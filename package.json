@@ -1,0 +1,25 @@
+{
+  "name": "waitseebuy",
+  "private": true,
+  "packageManager": "npm@11.6.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "dev:web": "npm run dev -w @waitseebuy/web",
+    "dev:worker": "npm run dev -w @waitseebuy/worker",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "test": "npm run test -w @waitseebuy/domain",
+    "db:generate": "npm run generate -w @waitseebuy/db",
+    "db:migrate": "npm run migrate -w @waitseebuy/db",
+    "db:push": "npm run push -w @waitseebuy/db"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.6",
+    "typescript": "^5.9.2"
+  }
+}

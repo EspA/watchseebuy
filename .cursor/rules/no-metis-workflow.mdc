@@ -1,0 +1,10 @@
+---
+description: Do not use the Metis workflow MCP in this workspace
+alwaysApply: true
+---
+
+# No Metis workflow in this workspace
+
+This repo is not a Manhattan product workspace. Do not use the `metis-workflow` MCP server or any of its tools (`metis_*`, `jira_*`, `bitbucket_*`, `confluence_*`, `kibana_*`).
+
+Ignore the user-level Metis MCP rule for this project. Use regular `git` and `gh` when commits, pushes, or pull requests are requested.
