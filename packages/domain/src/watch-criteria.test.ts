@@ -90,7 +90,7 @@ test("item location and available-to change coverage, confidence does not", () =
   assert.equal(toCoverageQuery(confidence).key, toCoverageQuery(base).key);
   assert.equal(toCoverageQuery(located).itemLocation, "country:US");
   assert.equal(toCoverageQuery(available).deliveryCountry, "CA");
-  assert.match(describeWatch(confidence), /confidence 7\+/);
+  assert.match(describeWatch(confidence), /seller confidence 7\+/);
 });
 
 test("listing and location filters parse eBay values", () => {

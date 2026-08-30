@@ -539,7 +539,7 @@ export function describeWatch(criteria: WatchCriteria): string {
     bits.push(`ships to ${criteria.shipToPostal}`);
   }
   if (criteria.minConfidence !== undefined) {
-    bits.push(`confidence ${criteria.minConfidence}+`);
+    bits.push(`seller confidence ${criteria.minConfidence}+`);
   }
   const set = cardSetLabel(criteria.cardSet);
   if (set) bits.push(set);

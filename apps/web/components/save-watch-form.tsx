@@ -119,6 +119,24 @@ export function SaveWatchForm({
           ))}
         </AutoSelect>
       </label>
+      <label>
+        Seller Confidence score
+        <AutoSelect
+          form={SEARCH_FORM}
+          name="confidence"
+          defaultValue={
+            intent.minConfidence !== undefined
+              ? String(intent.minConfidence)
+              : ""
+          }
+        >
+          {CONFIDENCE_FILTERS.map((option) => (
+            <option key={option.label} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </AutoSelect>
+      </label>
       <details
         className="filter-group"
         {...(moreFiltersOpen ? { open: true } : {})}
@@ -180,24 +198,6 @@ export function SaveWatchForm({
           </label>
         </div>
       </details>
-      <label>
-        Min confidence
-        <AutoSelect
-          form={SEARCH_FORM}
-          name="confidence"
-          defaultValue={
-            intent.minConfidence !== undefined
-              ? String(intent.minConfidence)
-              : ""
-          }
-        >
-          {CONFIDENCE_FILTERS.map((option) => (
-            <option key={option.label} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </AutoSelect>
-      </label>
       <CardFilters
         {...(intent.cardSet ? { cardSet: intent.cardSet } : {})}
         {...(intent.rarity ? { rarity: intent.rarity } : {})}
