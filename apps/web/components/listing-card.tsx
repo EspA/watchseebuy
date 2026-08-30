@@ -90,7 +90,7 @@ function ConfidenceCard({ listing }: { listing: CandidateListing }) {
       title={describeSellerFeedback(listing)}
     >
       <span className="confidence-score">{score}</span>
-      <span className="confidence-label">/10 confidence</span>
+      <span className="confidence-label">Seller score</span>
     </p>
   );
 }
