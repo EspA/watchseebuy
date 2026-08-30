@@ -1,0 +1,38 @@
+---
+description: WaitSeeBuy product north star — brand, wedge, and what not to build
+alwaysApply: true
+---
+
+# WaitSeeBuy
+
+This repo is **WaitSeeBuy** (`waitseebuy.com`). Wait. See. Buy.
+
+Become the CamelCamelCamel of eBay for everyday buyers — not a faster eBay, not a flipper-alert tool.
+
+## Locked decisions
+
+- **Name:** WaitSeeBuy. Never use eBay, Bay, or eBuy in the brand or domain.
+- **First vertical:** collectibles (cards, Lego, vintage toys, comics, coins, stamps, memorabilia).
+- **Core loop:** search acquires; **watches** are the product and the EPN engine.
+- **Auth gate:** search and sold comps are public. Account required only to save a watch or receive alerts. SSO: Google, Facebook, Apple. Email magic link as fallback. Optional ship-to on the search page; do not block search behind signup.
+- **Watches are intent**, not a clone of eBay saved-search params. Natural-language criteria, then explain why a listing matches.
+- **Landed cost is the number** people set (item + shipping + simple import/tax to their address). Location is first-class.
+- **Sold-comp context** on every result and every alert (condition-matched).
+- **Quiet alerts** over volume. Compete on accuracy, not 15-second poll speed.
+- **Official eBay APIs only.** EPN software-application approval required before sending users to eBay. Design for a short affiliate cookie (one-tap from the alert).
+- **Ad blockers:** probe the real EPN host. If blocked, dismissible banner + fallback to a plain eBay item URL. Never cloak affiliate links or break Buy.
+- **Quota increase on first live deploy.** File eBay Application Growth Check as soon as production is up. Instrument calls/day, cache hits, and 429s from day one so the request has a formula, not a guess. EPN approval and API quota are separate gates.
+- **Web first.** Mobile later, as a notification surface.
+- **Consumer core stays free.** EPN is default revenue. Do not hide basic watches behind a $20–40/mo wall.
+
+## Do not build
+
+Sniping, multi-marketplace reseller dashboards, scrapers, Telegram speed races, or a generic “all of eBay but simpler” homepage.
+
+## Stack (locked)
+
+Modular monolith on GCP. TypeScript, Next.js web, TypeScript worker, Cloud SQL Postgres. Official eBay APIs only. Coalesce watches into shared coverage queries — never poll once per user.
+
+Not now: GKE, a microservice per noun, scrapers, Firestore as system of record.
+
+Read `PRODUCT.md` and `ARCHITECTURE.md` before adding features.
