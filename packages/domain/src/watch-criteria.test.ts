@@ -1,7 +1,19 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  parseBrickCategory,
+  parseBrickStatus,
+  parseBrickType,
+  SET_EXCLUDE_WORDS,
+} from "./brick-filters.ts";
+import { parseFigureCategory } from "./figure-filters.ts";
+import {
   composeCatalogQuery,
+  CARD_GAME_FILTERS,
+  parseCardCategory,
+  parseCardGame,
+  parseCardGrade,
+  parseCardGrader,
   parseCardLanguage,
   parseCardRarity,
   parseCardSet,
@@ -25,6 +37,7 @@ import {
   parseListingTypeFilter,
   parseSearchIntent,
   toCoverageQuery,
+  userExcludeWords,
 } from "./watch-criteria.ts";
 
 
@@ -85,12 +98,15 @@ test("item location and available-to change coverage, confidence does not", () =
   const located = applyWatchOverrides(base, { itemLocation: "country:US" });
   const available = applyWatchOverrides(base, { shipToCountry: "CA" });
   const confidence = applyWatchOverrides(base, { minConfidence: 7 });
+  const priceScore = applyWatchOverrides(base, { minPriceScore: 8 });
   assert.notEqual(toCoverageQuery(located).key, toCoverageQuery(base).key);
   assert.notEqual(toCoverageQuery(available).key, toCoverageQuery(base).key);
   assert.equal(toCoverageQuery(confidence).key, toCoverageQuery(base).key);
+  assert.equal(toCoverageQuery(priceScore).key, toCoverageQuery(base).key);
   assert.equal(toCoverageQuery(located).itemLocation, "country:US");
   assert.equal(toCoverageQuery(available).deliveryCountry, "CA");
   assert.match(describeWatch(confidence), /seller confidence 7\+/);
+  assert.match(describeWatch(priceScore), /price score 8\+/);
 });
 
 test("listing and location filters parse eBay values", () => {
@@ -179,6 +195,36 @@ test("card catalog filters inject into eBay keywords, not Browse filter", () => 
   assert.equal(parseCardRarity("nope"), undefined);
   assert.equal(parseCardSet("base-set"), "base-set");
   assert.equal(parseCardLanguage("japanese"), "japanese");
+  assert.equal(parseCardGrader("psa"), "psa");
+  assert.equal(parseCardGrader("cgc"), "cgc");
+  assert.equal(parseCardGrader("nope"), undefined);
+  assert.equal(parseCardGrade("10"), "10");
+  assert.equal(parseCardGrade("1"), "1");
+  assert.equal(parseCardGrade("11"), undefined);
+  assert.equal(composeCatalogQuery("charizard", { grader: "psa" }), "charizard PSA");
+  assert.equal(
+    composeCatalogQuery("charizard", { grader: "psa", cardGrade: "10" }),
+    "charizard PSA 10",
+  );
+  assert.equal(
+    composeCatalogQuery("charizard", { grader: "cgc", cardGrade: "9" }),
+    "charizard CGC 9",
+  );
+  assert.equal(
+    composeCatalogQuery("charizard PSA 10", { grader: "psa", cardGrade: "10" }),
+    "charizard PSA 10",
+  );
+  assert.equal(stripCatalogTerms("charizard PSA", { grader: "bgs" }), "charizard PSA");
+  assert.equal(stripCatalogTerms("charizard PSA", { grader: "psa" }), "charizard");
+  assert.equal(
+    stripCatalogTerms("charizard PSA 10", { grader: "psa", cardGrade: "10" }),
+    "charizard",
+  );
+  assert.equal(
+    stripAllCatalogLabels("PSA 10 charizard", { includeGraders: false }),
+    "PSA 10 charizard",
+  );
+  assert.equal(stripAllCatalogLabels("PSA 10 charizard"), "charizard");
   assert.equal(
     composeCatalogQuery("charizard", {
       cardSet: "base-set",
@@ -213,6 +259,165 @@ test("card catalog filters inject into eBay keywords, not Browse filter", () => 
   assert.ok(!browseFilterParts({ listingType: "all" }).join(",").includes("rarity"));
   assert.match(describeWatch(filtered), /Base Set/);
   assert.match(describeWatch(filtered), /Holo Rare/);
+
+  const graded = applyWatchOverrides(base, { grader: "cgc", cardGrade: "10" });
+  assert.match(toCoverageQuery(graded).keywords, /cgc 10/);
+  assert.match(describeWatch(graded), /CGC 10/);
+});
+
+test("trading cards category is a Browse category_ids, not a keyword", () => {
+  assert.equal(parseCardCategory("2536"), "2536");
+  assert.equal(parseCardCategory("183454"), "183454");
+  assert.equal(parseCardCategory("999999"), undefined);
+  const base = parseSearchIntent("charizard");
+  const ccg = applyWatchOverrides(base, { cardCategory: "2536" });
+  const coverage = toCoverageQuery(ccg);
+  assert.equal(coverage.categoryIds, "2536");
+  assert.equal(coverage.keywords, "charizard");
+  assert.ok(!coverage.keywords.includes("collectible card"));
+  assert.notEqual(coverage.key, toCoverageQuery(base).key);
+  assert.match(describeWatch(ccg), /Collectible Card Games/);
+  const singles = applyWatchOverrides(base, { cardCategory: "183454" });
+  assert.equal(toCoverageQuery(singles).categoryIds, "183454");
+  assert.equal(toCoverageQuery(singles).keywords, "charizard");
+  assert.match(describeWatch(singles), /Single Cards/);
+  assert.ok(
+    !browseFilterParts({ listingType: "all" }).join(",").includes("183454"),
+  );
+});
+
+test("CCG game is a Browse aspect_filter, not a keyword", () => {
+  const slugs = CARD_GAME_FILTERS.map((option) => option.value);
+  assert.equal(new Set(slugs).size, slugs.length);
+  assert.equal(parseCardGame("pokemon-tcg"), "pokemon-tcg");
+  assert.equal(parseCardGame("Pokémon TCG"), "pokemon-tcg");
+  assert.equal(parseCardGame("nope"), undefined);
+  const base = parseSearchIntent("charizard");
+  const filtered = applyWatchOverrides(base, {
+    cardCategory: "183454",
+    cardGame: "pokemon-tcg",
+  });
+  const coverage = toCoverageQuery(filtered);
+  assert.equal(coverage.categoryIds, "183454");
+  assert.equal(
+    coverage.aspectFilter,
+    "categoryId:183454,Game:{Pokémon TCG}",
+  );
+  assert.equal(coverage.keywords, "charizard");
+  assert.ok(!coverage.keywords.toLowerCase().includes("pokemon"));
+  assert.notEqual(
+    coverage.key,
+    toCoverageQuery(applyWatchOverrides(base, { cardCategory: "183454" })).key,
+  );
+  assert.match(describeWatch(filtered), /Single Cards/);
+  assert.match(describeWatch(filtered), /Pokémon TCG/);
+  const withoutGame = applyWatchOverrides(filtered, {
+    cardCategory: "2536",
+  });
+  assert.equal(toCoverageQuery(withoutGame).aspectFilter, undefined);
+});
+
+test("building bricks type and status inject keywords; Set excludes instead", () => {
+  assert.equal(parseBrickType("minifigure"), "minifigure");
+  assert.equal(parseBrickType("set"), "set");
+  assert.equal(parseBrickType("nope"), undefined);
+  assert.equal(parseBrickStatus("factory-sealed"), "factory-sealed");
+  assert.equal(parseBrickCategory("183446"), "183446");
+  assert.equal(parseBrickCategory("19016"), undefined);
+  assert.equal(composeCatalogQuery("lego", { brickType: "set" }), "lego");
+  assert.equal(
+    composeCatalogQuery("lego", { brickType: "minifigure" }),
+    "lego minifigure",
+  );
+  assert.equal(
+    composeCatalogQuery("lego", { brickType: "instructions-manual" }),
+    "lego manual",
+  );
+  assert.equal(
+    composeCatalogQuery("lego", { brickType: "original-box" }),
+    "lego box",
+  );
+  assert.equal(
+    composeCatalogQuery("lego", { brickStatus: "factory-sealed" }),
+    "lego sealed",
+  );
+  assert.equal(
+    composeCatalogQuery("lego", { brickStatus: "complete" }),
+    "lego complete",
+  );
+  assert.equal(
+    composeCatalogQuery("lego", { brickStatus: "incomplete" }),
+    "lego incomplete",
+  );
+  assert.equal(
+    stripCatalogTerms("lego minifigure sealed", {
+      brickType: "minifigure",
+      brickStatus: "factory-sealed",
+    }),
+    "lego",
+  );
+  assert.equal(stripAllCatalogLabels("lego minifigure sealed incomplete"), "lego");
+
+  const base = parseSearchIntent("lego star wars");
+  const setWatch = applyWatchOverrides(base, {
+    brickType: "set",
+    excludeKeywords: mergeExcludeKeywords(["lot"]),
+  });
+  assert.deepEqual(
+    userExcludeWords(setWatch.excludeKeywords).sort((a, b) =>
+      a.localeCompare(b),
+    ),
+    [...SET_EXCLUDE_WORDS, "lot"].sort((a, b) => a.localeCompare(b)),
+  );
+  const setCoverage = toCoverageQuery(setWatch);
+  assert.equal(setCoverage.keywords, "lego star wars");
+  assert.ok(setCoverage.excludeKeywords?.includes("Minifigure"));
+  assert.ok(setCoverage.excludeKeywords?.includes("part"));
+  assert.match(describeWatch(setWatch), /Set/);
+  assert.match(describeWatch(setWatch), /excluding/);
+
+  const minifig = applyWatchOverrides(base, { brickType: "minifigure" });
+  assert.equal(toCoverageQuery(minifig).keywords, "lego star wars minifigure");
+  assert.deepEqual(userExcludeWords(minifig.excludeKeywords), []);
+  assert.match(describeWatch(minifig), /Minifigure/);
+
+  const cleared = applyWatchOverrides(setWatch, { clearBrickType: true });
+  assert.deepEqual(userExcludeWords(cleared.excludeKeywords), ["lot"]);
+});
+
+test("building toys category is a Browse category_ids, not a keyword", () => {
+  const base = parseSearchIntent("lego star wars");
+  const filtered = applyWatchOverrides(base, {
+    brickCategory: "183446",
+    brickStatus: "complete",
+  });
+  const coverage = toCoverageQuery(filtered);
+  assert.equal(coverage.categoryIds, "183446");
+  assert.equal(coverage.keywords, "lego star wars complete");
+  assert.ok(!coverage.keywords.includes("building toys"));
+  assert.notEqual(coverage.key, toCoverageQuery(base).key);
+  assert.match(describeWatch(filtered), /Building Toys/);
+  assert.match(describeWatch(filtered), /Complete/);
+  assert.ok(
+    !browseFilterParts({ listingType: "all" }).join(",").includes("183446"),
+  );
+});
+
+test("action figures category is a Browse category_ids, not a keyword", () => {
+  assert.equal(parseFigureCategory("246"), "246");
+  assert.equal(parseFigureCategory("261068"), "261068");
+  assert.equal(parseFigureCategory("999999"), undefined);
+  const base = parseSearchIntent("star wars kenner");
+  const filtered = applyWatchOverrides(base, { figureCategory: "246" });
+  const coverage = toCoverageQuery(filtered);
+  assert.equal(coverage.categoryIds, "246");
+  assert.equal(coverage.keywords, "star wars kenner");
+  assert.ok(!coverage.keywords.includes("action figures"));
+  assert.notEqual(coverage.key, toCoverageQuery(base).key);
+  assert.match(describeWatch(filtered), /Action Figures & Accessories/);
+  assert.ok(
+    !browseFilterParts({ listingType: "all" }).join(",").includes("246"),
+  );
 });
 
 test("graded condition stays on the coverage query", () => {

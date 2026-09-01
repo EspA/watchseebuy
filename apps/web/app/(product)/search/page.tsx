@@ -1,9 +1,12 @@
+import { unstable_noStore as noStore } from "next/cache";
 import {
+  attachPriceScores,
   landedCostCents,
   excludeWordsField,
   listingMatchesCondition,
   listingMatchesConfidence,
   listingMatchesListingType,
+  listingMatchesPriceScore,
   listingPassesExcludeKeywords,
   toCoverageQuery,
   withinLandedRange,
@@ -16,6 +19,10 @@ import { SearchSort } from "@/components/search-sort";
 import { intentFromSearchQuery, searchBarQuery } from "@/lib/search-params";
 import { priceSortFromQuery } from "@/lib/search-sort";
 import { getSession } from "@/lib/session";
+
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
+export const revalidate = 0;
 
 export default async function SearchPage({
   searchParams,
@@ -30,6 +37,7 @@ export default async function SearchPage({
     located?: string;
     to?: string;
     confidence?: string;
+    score?: string;
     listing?: string;
     exclude?: string;
     sort?: string;
@@ -37,8 +45,18 @@ export default async function SearchPage({
     rarity?: string;
     printing?: string;
     language?: string;
+    grader?: string;
+    grade?: string;
+    cardLine?: string;
+    cardCategory?: string;
+    cardGame?: string;
+    figureCategory?: string;
+    brickCategory?: string;
+    brickType?: string;
+    brickStatus?: string;
   }>;
 }) {
+  noStore();
   const query = await searchParams;
   const q = query.q ?? "";
   const sort = priceSortFromQuery(query.sort);
@@ -52,12 +70,28 @@ export default async function SearchPage({
     ...(query.located !== undefined ? { located: query.located } : {}),
     ...(query.to !== undefined ? { to: query.to } : {}),
     ...(query.confidence !== undefined ? { confidence: query.confidence } : {}),
+    ...(query.score !== undefined ? { score: query.score } : {}),
     ...(query.listing !== undefined ? { listing: query.listing } : {}),
     ...(query.exclude !== undefined ? { exclude: query.exclude } : {}),
     ...(query.set !== undefined ? { set: query.set } : {}),
     ...(query.rarity !== undefined ? { rarity: query.rarity } : {}),
     ...(query.printing !== undefined ? { printing: query.printing } : {}),
     ...(query.language !== undefined ? { language: query.language } : {}),
+    ...(query.grader !== undefined ? { grader: query.grader } : {}),
+    ...(query.grade !== undefined ? { grade: query.grade } : {}),
+    ...(query.cardLine !== undefined ? { cardLine: query.cardLine } : {}),
+    ...(query.cardCategory !== undefined
+      ? { cardCategory: query.cardCategory }
+      : {}),
+    ...(query.cardGame !== undefined ? { cardGame: query.cardGame } : {}),
+    ...(query.figureCategory !== undefined
+      ? { figureCategory: query.figureCategory }
+      : {}),
+    ...(query.brickCategory !== undefined
+      ? { brickCategory: query.brickCategory }
+      : {}),
+    ...(query.brickType !== undefined ? { brickType: query.brickType } : {}),
+    ...(query.brickStatus !== undefined ? { brickStatus: query.brickStatus } : {}),
   });
   const coverage = toCoverageQuery(intent);
   const session = await getSession();
@@ -70,7 +104,7 @@ export default async function SearchPage({
       })
     : { listings: [], configured: ebay.isConfigured() };
 
-  const listings = result.listings
+  const filtered = result.listings
     .filter((listing) => {
       const landedOk = withinLandedRange(
         landedCostCents({
@@ -98,6 +132,40 @@ export default async function SearchPage({
       });
       return sort === "price-desc" ? right - left : left - right;
     });
+  const identified =
+    q.trim() && filtered.length > 0
+      ? await ebay.hydrateProductSignals(filtered, coverage.ebaySite)
+      : filtered;
+  const listings = attachPriceScores(identified).filter((listing) =>
+    listingMatchesPriceScore(listing, intent.minPriceScore),
+  );
+  const scoreScope = [
+    q,
+    query.min,
+    query.max,
+    query.condition,
+    query.confidence,
+    query.score,
+    query.listing,
+    query.located,
+    query.to,
+    query.zip,
+    query.exclude,
+    query.set,
+    query.rarity,
+    query.printing,
+    query.language,
+    query.grader,
+    query.grade,
+    query.cardLine,
+    query.cardCategory,
+    query.cardGame,
+    query.figureCategory,
+    query.brickCategory,
+    query.brickType,
+    query.brickStatus,
+    query.sort,
+  ].join("|");
   const filteredOut = result.listings.length > 0 && listings.length === 0;
 
   return (
@@ -106,6 +174,7 @@ export default async function SearchPage({
       <form id="search-form" className="search-block" action="/search" method="get">
         <div className="search">
           <input
+            key={searchBarQuery(q, intent)}
             name="q"
             type="search"
             defaultValue={searchBarQuery(q, intent)}
@@ -123,6 +192,7 @@ export default async function SearchPage({
       {q.trim() ? (
         <div className="search-split">
           <SaveWatchForm
+            key={scoreScope}
             q={q}
             intent={intent}
             signedIn={Boolean(session)}
@@ -137,9 +207,12 @@ export default async function SearchPage({
                 </p>
                 <SearchSort value={sort} />
               </div>
-              <ul className="listings">
+              <ul className="listings" key={scoreScope}>
                 {listings.map((listing) => (
-                  <ListingCard key={listing.ebayItemId} listing={listing} />
+                  <ListingCard
+                    key={`${listing.ebayItemId}:${listing.priceScore.score}:${listing.priceScore.sampleSize}:${listing.priceScore.deltaPct}`}
+                    listing={listing}
+                  />
                 ))}
               </ul>
             </div>

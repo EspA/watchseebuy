@@ -15,9 +15,27 @@ type TokenResponse = {
 
 type Money = { value?: string; currency?: string };
 
+type TypedNameValue = { name?: string; value?: string };
+
+type ConditionDescriptor = {
+  name?: string;
+  values?: string[];
+  additionalInfo?: string;
+};
+
+type Product = {
+  gtins?: string[];
+  mpns?: string[];
+  brand?: string;
+  aspectGroups?: Array<{
+    aspects?: Array<{ localizedName?: string; localizedValues?: string[] }>;
+  }>;
+};
+
 type ItemSummary = {
   itemId?: string;
   legacyItemId?: string;
+  epid?: string;
   title?: string;
   image?: { imageUrl?: string };
   price?: Money;
@@ -29,6 +47,19 @@ type ItemSummary = {
   conditionId?: string;
   shortDescription?: string;
   seller?: { feedbackScore?: number; feedbackPercentage?: string | number };
+};
+
+type BrowseItem = ItemSummary & {
+  gtin?: string;
+  mpn?: string;
+  localizedAspects?: TypedNameValue[];
+  conditionDescriptors?: ConditionDescriptor[];
+  product?: Product;
+};
+
+type ItemsResponse = {
+  items?: BrowseItem[];
+  errors?: Array<{ message?: string; longMessage?: string }>;
 };
 
 type SearchResponse = {
@@ -71,6 +102,10 @@ function dollarsToCents(value: string | undefined): number {
 }
 
 export function mapItemSummary(item: ItemSummary): CandidateListing | null {
+  return mapBrowseItem(item);
+}
+
+export function mapBrowseItem(item: BrowseItem): CandidateListing | null {
   const ebayItemId = item.legacyItemId ?? item.itemId;
   if (!ebayItemId || !item.title) return null;
 
@@ -84,6 +119,19 @@ export function mapItemSummary(item: ItemSummary): CandidateListing | null {
     listingType:
       options.includes("AUCTION") && !isBin ? "auction" : "bin",
   };
+  if (item.itemId) listing.restItemId = item.itemId;
+  if (item.epid) listing.epid = item.epid;
+  const gtin = item.gtin ?? item.product?.gtins?.[0];
+  if (gtin) listing.gtin = gtin;
+  const mpn = item.mpn ?? item.product?.mpns?.[0];
+  if (mpn) listing.mpn = mpn;
+  const brand = item.product?.brand ?? aspectValue(item, "Brand");
+  if (brand) listing.brand = brand;
+  const aspects = mergeAspects(item);
+  if (aspects.length > 0) listing.localizedAspects = aspects;
+  if (item.conditionDescriptors?.length) {
+    listing.conditionDescriptors = item.conditionDescriptors;
+  }
   if (options.length > 0) listing.buyingOptions = options;
   if (item.seller?.feedbackScore !== undefined) {
     listing.sellerFeedbackScore = item.seller.feedbackScore;
@@ -103,6 +151,37 @@ export function mapItemSummary(item: ItemSummary): CandidateListing | null {
     listing.description = item.shortDescription.trim();
   }
   return listing;
+}
+
+function aspectValue(item: BrowseItem, name: string): string | undefined {
+  const needle = name.toLowerCase();
+  const fromListing = item.localizedAspects?.find(
+    (aspect) => aspect.name?.toLowerCase() === needle,
+  )?.value;
+  if (fromListing) return fromListing;
+  for (const group of item.product?.aspectGroups ?? []) {
+    for (const aspect of group.aspects ?? []) {
+      if (aspect.localizedName?.toLowerCase() === needle) {
+        return aspect.localizedValues?.[0];
+      }
+    }
+  }
+  return undefined;
+}
+
+function mergeAspects(item: BrowseItem): TypedNameValue[] {
+  const byName = new Map<string, string>();
+  for (const aspect of item.localizedAspects ?? []) {
+    if (aspect.name && aspect.value) byName.set(aspect.name, aspect.value);
+  }
+  for (const group of item.product?.aspectGroups ?? []) {
+    for (const aspect of group.aspects ?? []) {
+      const name = aspect.localizedName;
+      const value = aspect.localizedValues?.[0];
+      if (name && value && !byName.has(name)) byName.set(name, value);
+    }
+  }
+  return [...byName.entries()].map(([name, value]) => ({ name, value }));
 }
 
 export async function fetchApplicationToken(
@@ -143,15 +222,22 @@ export async function searchItemSummaries(input: {
   itemLocation?: string;
   deliveryCountry?: string;
   deliveryPostal?: string;
+  categoryIds?: string;
+  aspectFilter?: string;
 }): Promise<{ listings: CandidateListing[]; note?: string }> {
   const url = new URL(`${input.hosts.buy}/buy/browse/v1/item_summary/search`);
   url.searchParams.set("q", input.q);
   url.searchParams.set("limit", String(input.limit ?? 24));
   url.searchParams.set("fieldgroups", "EXTENDED");
+  if (input.categoryIds) url.searchParams.set("category_ids", input.categoryIds);
+  if (input.aspectFilter) {
+    url.searchParams.set("aspect_filter", input.aspectFilter);
+  }
   const filter = browseFilter(input);
   if (filter) url.searchParams.set("filter", filter);
 
   const res = await fetch(url, {
+    cache: "no-store",
     headers: {
       Authorization: `Bearer ${input.token}`,
       "X-EBAY-C-MARKETPLACE-ID": input.marketplaceId,
@@ -176,4 +262,61 @@ export async function searchItemSummaries(input: {
 export function browseFilter(input: BrowseFilterInput): string | undefined {
   const parts = browseFilterParts(input);
   return parts.length > 0 ? parts.join(",") : undefined;
+}
+
+const GET_ITEMS_CHUNK = 20;
+
+export async function getItemsByRestId(input: {
+  hosts: BrowseHosts;
+  token: string;
+  marketplaceId: string;
+  itemIds: string[];
+}): Promise<CandidateListing[]> {
+  const unique = [...new Set(input.itemIds.filter(Boolean))];
+  const listings: CandidateListing[] = [];
+  for (let i = 0; i < unique.length; i += GET_ITEMS_CHUNK) {
+    const chunk = unique.slice(i, i + GET_ITEMS_CHUNK);
+    const url = new URL(`${input.hosts.buy}/buy/browse/v1/item/`);
+    url.searchParams.set("item_ids", chunk.join(","));
+    url.searchParams.set("fieldgroups", "PRODUCT");
+    const res = await fetch(url, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${input.token}`,
+        "X-EBAY-C-MARKETPLACE-ID": input.marketplaceId,
+      },
+    });
+    const body = (await res.json()) as ItemsResponse;
+    if (!res.ok) {
+      throw new Error(
+        body.errors?.[0]?.longMessage ??
+          body.errors?.[0]?.message ??
+          `eBay getItems HTTP ${res.status}`,
+      );
+    }
+    for (const item of body.items ?? []) {
+      const listing = mapBrowseItem(item);
+      if (listing) listings.push(listing);
+    }
+  }
+  return listings;
+}
+
+export function mergeHydratedListing(
+  listing: CandidateListing,
+  detail: CandidateListing,
+): CandidateListing {
+  return {
+    ...listing,
+    ...(detail.epid && !listing.epid ? { epid: detail.epid } : {}),
+    ...(detail.gtin ? { gtin: detail.gtin } : {}),
+    ...(detail.brand ? { brand: detail.brand } : {}),
+    ...(detail.mpn ? { mpn: detail.mpn } : {}),
+    ...(detail.localizedAspects?.length
+      ? { localizedAspects: detail.localizedAspects }
+      : {}),
+    ...(detail.conditionDescriptors?.length
+      ? { conditionDescriptors: detail.conditionDescriptors }
+      : {}),
+  };
 }

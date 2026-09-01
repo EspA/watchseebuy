@@ -1,59 +1,73 @@
 # WaitSeeBuy — product thesis
 
 **Domain:** [waitseebuy.com](https://waitseebuy.com)  
-**Job:** Become the CamelCamelCamel of eBay — for people who will wait for the right piece, see whether the price is fair, then buy.
+**Job:** Become the CamelCamelCamel of eBay — for the exacting collector who already knows the piece, sees whether the price to their door is worth it, then buys.
 
 Wait. See. Buy.
 
-This is not a faster eBay. It is not a flipper radar. Search acquires. **Watches earn.**
+This is not a faster eBay. It is not a flipper radar. Search acquires. **Watches earn.** We curate for collectors.
 
 ---
 
 ## Who it is for
 
-A collector or everyday buyer who already knows what they want — a card, a figure, a comic, Lego toys, a coin — and is tired of eBay’s daily digest, keyword noise, and “cheap” listings that are expensive once shipping lands.
+**The exacting collector.** They already know the piece — the PSA 10, the factory-sealed set, the carded figure — and they are tired of eBay’s keyword noise and “cheap” listings that are expensive once shipping lands.
 
-They will wait weeks. They will not sit on Telegram. They want one quiet, trustworthy watch.
+They will wait weeks. They will not sit on Telegram. They share the piece and the precise criteria, then want a watch they can trust, on a schedule they choose.
 
 **Not for:** resellers chasing 15-second underpriced lots, snipers, or anyone whose job is “source inventory across six marketplaces.”
 
 ---
 
-## First vertical: collectibles
+## First vertical: vintage toys and cards
 
-Cards, Lego, vintage toys, comics, coins, stamps, memorabilia.
+The public wedge is the lines that actually move on eBay, not a generic “collectibles” aisle.
+
+**Launch lines:** Pokémon, LEGO, Hot Wheels, Labubu, Kenner Star Wars, Transformers, TMNT, Barbie, G.I. Joe, He-Man.
 
 Why this wedge:
 
 - Sold comps are the product. Collectors already think in “what did the last one go for?”
-- Condition language is brutal and eBay search is bad at it (graded vs raw, PSA/BGS, reprint, restoration, “for parts”).
-- Higher AOV than casual retail, and collectibles is one of the stronger eBay Partner Network categories.
+- Condition language is the product. eBay search is bad at it (PSA 10 vs raw, factory-sealed vs opened, carded vs loose, punched vs unpunched, complete accessories).
+- Higher AOV than casual retail, and these lines are among the stronger eBay Partner Network categories.
 - Passionate, repeat watchers. One good watch can last months.
 
-Homepage, examples, and alert copy should sound like a collector, not a sourcing tool. Other categories come later, using the same watch engine.
+Homepage, examples, and alert copy should sound like a collector: name the condition, not a category list. Comics, coins, stamps, sports cards, and other memorabilia use the same watch engine later. Do not put them on the homepage while the first vertical is this wedge.
+
+---
+
+## How we sound
+
+- Kicker: **For the exacting collector.** Not “for people who will wait,” not “picky,” not “experienced.”
+- Hero objects: **the PSA 10, the factory-sealed set, the carded figure.** Not “a card, a figure, a comic.”
+- Public copy says **price to your door.** “Landed cost” is the internal name (item + shipping + a simple import/tax guess). Do not lead with “landed” on a first-read surface; define it where the numbers appear.
+- We **watch with you** and tell you when that price is worth buying. Not “market insights.” Not “your opportunity.”
+- Buy is curated for collectors. We are not a faster marketplace.
 
 ---
 
 ## What we will build first
 
-1. **Simple search, no account required** — official eBay APIs, enough to find a piece and see whether the price is fair. Sign-in is not the front door. Not a redesign of eBay browse.
-2. **Intent watches** — stored as meaning, not a raw saved search. Example: “PSA 10 1986 Fleer Jordan, under $X landed, US or ships to me, not auction unless under Y, no reprints.”
-3. **Landed cost as the number** — max price includes shipping and a simple import/tax estimate to the user’s address. Location is first-class.
-4. **Sold-comp context on every result and every alert** — condition-matched, “this is 18% below the 90-day sold median.” That is why people click, and why EPN converts.
-5. **Quiet alerts** — email first, then push. Instant only when it is actually a deal. Quiet hours, exclude junk, seller-risk floor.
-6. **EPN-approved outbound buy** — one-tap from the alert, campaign IDs that can be re-attached. Design for a short cookie. In-app checkout (Buy APIs) is later, not v1.
+1. **Simple search, no account required** — official eBay APIs, quick and obvious, enough to find a piece and see whether the price is fair. Every result shows a **confidence score**, a **price score**, and the **price to your door**. Nothing hidden. Sign-in is not the front door. Not a redesign of eBay browse.
+2. **Intent watches** — the collector shares the piece and the precise criteria. Stored as meaning, not a raw saved search. Example: “PSA 10 Base Set Charizard, no reprints, under $X to my door, US or ships to me, not auction unless under Y.”
+3. **Price to your door as the number** — max price includes shipping and a simple import/tax estimate to the user’s address. Location is first-class.
+4. **Sold-comp context on every result and every alert** — condition-matched, “this is 18% below the 90-day sold median.” That is why people click, and why EPN converts. Price score is that judgment made visible.
+5. **Alerts on their schedule** — email first, then push. The collector chooses the cadence: **when a new listing appears**, a **daily note**, or a **weekly recap**. Instant is not the default; volume is not the goal. Quiet hours, exclude junk, seller-risk floor.
+6. **EPN-approved outbound buy** — one-tap from the alert, campaign IDs that can be re-attached. Design for a short cookie. In-app checkout (Buy APIs) is later, not v1. We curate what we send them to; we do not make eBay faster.
 
 Web first. Mobile is a notification surface after people already trust the watches.
+
+Until launch, waitseebuy.com is a static tease. Product routes stay off the public chrome.
 
 ---
 
 ## Who can do what without an account
 
-**Anyone can search and see comps.** That is how CamelCamelCamel works, and it is how we acquire. A collector should paste a card name, see landed price vs sold median, and decide — no email wall.
+**Anyone can search and see comps, scores, and the price to their door.** That is how CamelCamelCamel works, and it is how we acquire. A collector should paste a piece, see the all-in price vs sold median, and decide — no email wall.
 
 **Saving a watch and getting alerts requires an account.** Sign in with **Google, Facebook, or Apple**. Keep an email magic link as a fallback so someone is never stuck if a provider is down or they do not want social login. That account is the “wait” half of the product, and it is the only thing that creates standing eBay poll load.
 
-Landed cost without a profile: optional ship-to (ZIP / country) on the search itself, remembered in the browser. Do not force a signup to type a postcode.
+Price to your door without a profile: optional ship-to (ZIP / country) on the search itself, remembered in the browser. Do not force a signup to type a postcode.
 
 Protect quota without a login: cache search and comps aggressively, rate-limit by IP, and put the signup gate on **Watch this** — not on the search box.
 
@@ -67,6 +81,7 @@ Protect quota without a login: cache search and comps aggressively, rate-limit b
 - Scrapers — official eBay Developers Program + Browse/Feed APIs only
 - Anything that looks like eBay: no “eBuy”, no “Bay” in the brand, no confusing similarity
 - Generic “all of eBay, but simpler” as the homepage
+- A sourcing-tool voice: no “market insights,” no “opportunity,” no flipper radar
 - Paid walls in front of basic watches — consumer core stays free; EPN is the default revenue
 
 ---
@@ -89,6 +104,6 @@ Assume a short attribution window. If the user opens a listing two days later fr
 
 ## Success looks like
 
-A collector sets three watches, leaves the site, and comes back because an alert was *right* — fair landed price, right condition, not junk. They buy from that alert.
+A collector sets three watches, picks a cadence, leaves the site, and comes back because an alert was *right* — fair price to their door, right condition, not junk. They buy from that alert.
 
 If we are competing on “seconds after list,” we have already lost.

@@ -1,4 +1,21 @@
 import {
+  brickExcludeWords,
+  brickCategoryLabel,
+  brickStatusLabel,
+  brickTypeLabel,
+  withoutSetExcludeWords,
+} from "./brick-filters.ts";
+import {
+  figureCategoryIds,
+  figureCategoryLabel,
+} from "./figure-filters.ts";
+import {
+  cardCategoryIds,
+  cardCategoryLabel,
+  cardGameAspectFilter,
+  cardGameLabel,
+  categorySupportsCardGame,
+  cardGraderQueryTerm,
   cardLanguageLabel,
   cardPrintingLabel,
   cardRarityLabel,
@@ -275,12 +292,21 @@ export type WatchCriteria = {
   auctionMaxCents?: number;
   itemLocation?: string;
   minConfidence?: number;
+  minPriceScore?: number;
   shipToCountry?: string;
   shipToPostal?: string;
   cardSet?: string;
   rarity?: string;
   printing?: string;
   language?: string;
+  grader?: string;
+  cardGrade?: string;
+  cardCategory?: string;
+  cardGame?: string;
+  figureCategory?: string;
+  brickCategory?: string;
+  brickType?: string;
+  brickStatus?: string;
   ebaySite: string;
 };
 
@@ -294,6 +320,8 @@ export type CoverageQuery = {
   deliveryCountry?: string;
   deliveryPostal?: string;
   excludeKeywords?: string[];
+  categoryIds?: string;
+  aspectFilter?: string;
 };
 
 const DEFAULT_SITE = "EBAY_US";
@@ -390,6 +418,7 @@ export function applyWatchOverrides(
     listingType?: ListingType;
     itemLocation?: string;
     minConfidence?: number;
+    minPriceScore?: number;
     excludeKeywords?: string[];
     shipToCountry?: string;
     shipToPostal?: string;
@@ -397,12 +426,29 @@ export function applyWatchOverrides(
     rarity?: string;
     printing?: string;
     language?: string;
+    grader?: string;
+    cardGrade?: string;
+    cardCategory?: string;
+    cardGame?: string;
+    figureCategory?: string;
+    brickCategory?: string;
+    brickType?: string;
+    brickStatus?: string;
     clearMinConfidence?: boolean;
+    clearMinPriceScore?: boolean;
     clearShipTo?: boolean;
     clearCardSet?: boolean;
     clearRarity?: boolean;
     clearPrinting?: boolean;
     clearLanguage?: boolean;
+    clearGrader?: boolean;
+    clearCardGrade?: boolean;
+    clearCardCategory?: boolean;
+    clearCardGame?: boolean;
+    clearFigureCategory?: boolean;
+    clearBrickCategory?: boolean;
+    clearBrickType?: boolean;
+    clearBrickStatus?: boolean;
   },
 ): WatchCriteria {
   const next: WatchCriteria = { ...criteria };
@@ -431,6 +477,11 @@ export function applyWatchOverrides(
   } else if (overrides.minConfidence !== undefined) {
     next.minConfidence = overrides.minConfidence;
   }
+  if (overrides.clearMinPriceScore) {
+    delete next.minPriceScore;
+  } else if (overrides.minPriceScore !== undefined) {
+    next.minPriceScore = overrides.minPriceScore;
+  }
   if (overrides.excludeKeywords !== undefined) {
     next.excludeKeywords = mergeExcludeKeywords(
       userExcludeWords(overrides.excludeKeywords),
@@ -455,6 +506,46 @@ export function applyWatchOverrides(
   else if (overrides.printing !== undefined) next.printing = overrides.printing;
   if (overrides.clearLanguage) delete next.language;
   else if (overrides.language !== undefined) next.language = overrides.language;
+  if (overrides.clearGrader) delete next.grader;
+  else if (overrides.grader !== undefined) next.grader = overrides.grader;
+  if (overrides.clearCardGrade || overrides.clearGrader) delete next.cardGrade;
+  else if (overrides.cardGrade !== undefined) next.cardGrade = overrides.cardGrade;
+  if (overrides.clearCardCategory) delete next.cardCategory;
+  else if (overrides.cardCategory !== undefined) {
+    next.cardCategory = overrides.cardCategory;
+  }
+  if (overrides.clearCardGame || overrides.clearCardCategory) {
+    delete next.cardGame;
+  } else if (overrides.cardGame !== undefined) {
+    next.cardGame = overrides.cardGame;
+  }
+  if (next.cardGame && !categorySupportsCardGame(next.cardCategory)) {
+    delete next.cardGame;
+  }
+  if (overrides.clearFigureCategory) delete next.figureCategory;
+  else if (overrides.figureCategory !== undefined) {
+    next.figureCategory = overrides.figureCategory;
+  }
+  if (overrides.clearBrickCategory) delete next.brickCategory;
+  else if (overrides.brickCategory !== undefined) {
+    next.brickCategory = overrides.brickCategory;
+  }
+  if (overrides.clearBrickType) delete next.brickType;
+  else if (overrides.brickType !== undefined) next.brickType = overrides.brickType;
+  if (overrides.clearBrickStatus) delete next.brickStatus;
+  else if (overrides.brickStatus !== undefined) {
+    next.brickStatus = overrides.brickStatus;
+  }
+  if (
+    overrides.clearBrickType ||
+    overrides.brickType !== undefined ||
+    next.brickType === "set"
+  ) {
+    next.excludeKeywords = mergeExcludeKeywords([
+      ...withoutSetExcludeWords(userExcludeWords(next.excludeKeywords)),
+      ...brickExcludeWords(next.brickType),
+    ]);
+  }
   return next;
 }
 
@@ -470,6 +561,15 @@ export function toCoverageQuery(criteria: WatchCriteria): CoverageQuery {
   const deliveryCountry = criteria.shipToCountry?.trim() || undefined;
   const deliveryPostal = criteria.shipToPostal?.trim() || undefined;
   const excludeKeywords = userExcludeWords(criteria.excludeKeywords);
+  const categoryIds =
+    cardCategoryIds(criteria.cardCategory) ||
+    figureCategoryIds(criteria.figureCategory) ||
+    criteria.brickCategory?.trim() ||
+    undefined;
+  const aspectFilter = cardGameAspectFilter(
+    criteria.cardCategory,
+    criteria.cardGame,
+  );
   const key = [
     criteria.ebaySite,
     criteria.condition,
@@ -477,6 +577,8 @@ export function toCoverageQuery(criteria: WatchCriteria): CoverageQuery {
     itemLocation ?? "any",
     deliveryCountry ? `to:${deliveryCountry}` : "to:any",
     deliveryPostal ? `zip:${deliveryPostal}` : "zip:",
+    categoryIds ? `cat:${categoryIds}` : "cat:",
+    aspectFilter ? `asp:${aspectFilter}` : "asp:",
     excludeKeywords.length
       ? `ex:${[...excludeKeywords].map((w) => w.toLowerCase()).sort().join(",")}`
       : "ex:",
@@ -493,6 +595,8 @@ export function toCoverageQuery(criteria: WatchCriteria): CoverageQuery {
     ...(deliveryCountry ? { deliveryCountry } : {}),
     ...(deliveryPostal ? { deliveryPostal } : {}),
     ...(excludeKeywords.length ? { excludeKeywords } : {}),
+    ...(categoryIds ? { categoryIds } : {}),
+    ...(aspectFilter ? { aspectFilter } : {}),
   };
 }
 
@@ -517,7 +621,11 @@ export function describeWatch(criteria: WatchCriteria): string {
   if (criteria.condition !== "any") {
     bits.push(conditionLabel(criteria.condition));
   }
-  if (criteria.gradeCompany && criteria.minGrade !== undefined) {
+  if (
+    criteria.gradeCompany &&
+    criteria.minGrade !== undefined &&
+    !criteria.grader
+  ) {
     bits.push(`${criteria.gradeCompany.toUpperCase()} ${criteria.minGrade}+`);
   }
   if (criteria.listingType === "bin") bits.push("buy it now only");
@@ -541,6 +649,9 @@ export function describeWatch(criteria: WatchCriteria): string {
   if (criteria.minConfidence !== undefined) {
     bits.push(`seller confidence ${criteria.minConfidence}+`);
   }
+  if (criteria.minPriceScore !== undefined) {
+    bits.push(`price score ${criteria.minPriceScore}+`);
+  }
   const set = cardSetLabel(criteria.cardSet);
   if (set) bits.push(set);
   const rarity = cardRarityLabel(criteria.rarity);
@@ -549,6 +660,20 @@ export function describeWatch(criteria: WatchCriteria): string {
   if (printing) bits.push(printing);
   const language = cardLanguageLabel(criteria.language);
   if (language) bits.push(language);
+  const grader = cardGraderQueryTerm(criteria);
+  if (grader) bits.push(grader);
+  const cardCategory = cardCategoryLabel(criteria.cardCategory);
+  if (cardCategory) bits.push(cardCategory);
+  const cardGame = cardGameLabel(criteria.cardGame);
+  if (cardGame) bits.push(cardGame);
+  const figureCategory = figureCategoryLabel(criteria.figureCategory);
+  if (figureCategory) bits.push(figureCategory);
+  const brickCategory = brickCategoryLabel(criteria.brickCategory);
+  if (brickCategory) bits.push(brickCategory);
+  const brickType = brickTypeLabel(criteria.brickType);
+  if (brickType) bits.push(brickType);
+  const brickStatus = brickStatusLabel(criteria.brickStatus);
+  if (brickStatus) bits.push(brickStatus);
   const excluded = userExcludeWords(criteria.excludeKeywords);
   if (excluded.length > 0) {
     bits.push(`excluding ${excluded.join(", ")}`);

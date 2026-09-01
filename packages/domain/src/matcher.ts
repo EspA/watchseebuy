@@ -1,4 +1,13 @@
 import { landedCostCents } from "./pricing";
+import {
+  listingMatchesPriceScore,
+  type PriceScore,
+} from "./price-score";
+import type {
+  ConditionDescriptor,
+  ProductIdentity,
+  TypedNameValue,
+} from "./product-identity";
 import { listingMatchesConfidence } from "./seller-confidence";
 import {
   listingMatchesCondition,
@@ -9,6 +18,7 @@ import {
 
 export type CandidateListing = {
   ebayItemId: string;
+  restItemId?: string;
   title: string;
   itemCents: number;
   shippingCents: number;
@@ -23,6 +33,14 @@ export type CandidateListing = {
   conditionId?: string;
   webUrl?: string;
   description?: string;
+  epid?: string;
+  gtin?: string;
+  brand?: string;
+  mpn?: string;
+  localizedAspects?: TypedNameValue[];
+  conditionDescriptors?: ConditionDescriptor[];
+  identity?: ProductIdentity;
+  priceScore?: PriceScore;
 };
 
 export type MatchDecision = {
@@ -84,6 +102,9 @@ export function matchListing(
   }
   if (!listingMatchesConfidence(listing, watch.minConfidence)) {
     return { matches: false, landedCents, reasons: ["seller confidence"] };
+  }
+  if (!listingMatchesPriceScore(listing, watch.minPriceScore)) {
+    return { matches: false, landedCents, reasons: ["price score"] };
   }
   if (
     watch.listingType === "auction_below" &&

@@ -1,11 +1,14 @@
 import {
+  applyListingIdentity,
   ebaySearchQuery,
   type CandidateListing,
   type CoverageQuery,
 } from "@waitseebuy/domain";
 import {
   fetchApplicationToken,
+  getItemsByRestId,
   hostsForEnv,
+  mergeHydratedListing,
   searchItemSummaries,
 } from "./browse";
 
@@ -88,12 +91,64 @@ export class EbayClient {
         ...(coverage.deliveryPostal
           ? { deliveryPostal: coverage.deliveryPostal }
           : {}),
+        ...(coverage.categoryIds ? { categoryIds: coverage.categoryIds } : {}),
+        ...(coverage.aspectFilter ? { aspectFilter: coverage.aspectFilter } : {}),
       });
       return { ...result, configured: true };
     } catch (err) {
       const message = err instanceof Error ? err.message : "eBay search failed";
       return { listings: [], configured: true, note: message };
     }
+  }
+
+  /**
+   * One Browse getItems call per 20 listings. Call only after local filters
+   * so search itself stays a single item_summary request.
+   */
+  async hydrateProductSignals(
+    listings: CandidateListing[],
+    marketplaceId: string,
+  ): Promise<CandidateListing[]> {
+    if (!this.isConfigured() || listings.length === 0) {
+      return listings.map((listing) => applyListingIdentity(listing));
+    }
+
+    const ids = listings
+      .map((listing) => listing.restItemId)
+      .filter((id): id is string => Boolean(id));
+
+    let details: CandidateListing[] = [];
+    if (ids.length > 0) {
+      try {
+        const token = await this.token();
+        details = await getItemsByRestId({
+          hosts: hostsForEnv(this.env()),
+          token,
+          marketplaceId,
+          itemIds: ids,
+        });
+      } catch {
+        details = [];
+      }
+    }
+
+    const byRestId = new Map(
+      details
+        .filter((item) => item.restItemId)
+        .map((item) => [item.restItemId as string, item]),
+    );
+    const byLegacyId = new Map(
+      details.map((item) => [item.ebayItemId, item]),
+    );
+
+    return listings.map((listing) => {
+      const detail =
+        (listing.restItemId
+          ? byRestId.get(listing.restItemId)
+          : undefined) ?? byLegacyId.get(listing.ebayItemId);
+      const merged = detail ? mergeHydratedListing(listing, detail) : listing;
+      return applyListingIdentity(merged);
+    });
   }
 }
 
