@@ -4,14 +4,19 @@ import {
   CONDITION_FILTERS,
   CONDITION_GROUPS,
   CONFIDENCE_FILTERS,
+  PRICE_SCORE_FILTERS,
   ITEM_LOCATION_FILTERS,
   LISTING_TYPE_FILTERS,
   LOCATION_GROUPS,
+  excludeWordsField,
   isEbayConditionId,
   type WatchCriteria,
 } from "@waitseebuy/domain";
 import { AutoSelect, AutoText } from "@/components/auto-search";
+import { BuildingBricksFilters } from "@/components/building-bricks-filters";
 import { CardFilters } from "@/components/card-filters";
+import { ClearFiltersLink } from "@/components/clear-filters";
+import { FiguresFilters } from "@/components/figures-filters";
 import { dollarsField, searchParamsFromIntent } from "@/lib/search-params";
 
 const SEARCH_FORM = "search-form";
@@ -30,6 +35,13 @@ export function SaveWatchForm({
   if (!q.trim()) return null;
 
   const next = `/search?${searchParamsFromIntent(q, intent, watchId)}`;
+  const excluded = excludeWordsField(intent.excludeKeywords);
+  const clearFilters = new URLSearchParams({
+    q: intent.query.trim() || q,
+    ...(watchId ? { watch: watchId } : {}),
+    ...(excluded ? { exclude: excluded } : {}),
+    ...(intent.shipToPostal ? { zip: intent.shipToPostal } : {}),
+  });
   const listingValue =
     intent.listingType === "auction_below" ? "auction" : intent.listingType;
   const moreFiltersOpen =
@@ -57,7 +69,13 @@ export function SaveWatchForm({
           Watch this
         </Link>
       )}
-      <p>Main Filters</p>
+      <div className="filter-heading">
+        <p>Main Filters</p>
+        <ClearFiltersLink
+          href={`/search?${clearFilters}`}
+          query={intent.query.trim() || q}
+        />
+      </div>
       <div className="watch-price-row">
         <label>
           Min price
@@ -119,24 +137,44 @@ export function SaveWatchForm({
           ))}
         </AutoSelect>
       </label>
-      <label>
-        Seller Confidence score
-        <AutoSelect
-          form={SEARCH_FORM}
-          name="confidence"
-          defaultValue={
-            intent.minConfidence !== undefined
-              ? String(intent.minConfidence)
-              : ""
-          }
-        >
-          {CONFIDENCE_FILTERS.map((option) => (
-            <option key={option.label} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </AutoSelect>
-      </label>
+      <div className="watch-price-row">
+        <label>
+          Price score
+          <AutoSelect
+            form={SEARCH_FORM}
+            name="score"
+            defaultValue={
+              intent.minPriceScore !== undefined
+                ? String(intent.minPriceScore)
+                : ""
+            }
+          >
+            {PRICE_SCORE_FILTERS.map((option) => (
+              <option key={option.label} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </AutoSelect>
+        </label>
+        <label>
+          Seller score
+          <AutoSelect
+            form={SEARCH_FORM}
+            name="confidence"
+            defaultValue={
+              intent.minConfidence !== undefined
+                ? String(intent.minConfidence)
+                : ""
+            }
+          >
+            {CONFIDENCE_FILTERS.map((option) => (
+              <option key={option.label} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </AutoSelect>
+        </label>
+      </div>
       <details
         className="filter-group"
         {...(moreFiltersOpen ? { open: true } : {})}
@@ -199,10 +237,26 @@ export function SaveWatchForm({
         </div>
       </details>
       <CardFilters
+        {...(intent.cardCategory ? { cardCategory: intent.cardCategory } : {})}
+        {...(intent.cardGame ? { cardGame: intent.cardGame } : {})}
         {...(intent.cardSet ? { cardSet: intent.cardSet } : {})}
         {...(intent.rarity ? { rarity: intent.rarity } : {})}
         {...(intent.printing ? { printing: intent.printing } : {})}
         {...(intent.language ? { language: intent.language } : {})}
+        {...(intent.grader ? { grader: intent.grader } : {})}
+        {...(intent.cardGrade ? { cardGrade: intent.cardGrade } : {})}
+      />
+      <FiguresFilters
+        {...(intent.figureCategory
+          ? { figureCategory: intent.figureCategory }
+          : {})}
+      />
+      <BuildingBricksFilters
+        {...(intent.brickCategory
+          ? { brickCategory: intent.brickCategory }
+          : {})}
+        {...(intent.brickType ? { brickType: intent.brickType } : {})}
+        {...(intent.brickStatus ? { brickStatus: intent.brickStatus } : {})}
       />
     </div>
   );

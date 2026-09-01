@@ -17,12 +17,19 @@ export function collectibleItemKey(parts: {
   company?: string;
   set: string;
   subject: string;
+  cardNumber?: string;
+  language?: string;
+  variation?: string;
   grade?: string;
 }): string {
   return [
-    parts.company?.toLowerCase() ?? "raw",
+    "card",
     parts.set.toLowerCase().replace(/\s+/g, "-"),
     parts.subject.toLowerCase().replace(/\s+/g, "-"),
+    parts.cardNumber?.toLowerCase().replace(/\s+/g, "-") ?? "_",
+    parts.language?.toLowerCase().replace(/\s+/g, "-") ?? "_",
+    parts.variation?.toLowerCase().replace(/\s+/g, "-") ?? "_",
+    parts.company?.toLowerCase() ?? "raw",
     parts.grade ?? "ungraded",
   ].join("|");
 }

@@ -1,11 +1,13 @@
 import {
+  describePriceScore,
   describeSellerFeedback,
   formatUsd,
   landedCostCents,
   sellerConfidence,
   sellerConfidenceTone,
 } from "@waitseebuy/domain";
-import type { CandidateListing } from "@waitseebuy/domain";
+import type { CandidateListing, PriceScore } from "@waitseebuy/domain";
+import { ListingDescription } from "@/components/listing-description";
 import { epnItemUrl, plainItemUrl } from "@waitseebuy/ebay";
 
 function listingMeta(listing: CandidateListing): string {
@@ -50,7 +52,7 @@ export function ListingCard({ listing }: { listing: CandidateListing }) {
           <div className="listing-copy">
             <h2>{listing.title}</h2>
             {listing.description ? (
-              <p className="listing-desc">{listing.description}</p>
+              <ListingDescription text={listing.description} />
             ) : null}
             {listing.condition || listingMeta(listing) ? (
               <p className="listing-meta">
@@ -59,11 +61,22 @@ export function ListingCard({ listing }: { listing: CandidateListing }) {
                   .join(" · ")}
               </p>
             ) : null}
+            {listing.identity && listing.identity.confidence !== "low" ? (
+              <p className="listing-identity">
+                {listing.identity.label}
+              </p>
+            ) : null}
           </div>
           <div className="listing-price">
             <p className="listing-landed">{formatUsd(landed)}</p>
             <p className="listing-breakdown">{breakdown}</p>
-            <ConfidenceCard listing={listing} />
+            <div className="listing-scores">
+              <PriceScoreCard
+                score={listing.priceScore}
+                identity={listing.identity}
+              />
+              <ConfidenceCard listing={listing} />
+            </div>
           </div>
         </div>
         <div className="listing-actions">
@@ -78,6 +91,31 @@ export function ListingCard({ listing }: { listing: CandidateListing }) {
         </div>
       </div>
     </li>
+  );
+}
+
+function PriceScoreCard({
+  score,
+  identity,
+}: {
+  score?: PriceScore;
+  identity?: CandidateListing["identity"];
+}) {
+  const resolved: PriceScore = score ?? {
+    score: null,
+    tone: "low",
+    deltaPct: null,
+    sampleSize: 0,
+    reason: "Could not identify this product confidently",
+  };
+  return (
+    <p
+      className={`confidence confidence-${resolved.tone}`}
+      title={describePriceScore(resolved, identity)}
+    >
+      <span className="confidence-score">{resolved.score ?? "—"}</span>
+      <span className="confidence-label">Price score</span>
+    </p>
   );
 }
 

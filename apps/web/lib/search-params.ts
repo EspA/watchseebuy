@@ -5,6 +5,17 @@ import {
   excludeWordsField,
   mergeExcludeKeywords,
   parseAvailableTo,
+  parseBrickCategory,
+  parseBrickStatus,
+  parseBrickType,
+  parseFigureCategory,
+  DEFAULT_CARD_GRADE,
+  parseCardCategory,
+  parseCardGame,
+  parseCardGrade,
+  parseCardLine,
+  cardCategoryLineOf,
+  parseCardGrader,
   parseCardLanguage,
   parseCardPrinting,
   parseCardRarity,
@@ -13,6 +24,7 @@ import {
   parseExcludeWords,
   parseItemLocation,
   parseMinConfidence,
+  parseMinPriceScore,
   parseListingTypeFilter,
   parseSearchIntent,
   stripCatalogTerms,
@@ -29,12 +41,22 @@ export type SearchQuery = {
   located?: string;
   to?: string;
   confidence?: string;
+  score?: string;
   listing?: string;
   exclude?: string;
   set?: string;
   rarity?: string;
   printing?: string;
   language?: string;
+  grader?: string;
+  grade?: string;
+  cardLine?: string;
+  cardCategory?: string;
+  cardGame?: string;
+  figureCategory?: string;
+  brickCategory?: string;
+  brickType?: string;
+  brickStatus?: string;
 };
 
 export function intentFromSearchQuery(query: SearchQuery): WatchCriteria {
@@ -50,55 +72,100 @@ export function intentFromSearchQuery(query: SearchQuery): WatchCriteria {
       : undefined;
   const confidenceSpecified = query.confidence !== undefined;
   const confidence = parseMinConfidence(query.confidence);
+  const scoreSpecified = query.score !== undefined;
+  const minPriceScore = parseMinPriceScore(query.score);
 
-  const cardSet = parseCardSet(query.set);
-  const rarity = parseCardRarity(query.rarity);
-  const printing = parseCardPrinting(query.printing);
-  const language = parseCardLanguage(query.language);
+  const overrides: Parameters<typeof applyWatchOverrides>[1] = {};
+  if (query.condition !== undefined) {
+    overrides.condition = parseConditionFilter(query.condition);
+  }
+  if (listing !== undefined) overrides.listingType = listing;
+  if (located !== undefined) overrides.itemLocation = located;
+  if (confidenceSpecified) {
+    if (confidence !== undefined) overrides.minConfidence = confidence;
+    else overrides.clearMinConfidence = true;
+  }
+  if (scoreSpecified) {
+    if (minPriceScore !== undefined) overrides.minPriceScore = minPriceScore;
+    else overrides.clearMinPriceScore = true;
+  }
+  if (availableTo !== "any") overrides.shipToCountry = availableTo;
+  else if (zip) overrides.shipToCountry = "US";
+  else if (query.to !== undefined) overrides.clearShipTo = true;
+  if (zip) overrides.shipToPostal = zip;
+  if (query.exclude !== undefined) {
+    overrides.excludeKeywords = mergeExcludeKeywords(
+      parseExcludeWords(query.exclude),
+    );
+  }
+  if (query.set !== undefined) {
+    const cardSet = parseCardSet(query.set);
+    if (cardSet) overrides.cardSet = cardSet;
+    else overrides.clearCardSet = true;
+  }
+  if (query.rarity !== undefined) {
+    const rarity = parseCardRarity(query.rarity);
+    if (rarity) overrides.rarity = rarity;
+    else overrides.clearRarity = true;
+  }
+  if (query.printing !== undefined) {
+    const printing = parseCardPrinting(query.printing);
+    if (printing) overrides.printing = printing;
+    else overrides.clearPrinting = true;
+  }
+  if (query.language !== undefined) {
+    const language = parseCardLanguage(query.language);
+    if (language) overrides.language = language;
+    else overrides.clearLanguage = true;
+  }
+  if (query.grader !== undefined) {
+    const grader = parseCardGrader(query.grader);
+    if (grader) {
+      overrides.grader = grader;
+      overrides.cardGrade =
+        parseCardGrade(query.grade) ?? DEFAULT_CARD_GRADE;
+    } else {
+      overrides.clearGrader = true;
+      overrides.clearCardGrade = true;
+    }
+  } else if (query.grade !== undefined) {
+    const cardGrade = parseCardGrade(query.grade);
+    if (cardGrade) overrides.cardGrade = cardGrade;
+    else overrides.clearCardGrade = true;
+  }
+  if (query.cardCategory !== undefined || query.cardLine !== undefined) {
+    const cardCategory =
+      parseCardCategory(query.cardCategory) ?? parseCardLine(query.cardLine);
+    if (cardCategory) overrides.cardCategory = cardCategory;
+    else overrides.clearCardCategory = true;
+  }
+  if (query.cardGame !== undefined) {
+    const cardGame = parseCardGame(query.cardGame);
+    if (cardGame) overrides.cardGame = cardGame;
+    else overrides.clearCardGame = true;
+  }
+  if (query.figureCategory !== undefined) {
+    const figureCategory = parseFigureCategory(query.figureCategory);
+    if (figureCategory) overrides.figureCategory = figureCategory;
+    else overrides.clearFigureCategory = true;
+  }
+  if (query.brickCategory !== undefined) {
+    const brickCategory = parseBrickCategory(query.brickCategory);
+    if (brickCategory) overrides.brickCategory = brickCategory;
+    else overrides.clearBrickCategory = true;
+  }
+  if (query.brickType !== undefined) {
+    const brickType = parseBrickType(query.brickType);
+    if (brickType) overrides.brickType = brickType;
+    else overrides.clearBrickType = true;
+  }
+  if (query.brickStatus !== undefined) {
+    const brickStatus = parseBrickStatus(query.brickStatus);
+    if (brickStatus) overrides.brickStatus = brickStatus;
+    else overrides.clearBrickStatus = true;
+  }
 
-  const intent = applyWatchOverrides(parseSearchIntent(query.q), {
-    ...(query.condition !== undefined
-      ? { condition: parseConditionFilter(query.condition) }
-      : {}),
-    ...(listing !== undefined ? { listingType: listing } : {}),
-    ...(located !== undefined ? { itemLocation: located } : {}),
-    ...(confidenceSpecified
-      ? confidence !== undefined
-        ? { minConfidence: confidence }
-        : { clearMinConfidence: true }
-      : {}),
-    ...(availableTo !== "any"
-      ? { shipToCountry: availableTo }
-      : zip
-        ? { shipToCountry: "US" }
-        : query.to !== undefined
-          ? { clearShipTo: true }
-          : {}),
-    ...(zip ? { shipToPostal: zip } : {}),
-    ...(query.exclude !== undefined
-      ? { excludeKeywords: mergeExcludeKeywords(parseExcludeWords(query.exclude)) }
-      : {}),
-    ...(query.set !== undefined
-      ? cardSet
-        ? { cardSet }
-        : { clearCardSet: true }
-      : {}),
-    ...(query.rarity !== undefined
-      ? rarity
-        ? { rarity }
-        : { clearRarity: true }
-      : {}),
-    ...(query.printing !== undefined
-      ? printing
-        ? { printing }
-        : { clearPrinting: true }
-      : {}),
-    ...(query.language !== undefined
-      ? language
-        ? { language }
-        : { clearLanguage: true }
-      : {}),
-  });
+  const intent = applyWatchOverrides(parseSearchIntent(query.q), overrides);
   intent.query = stripCatalogTerms(intent.query, intent);
 
   if (query.zip !== undefined && !zip) {
@@ -160,6 +227,9 @@ export function searchParamsFromIntent(
   if (intent.minConfidence !== undefined) {
     params.set("confidence", String(intent.minConfidence));
   }
+  if (intent.minPriceScore !== undefined) {
+    params.set("score", String(intent.minPriceScore));
+  }
   if (intent.listingType !== "all") {
     params.set(
       "listing",
@@ -172,6 +242,18 @@ export function searchParamsFromIntent(
   if (intent.rarity) params.set("rarity", intent.rarity);
   if (intent.printing) params.set("printing", intent.printing);
   if (intent.language) params.set("language", intent.language);
+  if (intent.grader) params.set("grader", intent.grader);
+  if (intent.grader && intent.cardGrade) params.set("grade", intent.cardGrade);
+  if (intent.cardCategory) {
+    const line = cardCategoryLineOf(intent.cardCategory);
+    if (line) params.set("cardLine", line);
+    params.set("cardCategory", intent.cardCategory);
+  }
+  if (intent.cardGame) params.set("cardGame", intent.cardGame);
+  if (intent.figureCategory) params.set("figureCategory", intent.figureCategory);
+  if (intent.brickCategory) params.set("brickCategory", intent.brickCategory);
+  if (intent.brickType) params.set("brickType", intent.brickType);
+  if (intent.brickStatus) params.set("brickStatus", intent.brickStatus);
   return params;
 }
 

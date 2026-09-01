@@ -1,8 +1,15 @@
 /**
- * Card catalog facets from TCGplayer + Cardmarket.
- * eBay Browse has no first-class filter for these (aspect_filter needs a
- * category id and is Pokémon-only). Selected labels are injected into `q`.
+ * Card catalog facets from TCGplayer + Cardmarket, plus the official eBay
+ * Trading Cards taxonomy (Sports 212, Non-Sport 182982, CCG 2536).
+ * Set/rarity/printing/language/grader inject into `q`. Category is a Browse
+ * category_ids value and is never added to keywords.
  */
+
+import {
+  allBrickQueryTerms,
+  brickQueryTerms,
+  type BrickQuerySelection,
+} from "./brick-filters.ts";
 
 export type CardFilterOption = { value: string; label: string };
 
@@ -47,6 +54,19 @@ export const CARD_PRINTING_FILTERS: CardFilterOption[] = [
   { value: "non-holo", label: "Non-holo" },
   { value: "1st-edition", label: "1st Edition" },
 ];
+
+export const CARD_GRADER_FILTERS: CardFilterOption[] = [
+  { value: "psa", label: "PSA" },
+  { value: "cgc", label: "CGC" },
+  { value: "bgs", label: "BGS" },
+  { value: "sgc", label: "SGC" },
+];
+
+export const DEFAULT_CARD_GRADE = "10";
+
+export const CARD_GRADE_FILTERS: CardFilterOption[] = [
+  10, 9, 8, 7, 6, 5, 4, 3, 2, 1,
+].map((value) => ({ value: String(value), label: String(value) }));
 
 export const CARD_LANGUAGE_FILTERS: CardFilterOption[] = [
   { value: "english", label: "English" },
@@ -118,12 +138,589 @@ export const CARD_SET_GROUPS: CardSetGroup[] = [
   "Promos & other",
 ];
 
+/**
+ * eBay has no single Trading Cards id, and Browse accepts only one
+ * category_ids value. Groups follow the official US parents: Sports
+ * Trading Cards (212) under Sports Mem, Cards & Fan Shop; Non-Sport
+ * Trading Cards (182982) under Collectibles; Collectible Card Games
+ * (2536) under Toys & Hobbies. Toys & Hobbies itself is not selectable —
+ * that tree includes non-card toys.
+ */
+export type CardCategoryGroup =
+  | "Sports Mem, Cards & Fan Shop"
+  | "Collectibles"
+  | "Toys & Hobbies";
+
+export type CardCategoryOption = CardFilterOption & {
+  group?: CardCategoryGroup;
+};
+
+export const CARD_CATEGORY_FILTERS: CardCategoryOption[] = [
+  {
+    value: "212",
+    label: "Sports Trading Cards",
+    group: "Sports Mem, Cards & Fan Shop",
+  },
+  {
+    value: "261328",
+    label: "Sports Trading Card Singles",
+    group: "Sports Mem, Cards & Fan Shop",
+  },
+  {
+    value: "261329",
+    label: "Sports Trading Card Lots",
+    group: "Sports Mem, Cards & Fan Shop",
+  },
+  {
+    value: "261330",
+    label: "Sports Trading Card Sets",
+    group: "Sports Mem, Cards & Fan Shop",
+  },
+  {
+    value: "261331",
+    label: "Sports Sealed Trading Card Packs",
+    group: "Sports Mem, Cards & Fan Shop",
+  },
+  {
+    value: "261332",
+    label: "Sports Sealed Trading Card Boxes",
+    group: "Sports Mem, Cards & Fan Shop",
+  },
+  {
+    value: "261333",
+    label: "Sports Sealed Trading Card Cases",
+    group: "Sports Mem, Cards & Fan Shop",
+  },
+  {
+    value: "261334",
+    label: "Sports Trading Card Box & Case Breaks",
+    group: "Sports Mem, Cards & Fan Shop",
+  },
+  {
+    value: "463772",
+    label: "Sports Trading Card Repacks",
+    group: "Sports Mem, Cards & Fan Shop",
+  },
+  {
+    value: "261335",
+    label: "Sports Wrappers & Empty Card Boxes",
+    group: "Sports Mem, Cards & Fan Shop",
+  },
+  {
+    value: "261893",
+    label: "Sports Uncut Trading Card Sheets",
+    group: "Sports Mem, Cards & Fan Shop",
+  },
+  {
+    value: "183436",
+    label: "Sports Storage & Display Supplies",
+    group: "Sports Mem, Cards & Fan Shop",
+  },
+  {
+    value: "183437",
+    label: "Sports Card Sleeves & Bags",
+    group: "Sports Mem, Cards & Fan Shop",
+  },
+  {
+    value: "183438",
+    label: "Sports Card Toploaders & Holders",
+    group: "Sports Mem, Cards & Fan Shop",
+  },
+  {
+    value: "183439",
+    label: "Sports Albums, Binders & Pages",
+    group: "Sports Mem, Cards & Fan Shop",
+  },
+  {
+    value: "183440",
+    label: "Sports Card Storage Boxes & Dividers",
+    group: "Sports Mem, Cards & Fan Shop",
+  },
+  {
+    value: "183441",
+    label: "Sports Card Sorting Trays",
+    group: "Sports Mem, Cards & Fan Shop",
+  },
+  {
+    value: "183442",
+    label: "Sports Card Display Cases & Stands",
+    group: "Sports Mem, Cards & Fan Shop",
+  },
+  {
+    value: "261949",
+    label: "Sports Card Grading Tools",
+    group: "Sports Mem, Cards & Fan Shop",
+  },
+  {
+    value: "170135",
+    label: "Sports Price Guides & Publications",
+    group: "Sports Mem, Cards & Fan Shop",
+  },
+  {
+    value: "262055",
+    label: "Sport Trading Card NFTs",
+    group: "Sports Mem, Cards & Fan Shop",
+  },
+  {
+    value: "182982",
+    label: "Non-Sport Trading Cards",
+    group: "Collectibles",
+  },
+  {
+    value: "183050",
+    label: "Non-Sport Trading Card Singles",
+    group: "Collectibles",
+  },
+  {
+    value: "183051",
+    label: "Non-Sport Trading Card Lots",
+    group: "Collectibles",
+  },
+  {
+    value: "183052",
+    label: "Non-Sport Trading Card Sets",
+    group: "Collectibles",
+  },
+  {
+    value: "183053",
+    label: "Non-Sport Sealed Trading Card Packs",
+    group: "Collectibles",
+  },
+  {
+    value: "261035",
+    label: "Non-Sport Sealed Trading Card Boxes",
+    group: "Collectibles",
+  },
+  {
+    value: "261036",
+    label: "Non-Sport Sealed Trading Card Cases",
+    group: "Collectibles",
+  },
+  {
+    value: "261336",
+    label: "Non-Sport Trading Card Box & Case Breaks",
+    group: "Collectibles",
+  },
+  {
+    value: "183054",
+    label: "Non-Sport Wrappers & Empty Card Boxes",
+    group: "Collectibles",
+  },
+  {
+    value: "261947",
+    label: "Non-Sport Uncut Trading Card Sheets",
+    group: "Collectibles",
+  },
+  {
+    value: "183056",
+    label: "Non-Sport Card Supplies & Accessories",
+    group: "Collectibles",
+  },
+  {
+    value: "259148",
+    label: "Non-Sport Card Sleeves & Bags",
+    group: "Collectibles",
+  },
+  {
+    value: "259149",
+    label: "Non-Sport Card Toploaders & Holders",
+    group: "Collectibles",
+  },
+  {
+    value: "183059",
+    label: "Non-Sport Card Albums, Binders & Pages",
+    group: "Collectibles",
+  },
+  {
+    value: "259150",
+    label: "Non-Sport Card Storage Boxes & Dividers",
+    group: "Collectibles",
+  },
+  {
+    value: "261038",
+    label: "Non-Sport Card Sorting Trays",
+    group: "Collectibles",
+  },
+  {
+    value: "261037",
+    label: "Non-Sport Card Display Cases & Stands",
+    group: "Collectibles",
+  },
+  {
+    value: "261950",
+    label: "Non-Sport Card Grading Tools",
+    group: "Collectibles",
+  },
+  {
+    value: "171198",
+    label: "Non-Sport Price Guides & Publications",
+    group: "Collectibles",
+  },
+  {
+    value: "219",
+    label: "Other Non-Sport Trading Card Merchandise",
+    group: "Collectibles",
+  },
+  {
+    value: "262052",
+    label: "Non-Sport Trading Card NFTs",
+    group: "Collectibles",
+  },
+  {
+    value: "2536",
+    label: "Collectible Card Games",
+    group: "Toys & Hobbies",
+  },
+  {
+    value: "183454",
+    label: "Single Cards",
+    group: "Toys & Hobbies",
+  },
+  {
+    value: "183455",
+    label: "CCG Mixed Card Lots",
+    group: "Toys & Hobbies",
+  },
+  { value: "183459", label: "CCG Sets", group: "Toys & Hobbies" },
+  {
+    value: "183456",
+    label: "CCG Sealed Packs",
+    group: "Toys & Hobbies",
+  },
+  {
+    value: "183457",
+    label: "CCG Sealed Decks & Kits",
+    group: "Toys & Hobbies",
+  },
+  {
+    value: "261044",
+    label: "CCG Sealed Boxes",
+    group: "Toys & Hobbies",
+  },
+  {
+    value: "261045",
+    label: "CCG Sealed Cases",
+    group: "Toys & Hobbies",
+  },
+  {
+    value: "183458",
+    label: "CCG Player-Built Decks",
+    group: "Toys & Hobbies",
+  },
+  {
+    value: "261337",
+    label: "CCG Box & Case Breaks",
+    group: "Toys & Hobbies",
+  },
+  { value: "463773", label: "CCG Repacks", group: "Toys & Hobbies" },
+  {
+    value: "261948",
+    label: "Uncut CCG Sheets",
+    group: "Toys & Hobbies",
+  },
+  {
+    value: "183460",
+    label: "CCG Supplies & Accessories",
+    group: "Toys & Hobbies",
+  },
+  {
+    value: "183461",
+    label: "CCG Card Sleeves",
+    group: "Toys & Hobbies",
+  },
+  {
+    value: "183462",
+    label: "CCG Deck Boxes, Storage Cases & Dividers",
+    group: "Toys & Hobbies",
+  },
+  { value: "183463", label: "CCG Dice", group: "Toys & Hobbies" },
+  { value: "183464", label: "CCG Playmats", group: "Toys & Hobbies" },
+  {
+    value: "183465",
+    label: "CCG Albums, Binders & Pages",
+    group: "Toys & Hobbies",
+  },
+  { value: "261039", label: "CCG Coins", group: "Toys & Hobbies" },
+  { value: "261040", label: "CCG Counters", group: "Toys & Hobbies" },
+  {
+    value: "261042",
+    label: "CCG Dice Pouches",
+    group: "Toys & Hobbies",
+  },
+  {
+    value: "261043",
+    label: "CCG Playmat Tubes, Bags & Cases",
+    group: "Toys & Hobbies",
+  },
+  {
+    value: "261951",
+    label: "CCG Grading Tools",
+    group: "Toys & Hobbies",
+  },
+  {
+    value: "261041",
+    label: "CCG Price Guides & Publications",
+    group: "Toys & Hobbies",
+  },
+  { value: "2535", label: "Other CCG Items", group: "Toys & Hobbies" },
+  { value: "262056", label: "CCG NFTs", group: "Toys & Hobbies" },
+];
+
+export const CARD_CATEGORY_GROUPS: CardCategoryGroup[] = [
+  "Sports Mem, Cards & Fan Shop",
+  "Collectibles",
+  "Toys & Hobbies",
+];
+
+export const CARD_CATEGORY_LINES: CardCategoryOption[] = [
+  {
+    value: "212",
+    label: "Sports Trading Cards",
+    group: "Sports Mem, Cards & Fan Shop",
+  },
+  {
+    value: "182982",
+    label: "Non-Sport Trading Cards",
+    group: "Collectibles",
+  },
+  {
+    value: "2536",
+    label: "Collectible Card Games",
+    group: "Toys & Hobbies",
+  },
+];
+
+/** Leaf CCG categories that expose the official Game aspect. */
+export const CCG_GAME_CATEGORY_IDS = new Set([
+  "183454",
+  "183455",
+  "183456",
+  "183457",
+  "183458",
+  "183459",
+  "261044",
+  "261045",
+  "261337",
+  "463773",
+]);
+
+const CCG_GAME_NAMES = [
+  "7th Sea CCG",
+  "A Game of Thrones CCG",
+  "Age of Empires: Expandable Card Game",
+  "Aliens vs Predator CCG",
+  "Anachronism",
+  "Animal Kaiser",
+  "Ani-Mayhem",
+  "Argent Saga TCG",
+  "Austin Powers CCG",
+  "Babylon 5 CCG",
+  "Bakugan TCG",
+  "Battle Spirits TCG",
+  "Battlestar Galactica CCG",
+  "BattleTech CCG",
+  "Behind TCG",
+  "Bella Sara",
+  "Bleach TCG",
+  "Blood Wars",
+  "Buffy the Vampire Slayer CCG",
+  "Cardfight!! Vanguard TCG",
+  "Chaotic TCG",
+  "Corunea CCG",
+  "Cyberpunk CCG",
+  "Dark Age: Feudal Lords",
+  "Dark Eden",
+  "Deadlands: Lost Colony - Showdown",
+  "Deadman's Cross",
+  "Dice Masters",
+  "Digimon CCG",
+  "Dinosaur King TCG",
+  "Disney Lorcana TCG",
+  "Dixie",
+  "Doctor Who Alien Armies TCG",
+  "Doctor Who Alien Attax TCG",
+  "Doctor Who Battles in Time CCG",
+  "Doctor Who CCG",
+  "Doctor Who Monster Invasion TCG",
+  "Doomtown: Reloaded",
+  "Doomtrooper CCG",
+  "Dragoborne",
+  "Dragon Ball CCG",
+  "Dragon Ball GT TCG",
+  "Dragon Ball Super Card Game",
+  "Dragon Ball Z TCG",
+  "Dragon Storm CCG",
+  "D-Spirits",
+  "Duel Masters TCG",
+  "Dune CCG",
+  "Eagles CCG",
+  "Epic Battles",
+  "Epic TCG",
+  "Exodus TCG",
+  "Final Fantasy TCG",
+  "Fire Emblem 0 (Cipher)",
+  "Flesh and Blood TCG",
+  "Force of Will TCG",
+  "Fortnite TCG",
+  "Free Realms TCG",
+  "Future Card Buddyfight",
+  "G.I. Joe TCG",
+  "Galactic Empires",
+  "Gate Ruler TCG",
+  "Gridiron: Fantasy Football Game",
+  "Guardian Cross TCG",
+  "Guardians CCG",
+  "Gundam War TCG",
+  "Gwent: The Witcher Card Game",
+  "Gym Heroes TCG",
+  "Harry Potter TCG",
+  "Hecatomb",
+  "Heresy: Kingdom Come",
+  "Highlander: The Card Game",
+  "Illuminati: New World Order",
+  "InuYasha TCG",
+  "James Bond 007 CCG",
+  "Jedi Knights TCG",
+  "Justice League TCG",
+  "Kaijudo TCG",
+  "KeyForge",
+  "Kingdoms CCG",
+  "L.O.L. Surprise! Dance Off! TCG",
+  "Legendary: Marvel Studios",
+  "Legend of the Five Rings",
+  "LEGO Ninjago TCG",
+  "Lightseekers TCG",
+  "Looney Tunes TCG",
+  "Luck & Logic",
+  "Magic: The Gathering",
+  "Magi-Nation Duel",
+  "MapleStory iTCG",
+  "Marvel ReCharge CCG",
+  "Marvel Superstars TCG",
+  "Marvel Ultimate Battles TCG",
+  "Mega Man NT Warrior TCG",
+  "MetaX TCG",
+  "MetaZoo CCG",
+  "Middle-earth CCG",
+  "Minions TCG",
+  "Moshi Monsters Mash Up TCG",
+  "Munchkin CCG",
+  "My Hero Academia: The Card Game",
+  "My Little Pony CCG",
+  "Mythos CCG",
+  "Naruto CCG",
+  "Neopets TCG",
+  "Netrunner",
+  "One Piece CCG",
+  "On The Edge TCG",
+  "OverPower",
+  "Pirates Constructible Strategy Game",
+  "Pirates of the Caribbean TCG",
+  "Pirates of the Spanish Main",
+  "Pokémon TCG",
+  "Power Rangers ACG",
+  "Precious Memories",
+  "Raw Deal CCG",
+  "Redakai",
+  "Redemption TCG",
+  "Riftbound: League of Legends TCG",
+  "Robotech CCG",
+  "Sailor Moon CCG",
+  "Shadowfist TCG",
+  "Shadowrun: The Trading Card Game",
+  "Shadowverse",
+  "Skylanders Battlecast",
+  "Sorcery TCG",
+  "Spawn PowerCardz",
+  "Spellfire: Master the Magic",
+  "Stargate TCG",
+  "Star Trek: The Card Game",
+  "Star Trek CCG",
+  "Star Trek Tribbles CCG",
+  "Star Wars: Destiny",
+  "Star Wars CCG",
+  "Star Wars Episode I CCG",
+  "Star Wars Force Attax",
+  "Star Wars PocketModel TCG",
+  "Star Wars TCG",
+  "The Caster Chronicles TCG",
+  "The Eye of Judgment",
+  "The Lord of the Rings TCG",
+  "The Simpsons TCG",
+  "The Terminator CCG",
+  "The Wheel of Time CCG",
+  "The X-Files CCG",
+  "Tomb Raider CCG",
+  "Transformers TCG",
+  "Universal Fighting System",
+  "UniVersus",
+  "Vampire: The Eternal Struggle",
+  "Vs. System",
+  "WarCry",
+  "Warhammer: Age of Sigmar TCG",
+  "Warhammer 40,000 CCG",
+  "Warlord: Saga of the Storm",
+  "Webkinz TCG",
+  "Weiss Schwarz",
+  "Wildstorms CCG",
+  "Wing Commander TCG",
+  "Wixoss",
+  "World of Warcraft TCG",
+  "World of Warriors TCG",
+  "Wyvern",
+  "X-Men TCG",
+  "Young Jedi CCG",
+  "Yu-Gi-Oh! TCG",
+  "Yu Yu Hakusho TCG",
+  "Zombie World Order TCG",
+] as const;
+
+const CCG_GAME_POPULAR_ASPECTS = [
+  "Pokémon TCG",
+  "Magic: The Gathering",
+  "Yu-Gi-Oh! TCG",
+  "Disney Lorcana TCG",
+  "One Piece CCG",
+  "Digimon CCG",
+  "Flesh and Blood TCG",
+  "Dragon Ball Super Card Game",
+  "Weiss Schwarz",
+  "Cardfight!! Vanguard TCG",
+] as const;
+
+export type CardGameOption = CardFilterOption & { aspect: string };
+
+function slugifyGame(name: string): string {
+  return name
+    .replace(/Pokémon/g, "Pokemon")
+    .replace(/&/g, "and")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+export const CARD_GAME_FILTERS: CardGameOption[] = CCG_GAME_NAMES.map(
+  (aspect) => ({
+    value: slugifyGame(aspect),
+    label: aspect,
+    aspect,
+  }),
+);
+
+export const CARD_GAME_POPULAR = CCG_GAME_POPULAR_ASPECTS.map((aspect) =>
+  slugifyGame(aspect),
+);
+
 export type CardCatalogSelection = {
   cardSet?: string;
   rarity?: string;
   printing?: string;
   language?: string;
+  grader?: string;
+  cardGrade?: string;
 };
+
+export type CatalogSelection = CardCatalogSelection & BrickQuerySelection;
 
 const ANY = "any";
 
@@ -133,6 +730,75 @@ function findOption(
 ): CardFilterOption | undefined {
   if (!value || value === ANY) return undefined;
   return options.find((option) => option.value === value);
+}
+
+export function parseCardCategory(raw: string | undefined): string | undefined {
+  return findOption(CARD_CATEGORY_FILTERS, raw)?.value;
+}
+
+export function cardCategoryLabel(value: string | undefined): string | undefined {
+  return findOption(CARD_CATEGORY_FILTERS, value)?.label;
+}
+
+export function cardCategoryIds(value: string | undefined): string | undefined {
+  return parseCardCategory(value);
+}
+
+export function parseCardLine(raw: string | undefined): string | undefined {
+  if (!raw || raw === ANY) return undefined;
+  return CARD_CATEGORY_LINES.find((option) => option.value === raw)?.value;
+}
+
+export function cardCategoryLineOf(value: string | undefined): string | undefined {
+  const parsed = parseCardCategory(value);
+  if (!parsed) return undefined;
+  if (parseCardLine(parsed)) return parsed;
+  const option = CARD_CATEGORY_FILTERS.find((item) => item.value === parsed);
+  return CARD_CATEGORY_LINES.find((line) => line.group === option?.group)?.value;
+}
+
+export function cardCategoryChildren(lineId: string | undefined): CardCategoryOption[] {
+  const line = CARD_CATEGORY_LINES.find((option) => option.value === lineId);
+  if (!line) return [];
+  return CARD_CATEGORY_FILTERS.filter(
+    (option) => option.group === line.group && option.value !== line.value,
+  );
+}
+
+export function categorySupportsCardGame(value: string | undefined): boolean {
+  const parsed = parseCardCategory(value);
+  return Boolean(parsed && CCG_GAME_CATEGORY_IDS.has(parsed));
+}
+
+export function parseCardGame(raw: string | undefined): string | undefined {
+  if (!raw || raw === ANY) return undefined;
+  return CARD_GAME_FILTERS.find(
+    (option) => option.value === raw || option.aspect === raw,
+  )?.value;
+}
+
+export function cardGameLabel(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  return CARD_GAME_FILTERS.find(
+    (option) => option.value === value || option.aspect === value,
+  )?.label;
+}
+
+export function cardGameAspect(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  return CARD_GAME_FILTERS.find(
+    (option) => option.value === value || option.aspect === value,
+  )?.aspect;
+}
+
+export function cardGameAspectFilter(
+  categoryId: string | undefined,
+  game: string | undefined,
+): string | undefined {
+  const category = parseCardCategory(categoryId);
+  const aspect = cardGameAspect(game);
+  if (!category || !aspect || !categorySupportsCardGame(category)) return undefined;
+  return `categoryId:${category},Game:{${aspect}}`;
 }
 
 export function parseCardSet(raw: string | undefined): string | undefined {
@@ -151,6 +817,14 @@ export function parseCardLanguage(raw: string | undefined): string | undefined {
   return findOption(CARD_LANGUAGE_FILTERS, raw)?.value;
 }
 
+export function parseCardGrader(raw: string | undefined): string | undefined {
+  return findOption(CARD_GRADER_FILTERS, raw)?.value;
+}
+
+export function parseCardGrade(raw: string | undefined): string | undefined {
+  return findOption(CARD_GRADE_FILTERS, raw)?.value;
+}
+
 export function cardSetLabel(value: string | undefined): string | undefined {
   return findOption(CARD_SET_FILTERS, value)?.label;
 }
@@ -167,17 +841,38 @@ export function cardLanguageLabel(value: string | undefined): string | undefined
   return findOption(CARD_LANGUAGE_FILTERS, value)?.label;
 }
 
-/** Labels that should be appended to the eBay keyword query. */
-export function catalogQueryTerms(selection: CardCatalogSelection): string[] {
+export function cardGraderLabel(value: string | undefined): string | undefined {
+  return findOption(CARD_GRADER_FILTERS, value)?.label;
+}
+
+export function cardGradeLabel(value: string | undefined): string | undefined {
+  return findOption(CARD_GRADE_FILTERS, value)?.label;
+}
+
+/** `PSA 10` when both are set, otherwise just `PSA`. */
+export function cardGraderQueryTerm(
+  selection: Pick<CardCatalogSelection, "grader" | "cardGrade">,
+): string | undefined {
+  const grader = cardGraderLabel(selection.grader);
+  if (!grader) return undefined;
+  const grade = cardGradeLabel(selection.cardGrade);
+  return grade ? `${grader} ${grade}` : grader;
+}
+
+/** Labels / keywords that should be appended to the eBay keyword query. */
+export function catalogQueryTerms(selection: CatalogSelection): string[] {
   const terms: string[] = [];
   const set = cardSetLabel(selection.cardSet);
   const rarity = cardRarityLabel(selection.rarity);
   const printing = cardPrintingLabel(selection.printing);
   const language = cardLanguageLabel(selection.language);
+  const grader = cardGraderQueryTerm(selection);
   if (set) terms.push(set);
   if (rarity) terms.push(rarity);
   if (printing) terms.push(printing);
   if (language) terms.push(language);
+  if (grader) terms.push(grader);
+  terms.push(...brickQueryTerms(selection));
   return terms;
 }
 
@@ -190,20 +885,31 @@ export function queryIncludesPhrase(query: string, phrase: string): boolean {
   return phrasePattern(phrase).test(query);
 }
 
-function allCatalogLabels(): string[] {
+function allGraderLabels(): string[] {
+  const labels: string[] = [];
+  for (const grader of CARD_GRADER_FILTERS) {
+    for (const grade of CARD_GRADE_FILTERS) {
+      labels.push(`${grader.label} ${grade.label}`);
+    }
+    labels.push(grader.label);
+  }
+  return labels;
+}
+
+function allCatalogLabels(includeGraders = true): string[] {
   return [
-    ...CARD_SET_FILTERS,
-    ...CARD_RARITY_FILTERS,
-    ...CARD_PRINTING_FILTERS,
-    ...CARD_LANGUAGE_FILTERS,
-  ]
-    .map((option) => option.label)
-    .sort((a, b) => b.length - a.length);
+    ...CARD_SET_FILTERS.map((option) => option.label),
+    ...CARD_RARITY_FILTERS.map((option) => option.label),
+    ...CARD_PRINTING_FILTERS.map((option) => option.label),
+    ...CARD_LANGUAGE_FILTERS.map((option) => option.label),
+    ...(includeGraders ? allGraderLabels() : []),
+    ...allBrickQueryTerms(),
+  ].sort((a, b) => b.length - a.length);
 }
 
 export function stripCatalogTerms(
   query: string,
-  selection: CardCatalogSelection,
+  selection: CatalogSelection,
 ): string {
   let next = query;
   for (const term of catalogQueryTerms(selection)) {
@@ -213,21 +919,25 @@ export function stripCatalogTerms(
 }
 
 /** Drop every known catalog label so a dropdown change can replace the old term. */
-export function stripAllCatalogLabels(query: string): string {
+export function stripAllCatalogLabels(
+  query: string,
+  options?: { includeGraders?: boolean },
+): string {
   let next = query;
-  for (const term of allCatalogLabels()) {
+  for (const term of allCatalogLabels(options?.includeGraders ?? true)) {
     next = next.replace(phrasePattern(term), " ");
   }
   return next.replace(/\s+/g, " ").trim();
 }
 
 function quoteTerm(term: string): string {
+  if (/^(PSA|CGC|BGS|SGC) \d+$/i.test(term)) return term;
   return /\s/.test(term) ? `"${term}"` : term;
 }
 
 export function composeCatalogQuery(
   query: string,
-  selection: CardCatalogSelection,
+  selection: CatalogSelection,
 ): string {
   const extras = catalogQueryTerms(selection)
     .filter((term) => !queryIncludesPhrase(query, term))
