@@ -95,6 +95,7 @@ export function SignInForm({
             style={{
               border: "1px solid var(--line)",
               background: "var(--card)",
+              color: "var(--ink)",
               padding: "14px 16px",
               borderRadius: 6,
             }}

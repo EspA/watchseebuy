@@ -2,6 +2,7 @@
 
 import type { ChangeEvent } from "react";
 import { submitSearchForm } from "@/components/auto-search";
+import { useFilterGroup } from "@/components/filter-accordion";
 import { syncCatalogSearchForm } from "@/components/catalog-search-sync";
 import {
   BRICK_CATEGORY_FILTERS,
@@ -29,10 +30,11 @@ export function BuildingBricksFilters({
   brickStatus?: string;
 }) {
   const hasSelection = Boolean(brickCategory || brickType || brickStatus);
+  const { open, onToggle } = useFilterGroup("bricks", hasSelection);
 
   return (
-    <details className="filter-group" {...(hasSelection ? { open: true } : {})}>
-      <summary>Building Toys filters</summary>
+    <details className="filter-group" open={open} onToggle={onToggle}>
+      <summary>Building Toys</summary>
       <label>
         Category
         <select

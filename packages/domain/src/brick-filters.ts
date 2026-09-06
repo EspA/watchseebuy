@@ -108,6 +108,11 @@ export const SET_EXCLUDE_WORDS = [
   "torso",
   "head",
   "part",
+  "plate",
+  "brick",
+  "panel",
+  "tile",
+  "slope",
 ];
 
 export type BrickCatalogSelection = {

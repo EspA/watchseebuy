@@ -1,8 +1,13 @@
-import { describeWatch, type WatchCriteria } from "@waitseebuy/domain";
+import {
+  describeWatch,
+  parseWatchFrequency,
+  type WatchCriteria,
+} from "@waitseebuy/domain";
 import { getDb, listWatchesForUser } from "@waitseebuy/db";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { DeleteWatchForm } from "@/components/delete-watch-form";
+import { WatchSettingsForm } from "@/components/watch-settings-form";
 import { getSession } from "@/lib/session";
 import { searchHrefForWatch } from "@/lib/watch-search";
 
@@ -27,24 +32,18 @@ export default async function WatchesPage({
 
   return (
     <main className="page">
-      <h1>Your watches</h1>
-      <p className="lede">
-        Quiet watches for the pieces you will wait for. We alert when the
-        landed price looks fair — not every time something lists.
-      </p>
-      <p className="muted">Signed in as {session.user.email}</p>
-
       {saved ? (
-        <p className="banner" style={{ marginTop: 20 }}>
+        <p className="banner">
           Watch saved. Alerts come next — quiet, and only when it is a deal.
         </p>
       ) : null}
 
       {items.length === 0 ? (
-        <div className="panel" style={{ marginTop: 24 }}>
+        <div className="panel">
           <p>No watches yet.</p>
           <p className="muted">
-            <Link href="/search">Search a piece</Link> and save the intent.
+            <Link href="/search">Search a piece</Link> and click Watch this to
+            add a new watch.
           </p>
         </div>
       ) : (
@@ -64,6 +63,13 @@ export default async function WatchesPage({
                 <p className="muted">
                   {criteria ? describeWatch(criteria) : watch.coverageKeywords}
                 </p>
+                <WatchSettingsForm
+                  watchId={watch.id}
+                  frequency={parseWatchFrequency(watch.alertFrequency)}
+                  {...(criteria?.maxLandedCents !== undefined
+                    ? { maxLandedCents: criteria.maxLandedCents }
+                    : {})}
+                />
                 <div className="watch-actions">
                   <Link className="btn secondary" href={href}>
                     Open search

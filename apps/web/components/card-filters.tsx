@@ -2,11 +2,13 @@
 
 import { useState, type ChangeEvent } from "react";
 import { submitSearchForm } from "@/components/auto-search";
+import { useFilterGroup } from "@/components/filter-accordion";
 import { syncCatalogSearchForm } from "@/components/catalog-search-sync";
 import {
   CARD_CATEGORY_LINES,
   CARD_GAME_FILTERS,
   CARD_GAME_POPULAR,
+  CARD_GAME_WEDGE,
   CARD_GRADE_FILTERS,
   CARD_GRADER_FILTERS,
   CARD_LANGUAGE_FILTERS,
@@ -14,18 +16,35 @@ import {
   CARD_RARITY_FILTERS,
   CARD_SET_FILTERS,
   CARD_SET_GROUPS,
+  CCG_LINE_ID,
   DEFAULT_CARD_GRADE,
   cardCategoryChildren,
   cardCategoryLineOf,
   categorySupportsCardGame,
+  isPokemonCardGame,
+  isSlabGrader,
 } from "@waitseebuy/domain";
 
 const SEARCH_FORM = "search-form";
 
-function onFilterChange(event: ChangeEvent<HTMLSelectElement>) {
+function onFilterChange(event: ChangeEvent<HTMLSelectElement | HTMLInputElement>) {
   const form = event.currentTarget.form;
   if (!form) return;
   syncCatalogSearchForm(form, event.currentTarget.name);
+  submitSearchForm(form);
+}
+
+function searchForm(): HTMLFormElement | null {
+  const form = document.getElementById(SEARCH_FORM);
+  return form instanceof HTMLFormElement ? form : null;
+}
+
+function submitIntegrityChange(name: "cardNoReprints" | "cardNoProxy", on: boolean) {
+  const form = searchForm();
+  const hidden = form?.elements.namedItem(name);
+  if (hidden instanceof HTMLInputElement) hidden.value = on ? "1" : "0";
+  if (!form) return;
+  syncCatalogSearchForm(form, name);
   submitSearchForm(form);
 }
 
@@ -38,6 +57,8 @@ export function CardFilters({
   language,
   grader,
   cardGrade,
+  cardNoReprints,
+  cardNoProxy,
 }: {
   cardCategory?: string;
   cardGame?: string;
@@ -47,12 +68,17 @@ export function CardFilters({
   language?: string;
   grader?: string;
   cardGrade?: string;
+  cardNoReprints?: boolean;
+  cardNoProxy?: boolean;
 }) {
   const [selectedGrader, setSelectedGrader] = useState(grader ?? "any");
   const [selectedLine, setSelectedLine] = useState(
     cardCategoryLineOf(cardCategory) ?? "any",
   );
   const [selectedType, setSelectedType] = useState(cardCategory ?? "any");
+  const [selectedGame, setSelectedGame] = useState(cardGame ?? "any");
+  const [noReprints, setNoReprints] = useState(cardNoReprints !== false);
+  const [noProxy, setNoProxy] = useState(cardNoProxy !== false);
   const hasSelection = Boolean(
     cardCategory ||
       cardGame ||
@@ -60,7 +86,9 @@ export function CardFilters({
       rarity ||
       printing ||
       language ||
-      grader,
+      grader ||
+      cardNoReprints === false ||
+      cardNoProxy === false,
   );
   const typeOptions = cardCategoryChildren(selectedLine);
   const typeValue =
@@ -69,17 +97,29 @@ export function CardFilters({
       typeOptions.some((option) => option.value === selectedType))
       ? selectedType
       : selectedLine;
-  const showGame = categorySupportsCardGame(typeValue);
+  const showGame =
+    selectedLine === CCG_LINE_ID || categorySupportsCardGame(typeValue);
+  const showPokemonFacets = isPokemonCardGame(selectedGame);
+  const showGrade = isSlabGrader(selectedGrader);
   const popularGames = CARD_GAME_FILTERS.filter((option) =>
     CARD_GAME_POPULAR.includes(option.value),
   );
+  const wedgeGames = CARD_GAME_FILTERS.filter(
+    (option) =>
+      CARD_GAME_WEDGE.includes(option.value) &&
+      !CARD_GAME_POPULAR.includes(option.value),
+  );
   const otherGames = CARD_GAME_FILTERS.filter(
-    (option) => !CARD_GAME_POPULAR.includes(option.value),
+    (option) =>
+      !CARD_GAME_POPULAR.includes(option.value) &&
+      !CARD_GAME_WEDGE.includes(option.value),
   );
 
+  const { open, onToggle } = useFilterGroup("cards", hasSelection);
+
   return (
-    <details className="filter-group" {...(hasSelection ? { open: true } : {})}>
-      <summary>Cards Filters</summary>
+    <details className="filter-group" open={open} onToggle={onToggle}>
+      <summary>Cards</summary>
       <label>
         Category
         <select
@@ -96,9 +136,12 @@ export function CardFilters({
             if (typeField instanceof HTMLSelectElement) {
               typeField.value = nextType;
             }
-            const gameField = form?.elements.namedItem("cardGame");
-            if (gameField instanceof HTMLSelectElement) {
-              gameField.value = "any";
+            if (line !== CCG_LINE_ID) {
+              setSelectedGame("any");
+              const gameField = form?.elements.namedItem("cardGame");
+              if (gameField instanceof HTMLSelectElement) {
+                gameField.value = "any";
+              }
             }
             onFilterChange(event);
           }}
@@ -123,8 +166,10 @@ export function CardFilters({
             const gameField = form?.elements.namedItem("cardGame");
             if (
               gameField instanceof HTMLSelectElement &&
-              !categorySupportsCardGame(event.currentTarget.value)
+              !categorySupportsCardGame(event.currentTarget.value) &&
+              event.currentTarget.value !== CCG_LINE_ID
             ) {
+              setSelectedGame("any");
               gameField.value = "any";
             }
             onFilterChange(event);
@@ -146,7 +191,20 @@ export function CardFilters({
           form={SEARCH_FORM}
           name="cardGame"
           defaultValue={showGame ? (cardGame ?? "any") : "any"}
-          onChange={onFilterChange}
+          onChange={(event) => {
+            const next = event.currentTarget.value;
+            setSelectedGame(next);
+            if (!isPokemonCardGame(next)) {
+              const form = event.currentTarget.form;
+              const setField = form?.elements.namedItem("set");
+              if (setField instanceof HTMLSelectElement) setField.value = "any";
+              const rarityField = form?.elements.namedItem("rarity");
+              if (rarityField instanceof HTMLSelectElement) {
+                rarityField.value = "any";
+              }
+            }
+            onFilterChange(event);
+          }}
         >
           <option value="any">Any</option>
           <optgroup label="Popular">
@@ -156,7 +214,14 @@ export function CardFilters({
               </option>
             ))}
           </optgroup>
-          <optgroup label="All games">
+          <optgroup label="Launch lines">
+            {wedgeGames.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </optgroup>
+          <optgroup label="More games">
             {otherGames.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
@@ -184,7 +249,7 @@ export function CardFilters({
           ))}
         </select>
       </label>
-      <label hidden={selectedGrader === "any"}>
+      <label hidden={!showGrade}>
         Grade
         <select
           form={SEARCH_FORM}
@@ -199,12 +264,12 @@ export function CardFilters({
           ))}
         </select>
       </label>
-      <label>
+      <label hidden={!showPokemonFacets}>
         Set
         <select
           form={SEARCH_FORM}
           name="set"
-          defaultValue={cardSet ?? "any"}
+          defaultValue={showPokemonFacets ? (cardSet ?? "any") : "any"}
           onChange={onFilterChange}
         >
           <option value="any">Any</option>
@@ -218,22 +283,6 @@ export function CardFilters({
                 ),
               )}
             </optgroup>
-          ))}
-        </select>
-      </label>
-      <label>
-        Rarity
-        <select
-          form={SEARCH_FORM}
-          name="rarity"
-          defaultValue={rarity ?? "any"}
-          onChange={onFilterChange}
-        >
-          <option value="any">Any</option>
-          {CARD_RARITY_FILTERS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
           ))}
         </select>
       </label>
@@ -269,6 +318,60 @@ export function CardFilters({
           ))}
         </select>
       </label>
+      <label hidden={!showPokemonFacets}>
+        Rarity
+        <select
+          form={SEARCH_FORM}
+          name="rarity"
+          defaultValue={showPokemonFacets ? (rarity ?? "any") : "any"}
+          onChange={onFilterChange}
+        >
+          <option value="any">Any</option>
+          {CARD_RARITY_FILTERS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <div className="filter-chips">
+        <input
+          type="hidden"
+          form={SEARCH_FORM}
+          name="cardNoReprints"
+          value={noReprints ? "1" : "0"}
+        />
+        <input
+          type="hidden"
+          form={SEARCH_FORM}
+          name="cardNoProxy"
+          value={noProxy ? "1" : "0"}
+        />
+        <label className="filter-chip">
+          <input
+            type="checkbox"
+            checked={noReprints}
+            onChange={(event) => {
+              const on = event.currentTarget.checked;
+              setNoReprints(on);
+              submitIntegrityChange("cardNoReprints", on);
+            }}
+          />
+          No reprints
+        </label>
+        <label className="filter-chip">
+          <input
+            type="checkbox"
+            checked={noProxy}
+            onChange={(event) => {
+              const on = event.currentTarget.checked;
+              setNoProxy(on);
+              submitIntegrityChange("cardNoProxy", on);
+            }}
+          />
+          No proxy
+        </label>
+      </div>
     </details>
   );
 }

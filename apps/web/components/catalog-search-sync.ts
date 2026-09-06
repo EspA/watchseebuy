@@ -7,9 +7,14 @@ import {
   parseBrickStatus,
   parseBrickType,
   DEFAULT_CARD_GRADE,
+  cardSkippedDefaultExcludes,
+  isSlabGrader,
+  parseCardCategory,
+  parseCardGame,
   parseCardGrade,
   parseCardGrader,
   parseCardLanguage,
+  parseCardLine,
   parseCardPrinting,
   parseCardRarity,
   parseCardSet,
@@ -17,6 +22,16 @@ import {
   stripAllCatalogLabels,
   withoutSetExcludeWords,
   brickExcludeWords,
+  parseFigureCompleteness,
+  parseFigurePackaging,
+  parseFigurePunch,
+  parseWheelsPackaging,
+  cardExcludeWords,
+  figureExcludeWords,
+  wheelsExcludeWords,
+  withoutCardExcludeWords,
+  withoutCardedExcludeWords,
+  withoutFigureExcludeWords,
   type CatalogSelection,
 } from "@waitseebuy/domain";
 
@@ -39,16 +54,40 @@ export function readCatalogSelection(form: HTMLFormElement): CatalogSelection {
   const cardGrade = parseCardGrade(selectValue(form, "grade"));
   const brickType = parseBrickType(selectValue(form, "brickType"));
   const brickStatus = parseBrickStatus(selectValue(form, "brickStatus"));
+  const wheelsPackaging = parseWheelsPackaging(
+    selectValue(form, "wheelsPackaging"),
+  );
+  const figurePackaging = parseFigurePackaging(
+    selectValue(form, "figurePackaging"),
+  );
+  const figureCompleteness = parseFigureCompleteness(
+    selectValue(form, "figureCompleteness"),
+  );
+  const figurePunch = parseFigurePunch(selectValue(form, "figurePunch"));
   if (cardSet) selection.cardSet = cardSet;
   if (rarity) selection.rarity = rarity;
   if (printing) selection.printing = printing;
   if (language) selection.language = language;
   if (grader) {
     selection.grader = grader;
-    selection.cardGrade = cardGrade ?? DEFAULT_CARD_GRADE;
+    if (isSlabGrader(grader)) {
+      selection.cardGrade = cardGrade ?? DEFAULT_CARD_GRADE;
+    }
   }
   if (brickType) selection.brickType = brickType;
   if (brickStatus) selection.brickStatus = brickStatus;
+  if (wheelsPackaging) selection.wheelsPackaging = wheelsPackaging;
+  if (figurePackaging) selection.figurePackaging = figurePackaging;
+  if (figureCompleteness) selection.figureCompleteness = figureCompleteness;
+  if (figurePunch) selection.figurePunch = figurePunch;
+  const noReprints = form.elements.namedItem("cardNoReprints");
+  if (noReprints instanceof HTMLInputElement) {
+    selection.cardNoReprints = noReprints.value !== "0";
+  }
+  const noProxy = form.elements.namedItem("cardNoProxy");
+  if (noProxy instanceof HTMLInputElement) {
+    selection.cardNoProxy = noProxy.value !== "0";
+  }
   return selection;
 }
 
@@ -58,13 +97,17 @@ export function syncCatalogSearchForm(
 ) {
   const gradeField = form.elements.namedItem("grade");
   if (
-    parseCardGrader(selectValue(form, "grader")) &&
+    isSlabGrader(selectValue(form, "grader")) &&
     gradeField instanceof HTMLSelectElement &&
     !parseCardGrade(gradeField.value)
   ) {
     gradeField.value = DEFAULT_CARD_GRADE;
   }
   const selection = readCatalogSelection(form);
+  const cardCategory =
+    parseCardCategory(selectValue(form, "cardCategory")) ??
+    parseCardLine(selectValue(form, "cardLine"));
+  const cardGame = parseCardGame(selectValue(form, "cardGame"));
   const input = form.elements.namedItem("q");
   if (input instanceof HTMLInputElement) {
     input.value = composeCatalogQuery(
@@ -78,12 +121,26 @@ export function syncCatalogSearchForm(
     );
   }
   const exclude = form.elements.namedItem("exclude");
+  const cardSelection = {
+    ...selection,
+    ...(cardCategory ? { cardCategory } : {}),
+    ...(cardGame ? { cardGame } : {}),
+  };
   if (exclude instanceof HTMLInputElement) {
     exclude.value = excludeWordsField(
       mergeExcludeKeywords([
-        ...withoutSetExcludeWords(parseExcludeWords(exclude.value)),
+        ...withoutCardExcludeWords(
+          withoutFigureExcludeWords(
+            withoutCardedExcludeWords(
+              withoutSetExcludeWords(parseExcludeWords(exclude.value)),
+            ),
+          ),
+        ),
         ...brickExcludeWords(selection.brickType),
-      ]),
+        ...wheelsExcludeWords(selection.wheelsPackaging),
+        ...figureExcludeWords(selection.figurePackaging, selection.figurePunch),
+        ...cardExcludeWords(cardSelection),
+      ], cardSkippedDefaultExcludes(cardSelection)),
     );
   }
 }

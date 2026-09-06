@@ -10,7 +10,10 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (request.nextUrl.pathname.startsWith("/watches")) {
+  if (
+    request.nextUrl.pathname.startsWith("/watches") ||
+    request.nextUrl.pathname.startsWith("/settings")
+  ) {
     const session = getSessionCookie(request);
     if (!session) {
       const signIn = new URL("/sign-in", request.url);
@@ -23,5 +26,12 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/search/:path*", "/watches/:path*", "/sign-in/:path*"],
+  matcher: [
+    "/search/:path*",
+    "/watches",
+    "/watches/:path*",
+    "/settings",
+    "/settings/:path*",
+    "/sign-in/:path*",
+  ],
 };

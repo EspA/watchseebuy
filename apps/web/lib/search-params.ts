@@ -9,6 +9,13 @@ import {
   parseBrickStatus,
   parseBrickType,
   parseFigureCategory,
+  parseFigureCompleteness,
+  parseFigurePackaging,
+  parseFigurePunch,
+  parseFigureScale,
+  parseWheelsCategory,
+  parseWheelsPackaging,
+  parseWheelsScale,
   DEFAULT_CARD_GRADE,
   parseCardCategory,
   parseCardGame,
@@ -24,6 +31,7 @@ import {
   parseExcludeWords,
   parseItemLocation,
   parseMinConfidence,
+  parseEbaySite,
   parseMinPriceScore,
   parseListingTypeFilter,
   parseSearchIntent,
@@ -53,10 +61,20 @@ export type SearchQuery = {
   cardLine?: string;
   cardCategory?: string;
   cardGame?: string;
+  cardNoReprints?: string;
+  cardNoProxy?: string;
   figureCategory?: string;
+  figureScale?: string;
+  figurePackaging?: string;
+  figureCompleteness?: string;
+  figurePunch?: string;
   brickCategory?: string;
   brickType?: string;
   brickStatus?: string;
+  wheelsCategory?: string;
+  wheelsScale?: string;
+  wheelsPackaging?: string;
+  site?: string;
 };
 
 export function intentFromSearchQuery(query: SearchQuery): WatchCriteria {
@@ -76,6 +94,10 @@ export function intentFromSearchQuery(query: SearchQuery): WatchCriteria {
   const minPriceScore = parseMinPriceScore(query.score);
 
   const overrides: Parameters<typeof applyWatchOverrides>[1] = {};
+  if (query.site !== undefined) {
+    const ebaySite = parseEbaySite(query.site);
+    if (ebaySite) overrides.ebaySite = ebaySite;
+  }
   if (query.condition !== undefined) {
     overrides.condition = parseConditionFilter(query.condition);
   }
@@ -144,10 +166,36 @@ export function intentFromSearchQuery(query: SearchQuery): WatchCriteria {
     if (cardGame) overrides.cardGame = cardGame;
     else overrides.clearCardGame = true;
   }
+  if (query.cardNoReprints !== undefined) {
+    overrides.cardNoReprints = query.cardNoReprints !== "0";
+  }
+  if (query.cardNoProxy !== undefined) {
+    overrides.cardNoProxy = query.cardNoProxy !== "0";
+  }
   if (query.figureCategory !== undefined) {
     const figureCategory = parseFigureCategory(query.figureCategory);
     if (figureCategory) overrides.figureCategory = figureCategory;
     else overrides.clearFigureCategory = true;
+  }
+  if (query.figureScale !== undefined) {
+    const figureScale = parseFigureScale(query.figureScale);
+    if (figureScale) overrides.figureScale = figureScale;
+    else overrides.clearFigureScale = true;
+  }
+  if (query.figurePackaging !== undefined) {
+    const figurePackaging = parseFigurePackaging(query.figurePackaging);
+    if (figurePackaging) overrides.figurePackaging = figurePackaging;
+    else overrides.clearFigurePackaging = true;
+  }
+  if (query.figureCompleteness !== undefined) {
+    const figureCompleteness = parseFigureCompleteness(query.figureCompleteness);
+    if (figureCompleteness) overrides.figureCompleteness = figureCompleteness;
+    else overrides.clearFigureCompleteness = true;
+  }
+  if (query.figurePunch !== undefined) {
+    const figurePunch = parseFigurePunch(query.figurePunch);
+    if (figurePunch) overrides.figurePunch = figurePunch;
+    else overrides.clearFigurePunch = true;
   }
   if (query.brickCategory !== undefined) {
     const brickCategory = parseBrickCategory(query.brickCategory);
@@ -163,6 +211,21 @@ export function intentFromSearchQuery(query: SearchQuery): WatchCriteria {
     const brickStatus = parseBrickStatus(query.brickStatus);
     if (brickStatus) overrides.brickStatus = brickStatus;
     else overrides.clearBrickStatus = true;
+  }
+  if (query.wheelsCategory !== undefined) {
+    const wheelsCategory = parseWheelsCategory(query.wheelsCategory);
+    if (wheelsCategory) overrides.wheelsCategory = wheelsCategory;
+    else overrides.clearWheelsCategory = true;
+  }
+  if (query.wheelsScale !== undefined) {
+    const wheelsScale = parseWheelsScale(query.wheelsScale);
+    if (wheelsScale) overrides.wheelsScale = wheelsScale;
+    else overrides.clearWheelsScale = true;
+  }
+  if (query.wheelsPackaging !== undefined) {
+    const wheelsPackaging = parseWheelsPackaging(query.wheelsPackaging);
+    if (wheelsPackaging) overrides.wheelsPackaging = wheelsPackaging;
+    else overrides.clearWheelsPackaging = true;
   }
 
   const intent = applyWatchOverrides(parseSearchIntent(query.q), overrides);
@@ -210,6 +273,9 @@ export function searchParamsFromIntent(
   const params = new URLSearchParams();
   params.set("q", q);
   if (watchId) params.set("watch", watchId);
+  if (intent.ebaySite && intent.ebaySite !== "EBAY_US") {
+    params.set("site", intent.ebaySite);
+  }
   if (intent.minLandedCents !== undefined) {
     params.set("min", dollarsField(intent.minLandedCents));
   }
@@ -250,10 +316,25 @@ export function searchParamsFromIntent(
     params.set("cardCategory", intent.cardCategory);
   }
   if (intent.cardGame) params.set("cardGame", intent.cardGame);
+  if (intent.cardNoReprints === false) params.set("cardNoReprints", "0");
+  if (intent.cardNoProxy === false) params.set("cardNoProxy", "0");
   if (intent.figureCategory) params.set("figureCategory", intent.figureCategory);
+  if (intent.figureScale) params.set("figureScale", intent.figureScale);
+  if (intent.figurePackaging) {
+    params.set("figurePackaging", intent.figurePackaging);
+  }
+  if (intent.figureCompleteness) {
+    params.set("figureCompleteness", intent.figureCompleteness);
+  }
+  if (intent.figurePunch) params.set("figurePunch", intent.figurePunch);
   if (intent.brickCategory) params.set("brickCategory", intent.brickCategory);
   if (intent.brickType) params.set("brickType", intent.brickType);
   if (intent.brickStatus) params.set("brickStatus", intent.brickStatus);
+  if (intent.wheelsCategory) params.set("wheelsCategory", intent.wheelsCategory);
+  if (intent.wheelsScale) params.set("wheelsScale", intent.wheelsScale);
+  if (intent.wheelsPackaging) {
+    params.set("wheelsPackaging", intent.wheelsPackaging);
+  }
   return params;
 }
 

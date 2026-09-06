@@ -16,7 +16,9 @@ import { AutoSelect, AutoText } from "@/components/auto-search";
 import { BuildingBricksFilters } from "@/components/building-bricks-filters";
 import { CardFilters } from "@/components/card-filters";
 import { ClearFiltersLink } from "@/components/clear-filters";
+import { FilterAccordion } from "@/components/filter-accordion";
 import { FiguresFilters } from "@/components/figures-filters";
+import { HotWheelsFilters } from "@/components/hot-wheels-filters";
 import { dollarsField, searchParamsFromIntent } from "@/lib/search-params";
 
 const SEARCH_FORM = "search-form";
@@ -41,6 +43,9 @@ export function SaveWatchForm({
     ...(watchId ? { watch: watchId } : {}),
     ...(excluded ? { exclude: excluded } : {}),
     ...(intent.shipToPostal ? { zip: intent.shipToPostal } : {}),
+    ...(intent.ebaySite && intent.ebaySite !== "EBAY_US"
+      ? { site: intent.ebaySite }
+      : {}),
   });
   const listingValue =
     intent.listingType === "auction_below" ? "auction" : intent.listingType;
@@ -51,6 +56,39 @@ export function SaveWatchForm({
       intent.shipToCountry &&
         !(intent.shipToPostal && intent.shipToCountry === "US"),
     );
+  const cardsOpen = Boolean(
+    intent.cardCategory ||
+      intent.cardGame ||
+      intent.cardSet ||
+      intent.rarity ||
+      intent.printing ||
+      intent.language ||
+      intent.grader ||
+      intent.cardNoReprints === false ||
+      intent.cardNoProxy === false,
+  );
+  const figuresOpen = Boolean(
+    intent.figureCategory ||
+      intent.figureScale ||
+      intent.figurePackaging ||
+      intent.figureCompleteness ||
+      intent.figurePunch,
+  );
+  const vehiclesOpen = Boolean(
+    intent.wheelsCategory || intent.wheelsScale || intent.wheelsPackaging,
+  );
+  const bricksOpen = Boolean(
+    intent.brickCategory || intent.brickType || intent.brickStatus,
+  );
+  const specializedOpen = cardsOpen
+    ? "cards"
+    : figuresOpen
+      ? "figures"
+      : vehiclesOpen
+        ? "vehicles"
+        : bricksOpen
+          ? "bricks"
+          : undefined;
 
   return (
     <div className="watch-save">
@@ -70,7 +108,6 @@ export function SaveWatchForm({
         </Link>
       )}
       <div className="filter-heading">
-        <p>Main Filters</p>
         <ClearFiltersLink
           href={`/search?${clearFilters}`}
           query={intent.query.trim() || q}
@@ -179,7 +216,7 @@ export function SaveWatchForm({
         className="filter-group"
         {...(moreFiltersOpen ? { open: true } : {})}
       >
-        <summary>More filters</summary>
+        <summary>More</summary>
         <label>
           Listing type
           <AutoSelect
@@ -236,6 +273,9 @@ export function SaveWatchForm({
           </label>
         </div>
       </details>
+      <FilterAccordion
+        {...(specializedOpen ? { initialOpen: specializedOpen } : {})}
+      >
       <CardFilters
         {...(intent.cardCategory ? { cardCategory: intent.cardCategory } : {})}
         {...(intent.cardGame ? { cardGame: intent.cardGame } : {})}
@@ -245,10 +285,29 @@ export function SaveWatchForm({
         {...(intent.language ? { language: intent.language } : {})}
         {...(intent.grader ? { grader: intent.grader } : {})}
         {...(intent.cardGrade ? { cardGrade: intent.cardGrade } : {})}
+        {...(intent.cardNoReprints === false ? { cardNoReprints: false } : {})}
+        {...(intent.cardNoProxy === false ? { cardNoProxy: false } : {})}
       />
       <FiguresFilters
         {...(intent.figureCategory
           ? { figureCategory: intent.figureCategory }
+          : {})}
+        {...(intent.figureScale ? { figureScale: intent.figureScale } : {})}
+        {...(intent.figurePackaging
+          ? { figurePackaging: intent.figurePackaging }
+          : {})}
+        {...(intent.figureCompleteness
+          ? { figureCompleteness: intent.figureCompleteness }
+          : {})}
+        {...(intent.figurePunch ? { figurePunch: intent.figurePunch } : {})}
+      />
+      <HotWheelsFilters
+        {...(intent.wheelsCategory
+          ? { wheelsCategory: intent.wheelsCategory }
+          : {})}
+        {...(intent.wheelsScale ? { wheelsScale: intent.wheelsScale } : {})}
+        {...(intent.wheelsPackaging
+          ? { wheelsPackaging: intent.wheelsPackaging }
           : {})}
       />
       <BuildingBricksFilters
@@ -258,6 +317,7 @@ export function SaveWatchForm({
         {...(intent.brickType ? { brickType: intent.brickType } : {})}
         {...(intent.brickStatus ? { brickStatus: intent.brickStatus } : {})}
       />
+      </FilterAccordion>
     </div>
   );
 }

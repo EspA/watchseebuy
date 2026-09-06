@@ -39,10 +39,20 @@ export async function POST(request: Request) {
     cardLine: String(form.get("cardLine") ?? ""),
     cardCategory: String(form.get("cardCategory") ?? ""),
     cardGame: String(form.get("cardGame") ?? ""),
+    cardNoReprints: String(form.get("cardNoReprints") ?? ""),
+    cardNoProxy: String(form.get("cardNoProxy") ?? ""),
     figureCategory: String(form.get("figureCategory") ?? ""),
+    figureScale: String(form.get("figureScale") ?? ""),
+    figurePackaging: String(form.get("figurePackaging") ?? ""),
+    figureCompleteness: String(form.get("figureCompleteness") ?? ""),
+    figurePunch: String(form.get("figurePunch") ?? ""),
     brickCategory: String(form.get("brickCategory") ?? ""),
     brickType: String(form.get("brickType") ?? ""),
     brickStatus: String(form.get("brickStatus") ?? ""),
+    wheelsCategory: String(form.get("wheelsCategory") ?? ""),
+    wheelsScale: String(form.get("wheelsScale") ?? ""),
+    wheelsPackaging: String(form.get("wheelsPackaging") ?? ""),
+    site: String(form.get("site") ?? ""),
   });
   const coverage = toCoverageQuery(intent);
 

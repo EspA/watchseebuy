@@ -1,4 +1,9 @@
 import {
+  DEFAULT_EBAY_SITE,
+  ebaySiteLabel,
+  parseEbaySite,
+} from "./ebay-sites.ts";
+import {
   brickExcludeWords,
   brickCategoryLabel,
   brickStatusLabel,
@@ -6,14 +11,24 @@ import {
   withoutSetExcludeWords,
 } from "./brick-filters.ts";
 import {
+  categorySupportsFigureScale,
   figureCategoryIds,
   figureCategoryLabel,
+  figureCompletenessLabel,
+  figureExcludeWords,
+  figurePackagingLabel,
+  figurePunchLabel,
+  figureScaleAspectFilter,
+  figureScaleLabel,
+  withoutFigureExcludeWords,
 } from "./figure-filters.ts";
 import {
   cardCategoryIds,
   cardCategoryLabel,
+  cardExcludeWords,
   cardGameAspectFilter,
   cardGameLabel,
+  cardSkippedDefaultExcludes,
   categorySupportsCardGame,
   cardGraderQueryTerm,
   cardLanguageLabel,
@@ -21,7 +36,19 @@ import {
   cardRarityLabel,
   cardSetLabel,
   composeCatalogQuery,
+  isPokemonCardGame,
+  withoutCardExcludeWords,
 } from "./card-filters.ts";
+import {
+  categorySupportsWheelsScale,
+  wheelsCategoryIds,
+  wheelsCategoryLabel,
+  wheelsExcludeWords,
+  wheelsPackagingLabel,
+  wheelsScaleAspectFilter,
+  wheelsScaleLabel,
+  withoutCardedExcludeWords,
+} from "./wheel-filters.ts";
 
 export type ListingType = "all" | "bin" | "auction" | "auction_below" | "best_offer";
 
@@ -234,12 +261,16 @@ export function userExcludeWords(excludeKeywords: string[]): string[] {
   return excludeKeywords.filter((word) => !defaults.has(word.toLowerCase()));
 }
 
-export function mergeExcludeKeywords(userWords: string[]): string[] {
+export function mergeExcludeKeywords(
+  userWords: string[],
+  skipDefaults: string[] = [],
+): string[] {
+  const skip = new Set(skipDefaults.map((word) => word.toLowerCase()));
   const seen = new Set<string>();
   const words: string[] = [];
   for (const word of [...DEFAULT_EXCLUDES, ...userWords]) {
     const key = word.toLowerCase();
-    if (!key || seen.has(key)) continue;
+    if (!key || seen.has(key) || skip.has(key)) continue;
     seen.add(key);
     words.push(word);
   }
@@ -303,10 +334,19 @@ export type WatchCriteria = {
   cardGrade?: string;
   cardCategory?: string;
   cardGame?: string;
+  cardNoReprints?: boolean;
+  cardNoProxy?: boolean;
   figureCategory?: string;
+  figureScale?: string;
+  figurePackaging?: string;
+  figureCompleteness?: string;
+  figurePunch?: string;
   brickCategory?: string;
   brickType?: string;
   brickStatus?: string;
+  wheelsCategory?: string;
+  wheelsScale?: string;
+  wheelsPackaging?: string;
   ebaySite: string;
 };
 
@@ -324,7 +364,7 @@ export type CoverageQuery = {
   aspectFilter?: string;
 };
 
-const DEFAULT_SITE = "EBAY_US";
+const DEFAULT_SITE = DEFAULT_EBAY_SITE;
 
 const DEFAULT_EXCLUDES = ["reprint", "reprints", "proxy", "for parts"];
 
@@ -430,10 +470,20 @@ export function applyWatchOverrides(
     cardGrade?: string;
     cardCategory?: string;
     cardGame?: string;
+    cardNoReprints?: boolean;
+    cardNoProxy?: boolean;
     figureCategory?: string;
+    figureScale?: string;
+    figurePackaging?: string;
+    figureCompleteness?: string;
+    figurePunch?: string;
     brickCategory?: string;
     brickType?: string;
     brickStatus?: string;
+    wheelsCategory?: string;
+    wheelsScale?: string;
+    wheelsPackaging?: string;
+    ebaySite?: string;
     clearMinConfidence?: boolean;
     clearMinPriceScore?: boolean;
     clearShipTo?: boolean;
@@ -445,13 +495,25 @@ export function applyWatchOverrides(
     clearCardGrade?: boolean;
     clearCardCategory?: boolean;
     clearCardGame?: boolean;
+    clearCardNoReprints?: boolean;
+    clearCardNoProxy?: boolean;
     clearFigureCategory?: boolean;
+    clearFigureScale?: boolean;
+    clearFigurePackaging?: boolean;
+    clearFigureCompleteness?: boolean;
+    clearFigurePunch?: boolean;
     clearBrickCategory?: boolean;
     clearBrickType?: boolean;
     clearBrickStatus?: boolean;
+    clearWheelsCategory?: boolean;
+    clearWheelsScale?: boolean;
+    clearWheelsPackaging?: boolean;
   },
 ): WatchCriteria {
   const next: WatchCriteria = { ...criteria };
+  if (overrides.ebaySite !== undefined) {
+    next.ebaySite = parseEbaySite(overrides.ebaySite) ?? DEFAULT_SITE;
+  }
   if (overrides.minLandedCents !== undefined) {
     next.minLandedCents = overrides.minLandedCents;
   }
@@ -508,8 +570,15 @@ export function applyWatchOverrides(
   else if (overrides.language !== undefined) next.language = overrides.language;
   if (overrides.clearGrader) delete next.grader;
   else if (overrides.grader !== undefined) next.grader = overrides.grader;
-  if (overrides.clearCardGrade || overrides.clearGrader) delete next.cardGrade;
-  else if (overrides.cardGrade !== undefined) next.cardGrade = overrides.cardGrade;
+  if (
+    overrides.clearCardGrade ||
+    overrides.clearGrader ||
+    next.grader === "raw"
+  ) {
+    delete next.cardGrade;
+  } else if (overrides.cardGrade !== undefined) {
+    next.cardGrade = overrides.cardGrade;
+  }
   if (overrides.clearCardCategory) delete next.cardCategory;
   else if (overrides.cardCategory !== undefined) {
     next.cardCategory = overrides.cardCategory;
@@ -522,10 +591,49 @@ export function applyWatchOverrides(
   if (next.cardGame && !categorySupportsCardGame(next.cardCategory)) {
     delete next.cardGame;
   }
+  if (next.cardGame && !isPokemonCardGame(next.cardGame)) {
+    delete next.cardSet;
+    delete next.rarity;
+  }
+  if (overrides.clearCardNoReprints) delete next.cardNoReprints;
+  else if (overrides.cardNoReprints !== undefined) {
+    next.cardNoReprints = overrides.cardNoReprints;
+  }
+  if (overrides.clearCardNoProxy) delete next.cardNoProxy;
+  else if (overrides.cardNoProxy !== undefined) {
+    next.cardNoProxy = overrides.cardNoProxy;
+  }
   if (overrides.clearFigureCategory) delete next.figureCategory;
   else if (overrides.figureCategory !== undefined) {
     next.figureCategory = overrides.figureCategory;
   }
+  if (overrides.clearFigureScale) delete next.figureScale;
+  else if (overrides.figureScale !== undefined) {
+    next.figureScale = overrides.figureScale;
+  }
+  if (next.figureScale) {
+    const scaleCategory = figureCategoryIds(
+      next.figureCategory,
+      next.figureScale,
+    );
+    if (!scaleCategory || !categorySupportsFigureScale(scaleCategory)) {
+      delete next.figureScale;
+    }
+  }
+  if (overrides.clearFigurePackaging) delete next.figurePackaging;
+  else if (overrides.figurePackaging !== undefined) {
+    next.figurePackaging = overrides.figurePackaging;
+  }
+  if (overrides.clearFigureCompleteness) delete next.figureCompleteness;
+  else if (overrides.figureCompleteness !== undefined) {
+    next.figureCompleteness = overrides.figureCompleteness;
+  }
+  if (overrides.clearFigurePunch) delete next.figurePunch;
+  else if (overrides.figurePunch !== undefined) {
+    next.figurePunch = overrides.figurePunch;
+  }
+  if (next.figurePackaging !== "loose") delete next.figureCompleteness;
+  if (next.figurePackaging !== "carded") delete next.figurePunch;
   if (overrides.clearBrickCategory) delete next.brickCategory;
   else if (overrides.brickCategory !== undefined) {
     next.brickCategory = overrides.brickCategory;
@@ -536,15 +644,70 @@ export function applyWatchOverrides(
   else if (overrides.brickStatus !== undefined) {
     next.brickStatus = overrides.brickStatus;
   }
+  if (overrides.clearWheelsCategory) delete next.wheelsCategory;
+  else if (overrides.wheelsCategory !== undefined) {
+    next.wheelsCategory = overrides.wheelsCategory;
+  }
+  if (overrides.clearWheelsScale) delete next.wheelsScale;
+  else if (overrides.wheelsScale !== undefined) {
+    next.wheelsScale = overrides.wheelsScale;
+  }
+  if (next.wheelsScale) {
+    const scaleCategory = wheelsCategoryIds(
+      next.wheelsCategory,
+      next.wheelsScale,
+    );
+    if (!scaleCategory || !categorySupportsWheelsScale(scaleCategory)) {
+      delete next.wheelsScale;
+    }
+  }
+  if (overrides.clearWheelsPackaging) delete next.wheelsPackaging;
+  else if (overrides.wheelsPackaging !== undefined) {
+    next.wheelsPackaging = overrides.wheelsPackaging;
+  }
   if (
     overrides.clearBrickType ||
     overrides.brickType !== undefined ||
-    next.brickType === "set"
+    next.brickType === "set" ||
+    overrides.clearWheelsPackaging ||
+    overrides.wheelsPackaging !== undefined ||
+    next.wheelsPackaging === "carded" ||
+    overrides.clearFigurePackaging ||
+    overrides.figurePackaging !== undefined ||
+    overrides.clearFigurePunch ||
+    overrides.figurePunch !== undefined ||
+    next.figurePackaging === "carded" ||
+    next.figurePunch === "punched" ||
+    overrides.clearGrader ||
+    overrides.grader !== undefined ||
+    next.grader === "raw" ||
+    overrides.clearCardCategory ||
+    overrides.cardCategory !== undefined ||
+    Boolean(next.cardCategory) ||
+    overrides.clearCardGame ||
+    overrides.cardGame !== undefined ||
+    Boolean(next.cardGame) ||
+    overrides.cardNoReprints !== undefined ||
+    overrides.clearCardNoReprints ||
+    overrides.cardNoProxy !== undefined ||
+    overrides.clearCardNoProxy
   ) {
-    next.excludeKeywords = mergeExcludeKeywords([
-      ...withoutSetExcludeWords(userExcludeWords(next.excludeKeywords)),
-      ...brickExcludeWords(next.brickType),
-    ]);
+    next.excludeKeywords = mergeExcludeKeywords(
+      [
+        ...withoutCardExcludeWords(
+          withoutFigureExcludeWords(
+            withoutCardedExcludeWords(
+              withoutSetExcludeWords(userExcludeWords(next.excludeKeywords)),
+            ),
+          ),
+        ),
+        ...brickExcludeWords(next.brickType),
+        ...wheelsExcludeWords(next.wheelsPackaging),
+        ...figureExcludeWords(next.figurePackaging, next.figurePunch),
+        ...cardExcludeWords(next),
+      ],
+      cardSkippedDefaultExcludes(next),
+    );
   }
   return next;
 }
@@ -562,14 +725,24 @@ export function toCoverageQuery(criteria: WatchCriteria): CoverageQuery {
   const deliveryPostal = criteria.shipToPostal?.trim() || undefined;
   const excludeKeywords = userExcludeWords(criteria.excludeKeywords);
   const categoryIds =
-    cardCategoryIds(criteria.cardCategory) ||
-    figureCategoryIds(criteria.figureCategory) ||
+    cardCategoryIds(criteria.cardCategory, criteria.cardGame) ||
+    figureCategoryIds(criteria.figureCategory, criteria.figureScale) ||
     criteria.brickCategory?.trim() ||
+    wheelsCategoryIds(criteria.wheelsCategory, criteria.wheelsScale) ||
     undefined;
-  const aspectFilter = cardGameAspectFilter(
+  const cardAspect = cardGameAspectFilter(
     criteria.cardCategory,
     criteria.cardGame,
   );
+  const figureAspect = figureScaleAspectFilter(
+    criteria.figureCategory,
+    criteria.figureScale,
+  );
+  const wheelsAspect = wheelsScaleAspectFilter(
+    criteria.wheelsCategory,
+    criteria.wheelsScale,
+  );
+  const aspectFilter = cardAspect || figureAspect || wheelsAspect;
   const key = [
     criteria.ebaySite,
     criteria.condition,
@@ -606,6 +779,9 @@ function formatUsd(cents: number): string {
 
 export function describeWatch(criteria: WatchCriteria): string {
   const bits = [criteria.query];
+  if (criteria.ebaySite && criteria.ebaySite !== DEFAULT_SITE) {
+    bits.push(ebaySiteLabel(criteria.ebaySite));
+  }
   if (
     criteria.minLandedCents !== undefined &&
     criteria.maxLandedCents !== undefined
@@ -660,20 +836,39 @@ export function describeWatch(criteria: WatchCriteria): string {
   if (printing) bits.push(printing);
   const language = cardLanguageLabel(criteria.language);
   if (language) bits.push(language);
-  const grader = cardGraderQueryTerm(criteria);
-  if (grader) bits.push(grader);
+  if (criteria.grader === "raw") bits.push("Raw");
+  else {
+    const grader = cardGraderQueryTerm(criteria);
+    if (grader) bits.push(grader);
+  }
   const cardCategory = cardCategoryLabel(criteria.cardCategory);
   if (cardCategory) bits.push(cardCategory);
   const cardGame = cardGameLabel(criteria.cardGame);
   if (cardGame) bits.push(cardGame);
   const figureCategory = figureCategoryLabel(criteria.figureCategory);
   if (figureCategory) bits.push(figureCategory);
+  const figureScale = figureScaleLabel(criteria.figureScale);
+  if (figureScale) bits.push(figureScale);
+  const figurePackaging = figurePackagingLabel(criteria.figurePackaging);
+  if (figurePackaging) bits.push(figurePackaging);
+  const figureCompleteness = figureCompletenessLabel(
+    criteria.figureCompleteness,
+  );
+  if (figureCompleteness) bits.push(figureCompleteness);
+  const figurePunch = figurePunchLabel(criteria.figurePunch);
+  if (figurePunch) bits.push(figurePunch);
   const brickCategory = brickCategoryLabel(criteria.brickCategory);
   if (brickCategory) bits.push(brickCategory);
   const brickType = brickTypeLabel(criteria.brickType);
   if (brickType) bits.push(brickType);
   const brickStatus = brickStatusLabel(criteria.brickStatus);
   if (brickStatus) bits.push(brickStatus);
+  const wheelsCategory = wheelsCategoryLabel(criteria.wheelsCategory);
+  if (wheelsCategory) bits.push(wheelsCategory);
+  const wheelsScale = wheelsScaleLabel(criteria.wheelsScale);
+  if (wheelsScale) bits.push(wheelsScale);
+  const wheelsPackaging = wheelsPackagingLabel(criteria.wheelsPackaging);
+  if (wheelsPackaging) bits.push(wheelsPackaging);
   const excluded = userExcludeWords(criteria.excludeKeywords);
   if (excluded.length > 0) {
     bits.push(`excluding ${excluded.join(", ")}`);

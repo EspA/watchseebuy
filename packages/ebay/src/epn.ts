@@ -3,12 +3,12 @@ export type EpnLinkInput = {
   campaignId?: string;
   customId?: string;
   toolId?: string;
-  site?: "ebay.com" | "ebay.co.uk" | "ebay.de" | "ebay.fr";
+  site?: string;
 };
 
 export function plainItemUrl(
   itemId: string,
-  site: EpnLinkInput["site"] = "ebay.com",
+  site: string = "ebay.com",
 ): string {
   return `https://www.${site}/itm/${encodeURIComponent(itemId)}`;
 }
