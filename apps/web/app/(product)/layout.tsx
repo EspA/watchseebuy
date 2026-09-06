@@ -1,13 +1,22 @@
+import { getDb, getUserSettings } from "@waitseebuy/db";
 import { AdblockBanner } from "@/components/adblock-banner";
 import { Header } from "@/components/header";
+import { TimezoneSync } from "@/components/timezone-sync";
+import { getSession } from "@/lib/session";
 
-export default function ProductLayout({
+export default async function ProductLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await getSession();
+  const settings = session
+    ? await getUserSettings(getDb(), session.user.id)
+    : null;
+
   return (
     <div className="shell">
+      {session && !settings?.timezone ? <TimezoneSync /> : null}
       <Header />
       <AdblockBanner />
       {children}

@@ -18,6 +18,7 @@ export type SavedWatch = {
   coverageKey: string;
   coverageKeywords: string;
   sharedWatchCount: number;
+  alertFrequency: string;
 };
 
 async function upsertCoverageQuery(db: Database, coverage: CoverageQueryInput) {
@@ -154,6 +155,7 @@ export async function listWatchesForUser(db: Database, userId: string) {
       id: watches.id,
       label: watches.label,
       criteria: watches.criteria,
+      alertFrequency: watches.alertFrequency,
       createdAt: watches.createdAt,
       coverageId: coverageQueries.id,
       coverageKey: coverageQueries.key,
@@ -186,11 +188,59 @@ export async function listWatchesForUser(db: Database, userId: string) {
       label: row.label,
       criteria: row.criteria,
       createdAt: row.createdAt,
+      alertFrequency: row.alertFrequency,
       coverageKey: row.coverageKey,
       coverageKeywords: row.coverageKeywords,
       sharedWatchCount: counts.get(row.coverageId) ?? 1,
     }),
   );
+}
+
+export async function updateWatchSettings(
+  db: Database,
+  input: {
+    userId: string;
+    watchId: string;
+    alertFrequency: string;
+    maxLandedCents?: number | null;
+  },
+) {
+  const owned = await getWatchForUser(db, {
+    userId: input.userId,
+    watchId: input.watchId,
+  });
+  if (!owned) return false;
+
+  const nextCriteria =
+    input.maxLandedCents === undefined
+      ? owned.criteria
+      : withMaxPrice(owned.criteria, input.maxLandedCents);
+
+  const [updated] = await db
+    .update(watches)
+    .set({
+      criteria: nextCriteria,
+      alertFrequency: input.alertFrequency,
+    })
+    .where(and(eq(watches.id, owned.id), eq(watches.userId, input.userId)))
+    .returning({ id: watches.id });
+
+  return Boolean(updated);
+}
+
+function withMaxPrice(criteria: unknown, maxLandedCents: number | null) {
+  if (!criteria || typeof criteria !== "object") return criteria;
+  const next = { ...criteria } as Record<string, unknown>;
+  if (maxLandedCents === null) {
+    delete next.maxLandedCents;
+    return next;
+  }
+  next.maxLandedCents = maxLandedCents;
+  const min = next.minLandedCents;
+  if (typeof min === "number" && min > maxLandedCents) {
+    next.minLandedCents = maxLandedCents;
+  }
+  return next;
 }
 
 export async function deleteWatchForUser(

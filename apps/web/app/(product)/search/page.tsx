@@ -12,10 +12,12 @@ import {
   withinLandedRange,
 } from "@waitseebuy/domain";
 import { createEbayClientFromEnv } from "@waitseebuy/ebay";
+import { EbaySiteSelect } from "@/components/ebay-site-select";
 import { ExcludeWords } from "@/components/exclude-words";
 import { ListingCard } from "@/components/listing-card";
 import { SaveWatchForm } from "@/components/save-watch-form";
 import { SearchSort } from "@/components/search-sort";
+import { getDb, getUserSettings } from "@waitseebuy/db";
 import { intentFromSearchQuery, searchBarQuery } from "@/lib/search-params";
 import { priceSortFromQuery } from "@/lib/search-sort";
 import { getSession } from "@/lib/session";
@@ -50,22 +52,38 @@ export default async function SearchPage({
     cardLine?: string;
     cardCategory?: string;
     cardGame?: string;
+    cardNoReprints?: string;
+    cardNoProxy?: string;
     figureCategory?: string;
+    figureScale?: string;
+    figurePackaging?: string;
+    figureCompleteness?: string;
+    figurePunch?: string;
     brickCategory?: string;
     brickType?: string;
     brickStatus?: string;
+    wheelsCategory?: string;
+    wheelsScale?: string;
+    wheelsPackaging?: string;
+    site?: string;
   }>;
 }) {
   noStore();
   const query = await searchParams;
   const q = query.q ?? "";
   const sort = priceSortFromQuery(query.sort);
+  const session = await getSession();
+  const settings = session
+    ? await getUserSettings(getDb(), session.user.id)
+    : null;
+  const zip =
+    query.zip !== undefined ? query.zip : (settings?.shipToPostal ?? undefined);
   const intent = intentFromSearchQuery({
     q,
     ...(query.watch !== undefined ? { watch: query.watch } : {}),
     ...(query.min !== undefined ? { min: query.min } : {}),
     ...(query.max !== undefined ? { max: query.max } : {}),
-    ...(query.zip !== undefined ? { zip: query.zip } : {}),
+    ...(zip !== undefined ? { zip } : {}),
     ...(query.condition !== undefined ? { condition: query.condition } : {}),
     ...(query.located !== undefined ? { located: query.located } : {}),
     ...(query.to !== undefined ? { to: query.to } : {}),
@@ -84,17 +102,38 @@ export default async function SearchPage({
       ? { cardCategory: query.cardCategory }
       : {}),
     ...(query.cardGame !== undefined ? { cardGame: query.cardGame } : {}),
+    ...(query.cardNoReprints !== undefined
+      ? { cardNoReprints: query.cardNoReprints }
+      : {}),
+    ...(query.cardNoProxy !== undefined
+      ? { cardNoProxy: query.cardNoProxy }
+      : {}),
     ...(query.figureCategory !== undefined
       ? { figureCategory: query.figureCategory }
       : {}),
+    ...(query.figureScale !== undefined ? { figureScale: query.figureScale } : {}),
+    ...(query.figurePackaging !== undefined
+      ? { figurePackaging: query.figurePackaging }
+      : {}),
+    ...(query.figureCompleteness !== undefined
+      ? { figureCompleteness: query.figureCompleteness }
+      : {}),
+    ...(query.figurePunch !== undefined ? { figurePunch: query.figurePunch } : {}),
     ...(query.brickCategory !== undefined
       ? { brickCategory: query.brickCategory }
       : {}),
     ...(query.brickType !== undefined ? { brickType: query.brickType } : {}),
     ...(query.brickStatus !== undefined ? { brickStatus: query.brickStatus } : {}),
+    ...(query.wheelsCategory !== undefined
+      ? { wheelsCategory: query.wheelsCategory }
+      : {}),
+    ...(query.wheelsScale !== undefined ? { wheelsScale: query.wheelsScale } : {}),
+    ...(query.wheelsPackaging !== undefined
+      ? { wheelsPackaging: query.wheelsPackaging }
+      : {}),
+    ...(query.site !== undefined ? { site: query.site } : {}),
   });
   const coverage = toCoverageQuery(intent);
-  const session = await getSession();
   const ebay = createEbayClientFromEnv();
   const result = q.trim()
     ? await ebay.search(coverage, {
@@ -160,27 +199,39 @@ export default async function SearchPage({
     query.cardLine,
     query.cardCategory,
     query.cardGame,
+    query.cardNoReprints,
+    query.cardNoProxy,
     query.figureCategory,
+    query.figureScale,
+    query.figurePackaging,
+    query.figureCompleteness,
+    query.figurePunch,
     query.brickCategory,
     query.brickType,
     query.brickStatus,
+    query.wheelsCategory,
+    query.wheelsScale,
+    query.wheelsPackaging,
+    query.site,
     query.sort,
   ].join("|");
   const filteredOut = result.listings.length > 0 && listings.length === 0;
 
   return (
     <main className="page">
-      <h1>Search</h1>
       <form id="search-form" className="search-block" action="/search" method="get">
         <div className="search">
-          <input
-            key={searchBarQuery(q, intent)}
-            name="q"
-            type="search"
-            defaultValue={searchBarQuery(q, intent)}
-            placeholder="PSA 10 1986 Fleer Jordan"
-            aria-label="Search collectibles"
-          />
+          <div className="search-combo">
+            <EbaySiteSelect site={intent.ebaySite} />
+            <input
+              key={searchBarQuery(q, intent)}
+              name="q"
+              type="search"
+              defaultValue={searchBarQuery(q, intent)}
+              placeholder="Find eBay pieces"
+              aria-label="Search collectibles"
+            />
+          </div>
           {query.watch ? (
             <input type="hidden" name="watch" value={query.watch} />
           ) : null}
@@ -212,6 +263,7 @@ export default async function SearchPage({
                   <ListingCard
                     key={`${listing.ebayItemId}:${listing.priceScore.score}:${listing.priceScore.sampleSize}:${listing.priceScore.deltaPct}`}
                     listing={listing}
+                    site={intent.ebaySite}
                   />
                 ))}
               </ul>

@@ -11,9 +11,13 @@ export function landedCostCents(input: LandedInputs): number {
 }
 
 export function formatUsd(cents: number): string {
+  return formatMoney(cents, "USD");
+}
+
+export function formatMoney(cents: number, currency = "USD"): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "USD",
+    currency,
   }).format(cents / 100);
 }
 

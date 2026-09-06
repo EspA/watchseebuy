@@ -1,7 +1,7 @@
 import {
   CARD_LANGUAGE_FILTERS,
-  CARD_PRINTING_FILTERS,
-  CARD_SET_FILTERS,
+  CARD_PRINTING_IDENTITY_LABELS,
+  CARD_SET_IDENTITY_LABELS,
 } from "./card-filters.ts";
 
 export type IdentitySource = "epid" | "gtin" | "mpn" | "aspects" | "title";
@@ -267,7 +267,7 @@ export function parseCollectibleFromText(text: string): CardKeyParts {
   if (year?.[1]) parts.year = year[1];
 
   const set = matchLongestLabel(hay, [
-    ...CARD_SET_FILTERS.map((option) => option.label),
+    ...CARD_SET_IDENTITY_LABELS,
     ...SPORT_SETS,
   ]);
   if (set) parts.set = set;
@@ -280,7 +280,7 @@ export function parseCollectibleFromText(text: string): CardKeyParts {
 
   const variation = matchLongestLabel(
     hay,
-    CARD_PRINTING_FILTERS.map((option) => option.label),
+    CARD_PRINTING_IDENTITY_LABELS,
   );
   if (variation) parts.variation = variation;
 
@@ -475,9 +475,9 @@ function subjectFromText(text: string, parts: CardKeyParts): string | undefined 
     parts.cardNumber,
     parts.company,
     parts.grade,
-    ...CARD_SET_FILTERS.map((option) => option.label),
+    ...CARD_SET_IDENTITY_LABELS,
     ...CARD_LANGUAGE_FILTERS.map((option) => option.label),
-    ...CARD_PRINTING_FILTERS.map((option) => option.label),
+    ...CARD_PRINTING_IDENTITY_LABELS,
     ...SPORT_SETS,
   ].filter((value): value is string => Boolean(value));
   for (const phrase of drop) {

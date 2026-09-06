@@ -6,6 +6,35 @@ import { nextCookies } from "better-auth/next-js";
 import { magicLink } from "better-auth/plugins";
 import { rememberDevMagicLink } from "./dev-magic-link";
 
+async function sendAuthEmail(input: {
+  to: string;
+  subject: string;
+  text: string;
+  url: string;
+}) {
+  if (process.env.RESEND_API_KEY) {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: process.env.EMAIL_FROM ?? "WaitSeeBuy <noreply@waitseebuy.com>",
+        to: input.to,
+        subject: input.subject,
+        text: input.text,
+      }),
+    });
+    if (!res.ok) {
+      throw new Error(`Resend failed: ${await res.text()}`);
+    }
+    return;
+  }
+  rememberDevMagicLink(input.to, input.url);
+  console.log(`[waitseebuy] ${input.subject} for ${input.to}: ${input.url}`);
+}
+
 function socialProviders() {
   const providers: NonNullable<
     Parameters<typeof betterAuth>[0]
@@ -41,6 +70,19 @@ export const auth = betterAuth({
     schema: { user, session, account, verification },
   }),
   socialProviders: socialProviders(),
+  emailAndPassword: {
+    enabled: true,
+    disableSignUp: true,
+    minPasswordLength: 8,
+    sendResetPassword: async ({ user: target, url }) => {
+      await sendAuthEmail({
+        to: target.email,
+        subject: "Reset your WaitSeeBuy password",
+        text: `Wait. See. Buy.\n\nReset your password: ${url}\n`,
+        url,
+      });
+    },
+  },
   account: {
     accountLinking: {
       enabled: true,
@@ -50,27 +92,12 @@ export const auth = betterAuth({
   plugins: [
     magicLink({
       sendMagicLink: async ({ email, url }) => {
-        if (process.env.RESEND_API_KEY) {
-          const res = await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              from: process.env.EMAIL_FROM ?? "WaitSeeBuy <noreply@waitseebuy.com>",
-              to: email,
-              subject: "Your WaitSeeBuy sign-in link",
-              text: `Wait. See. Buy.\n\nSign in: ${url}\n`,
-            }),
-          });
-          if (!res.ok) {
-            throw new Error(`Resend failed: ${await res.text()}`);
-          }
-          return;
-        }
-        rememberDevMagicLink(email, url);
-        console.log(`[waitseebuy] magic link for ${email}: ${url}`);
+        await sendAuthEmail({
+          to: email,
+          subject: "Your WaitSeeBuy sign-in link",
+          text: `Wait. See. Buy.\n\nSign in: ${url}\n`,
+          url,
+        });
       },
     }),
     nextCookies(),

@@ -10,52 +10,70 @@ import {
   brickQueryTerms,
   type BrickQuerySelection,
 } from "./brick-filters.ts";
+import {
+  allWheelsQueryTerms,
+  wheelsQueryTerms,
+  type WheelsQuerySelection,
+} from "./wheel-filters.ts";
+import {
+  allFigureQueryTerms,
+  figureQueryTerms,
+  type FigureQuerySelection,
+} from "./figure-filters.ts";
 
-export type CardFilterOption = { value: string; label: string };
+export type CardFilterOption = {
+  value: string;
+  label: string;
+  queryTerm?: string;
+};
 
 export type CardSetGroup =
-  | "Vintage"
-  | "XY / Sun & Moon"
+  | "WOTC Vintage"
+  | "EX"
+  | "DP / HGSS"
+  | "Black & White"
+  | "XY"
+  | "Sun & Moon"
   | "Sword & Shield"
-  | "Scarlet & Violet"
-  | "Promos & other";
+  | "Scarlet & Violet";
 
+/** Chase rarities only. Common/Uncommon/Rare are noise on eBay. */
 export const CARD_RARITY_FILTERS: CardFilterOption[] = [
-  { value: "common", label: "Common" },
-  { value: "uncommon", label: "Uncommon" },
-  { value: "rare", label: "Rare" },
   { value: "holo-rare", label: "Holo Rare" },
-  { value: "double-rare", label: "Double Rare" },
-  { value: "triple-rare", label: "Triple Rare" },
   { value: "ultra-rare", label: "Ultra Rare" },
   { value: "secret-rare", label: "Secret Rare" },
-  { value: "illustration-rare", label: "Illustration Rare" },
-  { value: "special-illustration-rare", label: "Special Illustration Rare" },
+  { value: "illustration-rare", label: "Illustration Rare", queryTerm: "IR" },
+  {
+    value: "special-illustration-rare",
+    label: "Special Illustration Rare",
+    queryTerm: "SIR",
+  },
   { value: "rainbow-rare", label: "Rainbow Rare" },
   { value: "hyper-rare", label: "Hyper Rare" },
-  { value: "mega-hyper-rare", label: "Mega Hyper Rare" },
-  { value: "shiny-rare", label: "Shiny Rare" },
-  { value: "shiny-holo-rare", label: "Shiny Holo Rare" },
-  { value: "shiny-ultra-rare", label: "Shiny Ultra Rare" },
-  { value: "radiant-rare", label: "Radiant Rare" },
   { value: "amazing-rare", label: "Amazing Rare" },
-  { value: "ace-rare", label: "ACE Rare" },
-  { value: "character-rare", label: "Character Rare" },
-  { value: "character-super-rare", label: "Character Super Rare" },
-  { value: "promo", label: "Promo" },
-  { value: "classic-collection", label: "Classic Collection" },
-  { value: "prize-pack-series", label: "Prize Pack Series" },
-  { value: "code-card", label: "Code Card" },
 ];
 
 export const CARD_PRINTING_FILTERS: CardFilterOption[] = [
-  { value: "holofoil", label: "Holofoil" },
-  { value: "reverse-holofoil", label: "Reverse Holofoil" },
-  { value: "non-holo", label: "Non-holo" },
   { value: "1st-edition", label: "1st Edition" },
+  { value: "unlimited", label: "Unlimited" },
+  { value: "shadowless", label: "Shadowless" },
+  {
+    value: "reverse-holofoil",
+    label: "Reverse Holofoil",
+    queryTerm: "reverse holo",
+  },
+];
+
+/** Extra title tokens so identity still recognizes older printing language. */
+export const CARD_PRINTING_IDENTITY_LABELS = [
+  ...CARD_PRINTING_FILTERS.map((option) => option.label),
+  "Holofoil",
+  "Non-holo",
+  "Reverse Holo",
 ];
 
 export const CARD_GRADER_FILTERS: CardFilterOption[] = [
+  { value: "raw", label: "Raw" },
   { value: "psa", label: "PSA" },
   { value: "cgc", label: "CGC" },
   { value: "bgs", label: "BGS" },
@@ -65,8 +83,19 @@ export const CARD_GRADER_FILTERS: CardFilterOption[] = [
 export const DEFAULT_CARD_GRADE = "10";
 
 export const CARD_GRADE_FILTERS: CardFilterOption[] = [
-  10, 9, 8, 7, 6, 5, 4, 3, 2, 1,
-].map((value) => ({ value: String(value), label: String(value) }));
+  "10",
+  "9.5",
+  "9",
+  "8.5",
+  "8",
+  "7",
+  "6",
+  "5",
+  "4",
+  "3",
+  "2",
+  "1",
+].map((value) => ({ value, label: value }));
 
 export const CARD_LANGUAGE_FILTERS: CardFilterOption[] = [
   { value: "english", label: "English" },
@@ -75,67 +104,159 @@ export const CARD_LANGUAGE_FILTERS: CardFilterOption[] = [
   { value: "german", label: "German" },
   { value: "spanish", label: "Spanish" },
   { value: "italian", label: "Italian" },
-  { value: "portuguese", label: "Portuguese" },
   { value: "korean", label: "Korean" },
   { value: "simplified-chinese", label: "Simplified Chinese" },
   { value: "traditional-chinese", label: "Traditional Chinese" },
-  { value: "russian", label: "Russian" },
-  { value: "dutch", label: "Dutch" },
 ];
 
+export const CARD_RAW_EXCLUDE_WORDS = [
+  "psa",
+  "cgc",
+  "bgs",
+  "sgc",
+  "beckett",
+  "graded",
+];
+export const CARD_REPRINT_EXCLUDE_WORDS = ["reproduction"];
+export const CARD_PROXY_EXCLUDE_WORDS = ["fake"];
+export const CARD_CUSTOM_EXCLUDE_WORDS = ["custom"];
+
 export const CARD_SET_FILTERS: (CardFilterOption & { group: CardSetGroup })[] = [
-  { value: "base-set", label: "Base Set", group: "Vintage" },
-  { value: "base-set-shadowless", label: "Base Set Shadowless", group: "Vintage" },
-  { value: "base-set-2", label: "Base Set 2", group: "Vintage" },
-  { value: "jungle", label: "Jungle", group: "Vintage" },
-  { value: "fossil", label: "Fossil", group: "Vintage" },
-  { value: "team-rocket", label: "Team Rocket", group: "Vintage" },
-  { value: "gym-heroes", label: "Gym Heroes", group: "Vintage" },
-  { value: "gym-challenge", label: "Gym Challenge", group: "Vintage" },
-  { value: "neo-genesis", label: "Neo Genesis", group: "Vintage" },
-  { value: "neo-discovery", label: "Neo Discovery", group: "Vintage" },
-  { value: "neo-revelation", label: "Neo Revelation", group: "Vintage" },
-  { value: "neo-destiny", label: "Neo Destiny", group: "Vintage" },
-  { value: "legendary-collection", label: "Legendary Collection", group: "Vintage" },
-  { value: "expedition", label: "Expedition", group: "Vintage" },
-  { value: "aquapolis", label: "Aquapolis", group: "Vintage" },
-  { value: "skyridge", label: "Skyridge", group: "Vintage" },
-  { value: "xy-evolutions", label: "XY Evolutions", group: "XY / Sun & Moon" },
-  { value: "hidden-fates", label: "Hidden Fates", group: "XY / Sun & Moon" },
-  { value: "hidden-fates-shiny-vault", label: "Hidden Fates Shiny Vault", group: "XY / Sun & Moon" },
-  { value: "cosmic-eclipse", label: "Cosmic Eclipse", group: "XY / Sun & Moon" },
-  { value: "champions-path", label: "Champion's Path", group: "XY / Sun & Moon" },
-  { value: "shining-fates", label: "Shining Fates", group: "XY / Sun & Moon" },
-  { value: "celebrations", label: "Celebrations", group: "XY / Sun & Moon" },
-  { value: "celebrations-classic", label: "Celebrations Classic Collection", group: "XY / Sun & Moon" },
+  { value: "base-set", label: "Base Set", group: "WOTC Vintage" },
+  { value: "base-set-2", label: "Base Set 2", group: "WOTC Vintage" },
+  { value: "jungle", label: "Jungle", group: "WOTC Vintage" },
+  { value: "fossil", label: "Fossil", group: "WOTC Vintage" },
+  { value: "team-rocket", label: "Team Rocket", group: "WOTC Vintage" },
+  { value: "gym-heroes", label: "Gym Heroes", group: "WOTC Vintage" },
+  { value: "gym-challenge", label: "Gym Challenge", group: "WOTC Vintage" },
+  { value: "neo-genesis", label: "Neo Genesis", group: "WOTC Vintage" },
+  { value: "neo-discovery", label: "Neo Discovery", group: "WOTC Vintage" },
+  { value: "neo-revelation", label: "Neo Revelation", group: "WOTC Vintage" },
+  { value: "neo-destiny", label: "Neo Destiny", group: "WOTC Vintage" },
+  { value: "legendary-collection", label: "Legendary Collection", group: "WOTC Vintage" },
+  { value: "expedition", label: "Expedition", group: "WOTC Vintage" },
+  { value: "aquapolis", label: "Aquapolis", group: "WOTC Vintage" },
+  { value: "skyridge", label: "Skyridge", group: "WOTC Vintage" },
+  { value: "ruby-sapphire", label: "Ruby & Sapphire", group: "EX" },
+  { value: "sandstorm", label: "Sandstorm", group: "EX" },
+  { value: "dragon", label: "Dragon", group: "EX" },
+  { value: "team-magma-vs-team-aqua", label: "Team Magma vs Team Aqua", group: "EX" },
+  { value: "hidden-legends", label: "Hidden Legends", group: "EX" },
+  { value: "firered-leafgreen", label: "FireRed & LeafGreen", group: "EX" },
+  { value: "team-rocket-returns", label: "Team Rocket Returns", group: "EX" },
+  { value: "deoxys", label: "Deoxys", group: "EX" },
+  { value: "emerald", label: "Emerald", group: "EX" },
+  { value: "unseen-forces", label: "Unseen Forces", group: "EX" },
+  { value: "delta-species", label: "Delta Species", group: "EX" },
+  { value: "legend-maker", label: "Legend Maker", group: "EX" },
+  { value: "holon-phantoms", label: "Holon Phantoms", group: "EX" },
+  { value: "crystal-guardians", label: "Crystal Guardians", group: "EX" },
+  { value: "dragon-frontiers", label: "Dragon Frontiers", group: "EX" },
+  { value: "power-keepers", label: "Power Keepers", group: "EX" },
+  { value: "diamond-pearl", label: "Diamond & Pearl", group: "DP / HGSS" },
+  { value: "mysterious-treasures", label: "Mysterious Treasures", group: "DP / HGSS" },
+  { value: "secret-wonders", label: "Secret Wonders", group: "DP / HGSS" },
+  { value: "great-encounters", label: "Great Encounters", group: "DP / HGSS" },
+  { value: "majestic-dawn", label: "Majestic Dawn", group: "DP / HGSS" },
+  { value: "legends-awakened", label: "Legends Awakened", group: "DP / HGSS" },
+  { value: "stormfront", label: "Stormfront", group: "DP / HGSS" },
+  { value: "platinum", label: "Platinum", group: "DP / HGSS" },
+  { value: "rising-rivals", label: "Rising Rivals", group: "DP / HGSS" },
+  { value: "supreme-victors", label: "Supreme Victors", group: "DP / HGSS" },
+  { value: "arceus", label: "Arceus", group: "DP / HGSS" },
+  { value: "heartgold-soulsilver", label: "HeartGold & SoulSilver", group: "DP / HGSS" },
+  { value: "unleashed", label: "Unleashed", group: "DP / HGSS" },
+  { value: "undaunted", label: "Undaunted", group: "DP / HGSS" },
+  { value: "triumphant", label: "Triumphant", group: "DP / HGSS" },
+  { value: "call-of-legends", label: "Call of Legends", group: "DP / HGSS" },
+  { value: "black-white", label: "Black & White", group: "Black & White" },
+  { value: "emerging-powers", label: "Emerging Powers", group: "Black & White" },
+  { value: "noble-victories", label: "Noble Victories", group: "Black & White" },
+  { value: "next-destinies", label: "Next Destinies", group: "Black & White" },
+  { value: "dark-explorers", label: "Dark Explorers", group: "Black & White" },
+  { value: "dragons-exalted", label: "Dragons Exalted", group: "Black & White" },
+  { value: "boundaries-crossed", label: "Boundaries Crossed", group: "Black & White" },
+  { value: "plasma-storm", label: "Plasma Storm", group: "Black & White" },
+  { value: "plasma-freeze", label: "Plasma Freeze", group: "Black & White" },
+  { value: "plasma-blast", label: "Plasma Blast", group: "Black & White" },
+  { value: "legendary-treasures", label: "Legendary Treasures", group: "Black & White" },
+  { value: "xy", label: "XY", group: "XY" },
+  { value: "flashfire", label: "Flashfire", group: "XY" },
+  { value: "furious-fists", label: "Furious Fists", group: "XY" },
+  { value: "phantom-forces", label: "Phantom Forces", group: "XY" },
+  { value: "primal-clash", label: "Primal Clash", group: "XY" },
+  { value: "roaring-skies", label: "Roaring Skies", group: "XY" },
+  { value: "ancient-origins", label: "Ancient Origins", group: "XY" },
+  { value: "breakthrough", label: "BREAKthrough", group: "XY" },
+  { value: "breakpoint", label: "BREAKpoint", group: "XY" },
+  { value: "fates-collide", label: "Fates Collide", group: "XY" },
+  { value: "steam-siege", label: "Steam Siege", group: "XY" },
+  { value: "xy-evolutions", label: "Evolutions", group: "XY" },
+  { value: "sun-moon", label: "Sun & Moon", group: "Sun & Moon" },
+  { value: "guardians-rising", label: "Guardians Rising", group: "Sun & Moon" },
+  { value: "burning-shadows", label: "Burning Shadows", group: "Sun & Moon" },
+  { value: "crimson-invasion", label: "Crimson Invasion", group: "Sun & Moon" },
+  { value: "ultra-prism", label: "Ultra Prism", group: "Sun & Moon" },
+  { value: "forbidden-light", label: "Forbidden Light", group: "Sun & Moon" },
+  { value: "celestial-storm", label: "Celestial Storm", group: "Sun & Moon" },
+  { value: "lost-thunder", label: "Lost Thunder", group: "Sun & Moon" },
+  { value: "team-up", label: "Team Up", group: "Sun & Moon" },
+  { value: "unbroken-bonds", label: "Unbroken Bonds", group: "Sun & Moon" },
+  { value: "unified-minds", label: "Unified Minds", group: "Sun & Moon" },
+  { value: "hidden-fates", label: "Hidden Fates", group: "Sun & Moon" },
+  { value: "cosmic-eclipse", label: "Cosmic Eclipse", group: "Sun & Moon" },
+  { value: "sword-shield", label: "Sword & Shield", group: "Sword & Shield" },
+  { value: "rebel-clash", label: "Rebel Clash", group: "Sword & Shield" },
+  { value: "darkness-ablaze", label: "Darkness Ablaze", group: "Sword & Shield" },
+  { value: "champions-path", label: "Champion's Path", group: "Sword & Shield" },
   { value: "vivid-voltage", label: "Vivid Voltage", group: "Sword & Shield" },
+  { value: "shining-fates", label: "Shining Fates", group: "Sword & Shield" },
   { value: "battle-styles", label: "Battle Styles", group: "Sword & Shield" },
+  { value: "chilling-reign", label: "Chilling Reign", group: "Sword & Shield" },
   { value: "evolving-skies", label: "Evolving Skies", group: "Sword & Shield" },
+  { value: "celebrations", label: "Celebrations", group: "Sword & Shield" },
   { value: "fusion-strike", label: "Fusion Strike", group: "Sword & Shield" },
   { value: "brilliant-stars", label: "Brilliant Stars", group: "Sword & Shield" },
+  { value: "astral-radiance", label: "Astral Radiance", group: "Sword & Shield" },
+  { value: "pokemon-go", label: "Pokemon GO", group: "Sword & Shield" },
   { value: "lost-origin", label: "Lost Origin", group: "Sword & Shield" },
   { value: "silver-tempest", label: "Silver Tempest", group: "Sword & Shield" },
   { value: "crown-zenith", label: "Crown Zenith", group: "Sword & Shield" },
-  { value: "pokemon-go", label: "Pokemon GO", group: "Sword & Shield" },
-  { value: "scarlet-violet-151", label: "Scarlet & Violet 151", group: "Scarlet & Violet" },
-  { value: "paldean-fates", label: "Paldean Fates", group: "Scarlet & Violet" },
+  { value: "scarlet-violet", label: "Scarlet & Violet", group: "Scarlet & Violet" },
+  { value: "paldea-evolved", label: "Paldea Evolved", group: "Scarlet & Violet" },
   { value: "obsidian-flames", label: "Obsidian Flames", group: "Scarlet & Violet" },
+  { value: "scarlet-violet-151", label: "151", group: "Scarlet & Violet" },
+  { value: "paradox-rift", label: "Paradox Rift", group: "Scarlet & Violet" },
+  { value: "paldean-fates", label: "Paldean Fates", group: "Scarlet & Violet" },
+  { value: "temporal-forces", label: "Temporal Forces", group: "Scarlet & Violet" },
   { value: "twilight-masquerade", label: "Twilight Masquerade", group: "Scarlet & Violet" },
+  { value: "shrouded-fable", label: "Shrouded Fable", group: "Scarlet & Violet" },
+  { value: "stellar-crown", label: "Stellar Crown", group: "Scarlet & Violet" },
   { value: "surging-sparks", label: "Surging Sparks", group: "Scarlet & Violet" },
   { value: "prismatic-evolutions", label: "Prismatic Evolutions", group: "Scarlet & Violet" },
+  { value: "journey-together", label: "Journey Together", group: "Scarlet & Violet" },
+  { value: "destined-rivals", label: "Destined Rivals", group: "Scarlet & Violet" },
+  { value: "black-bolt", label: "Black Bolt", group: "Scarlet & Violet" },
+  { value: "white-flare", label: "White Flare", group: "Scarlet & Violet" },
   { value: "phantasmal-flames", label: "Phantasmal Flames", group: "Scarlet & Violet" },
-  { value: "swsh-promos", label: "Sword & Shield Promos", group: "Promos & other" },
-  { value: "sv-promos", label: "Scarlet & Violet Promos", group: "Promos & other" },
-  { value: "mcdonalds-promos-2024", label: "McDonald's Promos 2024", group: "Promos & other" },
-  { value: "prize-pack-series", label: "Prize Pack Series Cards", group: "Promos & other" },
 ];
 
 export const CARD_SET_GROUPS: CardSetGroup[] = [
-  "Vintage",
-  "XY / Sun & Moon",
+  "WOTC Vintage",
+  "EX",
+  "DP / HGSS",
+  "Black & White",
+  "XY",
+  "Sun & Moon",
   "Sword & Shield",
   "Scarlet & Violet",
-  "Promos & other",
+];
+
+export const CARD_SET_IDENTITY_LABELS = [
+  ...CARD_SET_FILTERS.map((option) => option.label),
+  "Base Set Shadowless",
+  "XY Evolutions",
+  "Scarlet & Violet 151",
 ];
 
 /**
@@ -157,351 +278,105 @@ export type CardCategoryOption = CardFilterOption & {
 
 export const CARD_CATEGORY_FILTERS: CardCategoryOption[] = [
   {
+    value: "2536",
+    label: "Collectible Card Games",
+    group: "Toys & Hobbies",
+  },
+  { value: "183454", label: "Singles", group: "Toys & Hobbies" },
+  { value: "183455", label: "Lots", group: "Toys & Hobbies" },
+  { value: "183459", label: "Sets", group: "Toys & Hobbies" },
+  { value: "183456", label: "Sealed packs", group: "Toys & Hobbies" },
+  {
+    value: "183457",
+    label: "Sealed decks & kits",
+    group: "Toys & Hobbies",
+  },
+  { value: "261044", label: "Sealed boxes", group: "Toys & Hobbies" },
+  { value: "261045", label: "Sealed cases", group: "Toys & Hobbies" },
+  {
+    value: "182982",
+    label: "Non-Sport Trading Cards",
+    group: "Collectibles",
+  },
+  { value: "183050", label: "Singles", group: "Collectibles" },
+  { value: "183051", label: "Lots", group: "Collectibles" },
+  { value: "183052", label: "Sets", group: "Collectibles" },
+  { value: "183053", label: "Sealed packs", group: "Collectibles" },
+  { value: "261035", label: "Sealed boxes", group: "Collectibles" },
+  { value: "261036", label: "Sealed cases", group: "Collectibles" },
+  {
     value: "212",
     label: "Sports Trading Cards",
     group: "Sports Mem, Cards & Fan Shop",
   },
   {
     value: "261328",
-    label: "Sports Trading Card Singles",
+    label: "Singles",
     group: "Sports Mem, Cards & Fan Shop",
   },
   {
     value: "261329",
-    label: "Sports Trading Card Lots",
+    label: "Lots",
     group: "Sports Mem, Cards & Fan Shop",
   },
   {
     value: "261330",
-    label: "Sports Trading Card Sets",
+    label: "Sets",
     group: "Sports Mem, Cards & Fan Shop",
   },
   {
     value: "261331",
-    label: "Sports Sealed Trading Card Packs",
+    label: "Sealed packs",
     group: "Sports Mem, Cards & Fan Shop",
   },
   {
     value: "261332",
-    label: "Sports Sealed Trading Card Boxes",
+    label: "Sealed boxes",
     group: "Sports Mem, Cards & Fan Shop",
   },
   {
     value: "261333",
-    label: "Sports Sealed Trading Card Cases",
+    label: "Sealed cases",
     group: "Sports Mem, Cards & Fan Shop",
   },
-  {
-    value: "261334",
-    label: "Sports Trading Card Box & Case Breaks",
-    group: "Sports Mem, Cards & Fan Shop",
-  },
-  {
-    value: "463772",
-    label: "Sports Trading Card Repacks",
-    group: "Sports Mem, Cards & Fan Shop",
-  },
-  {
-    value: "261335",
-    label: "Sports Wrappers & Empty Card Boxes",
-    group: "Sports Mem, Cards & Fan Shop",
-  },
-  {
-    value: "261893",
-    label: "Sports Uncut Trading Card Sheets",
-    group: "Sports Mem, Cards & Fan Shop",
-  },
-  {
-    value: "183436",
-    label: "Sports Storage & Display Supplies",
-    group: "Sports Mem, Cards & Fan Shop",
-  },
-  {
-    value: "183437",
-    label: "Sports Card Sleeves & Bags",
-    group: "Sports Mem, Cards & Fan Shop",
-  },
-  {
-    value: "183438",
-    label: "Sports Card Toploaders & Holders",
-    group: "Sports Mem, Cards & Fan Shop",
-  },
-  {
-    value: "183439",
-    label: "Sports Albums, Binders & Pages",
-    group: "Sports Mem, Cards & Fan Shop",
-  },
-  {
-    value: "183440",
-    label: "Sports Card Storage Boxes & Dividers",
-    group: "Sports Mem, Cards & Fan Shop",
-  },
-  {
-    value: "183441",
-    label: "Sports Card Sorting Trays",
-    group: "Sports Mem, Cards & Fan Shop",
-  },
-  {
-    value: "183442",
-    label: "Sports Card Display Cases & Stands",
-    group: "Sports Mem, Cards & Fan Shop",
-  },
-  {
-    value: "261949",
-    label: "Sports Card Grading Tools",
-    group: "Sports Mem, Cards & Fan Shop",
-  },
-  {
-    value: "170135",
-    label: "Sports Price Guides & Publications",
-    group: "Sports Mem, Cards & Fan Shop",
-  },
-  {
-    value: "262055",
-    label: "Sport Trading Card NFTs",
-    group: "Sports Mem, Cards & Fan Shop",
-  },
-  {
-    value: "182982",
-    label: "Non-Sport Trading Cards",
-    group: "Collectibles",
-  },
-  {
-    value: "183050",
-    label: "Non-Sport Trading Card Singles",
-    group: "Collectibles",
-  },
-  {
-    value: "183051",
-    label: "Non-Sport Trading Card Lots",
-    group: "Collectibles",
-  },
-  {
-    value: "183052",
-    label: "Non-Sport Trading Card Sets",
-    group: "Collectibles",
-  },
-  {
-    value: "183053",
-    label: "Non-Sport Sealed Trading Card Packs",
-    group: "Collectibles",
-  },
-  {
-    value: "261035",
-    label: "Non-Sport Sealed Trading Card Boxes",
-    group: "Collectibles",
-  },
-  {
-    value: "261036",
-    label: "Non-Sport Sealed Trading Card Cases",
-    group: "Collectibles",
-  },
-  {
-    value: "261336",
-    label: "Non-Sport Trading Card Box & Case Breaks",
-    group: "Collectibles",
-  },
-  {
-    value: "183054",
-    label: "Non-Sport Wrappers & Empty Card Boxes",
-    group: "Collectibles",
-  },
-  {
-    value: "261947",
-    label: "Non-Sport Uncut Trading Card Sheets",
-    group: "Collectibles",
-  },
-  {
-    value: "183056",
-    label: "Non-Sport Card Supplies & Accessories",
-    group: "Collectibles",
-  },
-  {
-    value: "259148",
-    label: "Non-Sport Card Sleeves & Bags",
-    group: "Collectibles",
-  },
-  {
-    value: "259149",
-    label: "Non-Sport Card Toploaders & Holders",
-    group: "Collectibles",
-  },
-  {
-    value: "183059",
-    label: "Non-Sport Card Albums, Binders & Pages",
-    group: "Collectibles",
-  },
-  {
-    value: "259150",
-    label: "Non-Sport Card Storage Boxes & Dividers",
-    group: "Collectibles",
-  },
-  {
-    value: "261038",
-    label: "Non-Sport Card Sorting Trays",
-    group: "Collectibles",
-  },
-  {
-    value: "261037",
-    label: "Non-Sport Card Display Cases & Stands",
-    group: "Collectibles",
-  },
-  {
-    value: "261950",
-    label: "Non-Sport Card Grading Tools",
-    group: "Collectibles",
-  },
-  {
-    value: "171198",
-    label: "Non-Sport Price Guides & Publications",
-    group: "Collectibles",
-  },
-  {
-    value: "219",
-    label: "Other Non-Sport Trading Card Merchandise",
-    group: "Collectibles",
-  },
-  {
-    value: "262052",
-    label: "Non-Sport Trading Card NFTs",
-    group: "Collectibles",
-  },
+];
+
+export const CARD_CATEGORY_GROUPS: CardCategoryGroup[] = [
+  "Toys & Hobbies",
+  "Collectibles",
+  "Sports Mem, Cards & Fan Shop",
+];
+
+export const CARD_CATEGORY_LINES: CardCategoryOption[] = [
   {
     value: "2536",
     label: "Collectible Card Games",
     group: "Toys & Hobbies",
   },
   {
-    value: "183454",
-    label: "Single Cards",
-    group: "Toys & Hobbies",
+    value: "182982",
+    label: "Non-Sport Trading Cards",
+    group: "Collectibles",
   },
-  {
-    value: "183455",
-    label: "CCG Mixed Card Lots",
-    group: "Toys & Hobbies",
-  },
-  { value: "183459", label: "CCG Sets", group: "Toys & Hobbies" },
-  {
-    value: "183456",
-    label: "CCG Sealed Packs",
-    group: "Toys & Hobbies",
-  },
-  {
-    value: "183457",
-    label: "CCG Sealed Decks & Kits",
-    group: "Toys & Hobbies",
-  },
-  {
-    value: "261044",
-    label: "CCG Sealed Boxes",
-    group: "Toys & Hobbies",
-  },
-  {
-    value: "261045",
-    label: "CCG Sealed Cases",
-    group: "Toys & Hobbies",
-  },
-  {
-    value: "183458",
-    label: "CCG Player-Built Decks",
-    group: "Toys & Hobbies",
-  },
-  {
-    value: "261337",
-    label: "CCG Box & Case Breaks",
-    group: "Toys & Hobbies",
-  },
-  { value: "463773", label: "CCG Repacks", group: "Toys & Hobbies" },
-  {
-    value: "261948",
-    label: "Uncut CCG Sheets",
-    group: "Toys & Hobbies",
-  },
-  {
-    value: "183460",
-    label: "CCG Supplies & Accessories",
-    group: "Toys & Hobbies",
-  },
-  {
-    value: "183461",
-    label: "CCG Card Sleeves",
-    group: "Toys & Hobbies",
-  },
-  {
-    value: "183462",
-    label: "CCG Deck Boxes, Storage Cases & Dividers",
-    group: "Toys & Hobbies",
-  },
-  { value: "183463", label: "CCG Dice", group: "Toys & Hobbies" },
-  { value: "183464", label: "CCG Playmats", group: "Toys & Hobbies" },
-  {
-    value: "183465",
-    label: "CCG Albums, Binders & Pages",
-    group: "Toys & Hobbies",
-  },
-  { value: "261039", label: "CCG Coins", group: "Toys & Hobbies" },
-  { value: "261040", label: "CCG Counters", group: "Toys & Hobbies" },
-  {
-    value: "261042",
-    label: "CCG Dice Pouches",
-    group: "Toys & Hobbies",
-  },
-  {
-    value: "261043",
-    label: "CCG Playmat Tubes, Bags & Cases",
-    group: "Toys & Hobbies",
-  },
-  {
-    value: "261951",
-    label: "CCG Grading Tools",
-    group: "Toys & Hobbies",
-  },
-  {
-    value: "261041",
-    label: "CCG Price Guides & Publications",
-    group: "Toys & Hobbies",
-  },
-  { value: "2535", label: "Other CCG Items", group: "Toys & Hobbies" },
-  { value: "262056", label: "CCG NFTs", group: "Toys & Hobbies" },
-];
-
-export const CARD_CATEGORY_GROUPS: CardCategoryGroup[] = [
-  "Sports Mem, Cards & Fan Shop",
-  "Collectibles",
-  "Toys & Hobbies",
-];
-
-export const CARD_CATEGORY_LINES: CardCategoryOption[] = [
   {
     value: "212",
     label: "Sports Trading Cards",
     group: "Sports Mem, Cards & Fan Shop",
   },
-  {
-    value: "182982",
-    label: "Non-Sport Trading Cards",
-    group: "Collectibles",
-  },
-  {
-    value: "2536",
-    label: "Collectible Card Games",
-    group: "Toys & Hobbies",
-  },
 ];
+
+export const CCG_LINE_ID = "2536";
+export const CCG_SINGLES_ID = "183454";
 
 /** Leaf CCG categories that expose the official Game aspect. */
 export const CCG_GAME_CATEGORY_IDS = new Set([
-  "183454",
+  CCG_SINGLES_ID,
   "183455",
   "183456",
   "183457",
-  "183458",
   "183459",
   "261044",
   "261045",
-  "261337",
-  "463773",
 ]);
 
 const CCG_GAME_NAMES = [
@@ -711,6 +586,16 @@ export const CARD_GAME_POPULAR = CCG_GAME_POPULAR_ASPECTS.map((aspect) =>
   slugifyGame(aspect),
 );
 
+/** Launch-line CCGs that sit next to Popular. */
+export const CARD_GAME_WEDGE = [
+  "star-wars-tcg",
+  "star-wars-ccg",
+  "g-i-joe-tcg",
+  "transformers-tcg",
+];
+
+export const POKEMON_GAME = "pokemon-tcg";
+
 export type CardCatalogSelection = {
   cardSet?: string;
   rarity?: string;
@@ -718,9 +603,14 @@ export type CardCatalogSelection = {
   language?: string;
   grader?: string;
   cardGrade?: string;
+  cardNoReprints?: boolean;
+  cardNoProxy?: boolean;
 };
 
-export type CatalogSelection = CardCatalogSelection & BrickQuerySelection;
+export type CatalogSelection = CardCatalogSelection &
+  BrickQuerySelection &
+  WheelsQuerySelection &
+  FigureQuerySelection;
 
 const ANY = "any";
 
@@ -740,8 +630,14 @@ export function cardCategoryLabel(value: string | undefined): string | undefined
   return findOption(CARD_CATEGORY_FILTERS, value)?.label;
 }
 
-export function cardCategoryIds(value: string | undefined): string | undefined {
-  return parseCardCategory(value);
+export function cardCategoryIds(
+  value: string | undefined,
+  game?: string,
+): string | undefined {
+  const parsed = parseCardCategory(value);
+  if (!parsed) return undefined;
+  if (parsed === CCG_LINE_ID && parseCardGame(game)) return CCG_SINGLES_ID;
+  return parsed;
 }
 
 export function parseCardLine(raw: string | undefined): string | undefined {
@@ -767,7 +663,13 @@ export function cardCategoryChildren(lineId: string | undefined): CardCategoryOp
 
 export function categorySupportsCardGame(value: string | undefined): boolean {
   const parsed = parseCardCategory(value);
-  return Boolean(parsed && CCG_GAME_CATEGORY_IDS.has(parsed));
+  return Boolean(
+    parsed && (parsed === CCG_LINE_ID || CCG_GAME_CATEGORY_IDS.has(parsed)),
+  );
+}
+
+export function isPokemonCardGame(value: string | undefined): boolean {
+  return parseCardGame(value) === POKEMON_GAME;
 }
 
 export function parseCardGame(raw: string | undefined): string | undefined {
@@ -795,9 +697,10 @@ export function cardGameAspectFilter(
   categoryId: string | undefined,
   game: string | undefined,
 ): string | undefined {
-  const category = parseCardCategory(categoryId);
   const aspect = cardGameAspect(game);
-  if (!category || !aspect || !categorySupportsCardGame(category)) return undefined;
+  if (!aspect) return undefined;
+  const category = cardCategoryIds(categoryId, game);
+  if (!category || !CCG_GAME_CATEGORY_IDS.has(category)) return undefined;
   return `categoryId:${category},Game:{${aspect}}`;
 }
 
@@ -818,7 +721,14 @@ export function parseCardLanguage(raw: string | undefined): string | undefined {
 }
 
 export function parseCardGrader(raw: string | undefined): string | undefined {
+  if (!raw || raw === ANY) return undefined;
+  if (raw.toLowerCase() === "beckett") return "bgs";
   return findOption(CARD_GRADER_FILTERS, raw)?.value;
+}
+
+export function isSlabGrader(value: string | undefined): boolean {
+  const grader = parseCardGrader(value);
+  return Boolean(grader && grader !== "raw");
 }
 
 export function parseCardGrade(raw: string | undefined): string | undefined {
@@ -849,23 +759,116 @@ export function cardGradeLabel(value: string | undefined): string | undefined {
   return findOption(CARD_GRADE_FILTERS, value)?.label;
 }
 
-/** `PSA 10` when both are set, otherwise just `PSA`. */
+function optionQueryTerm(
+  option: CardFilterOption | undefined,
+): string | undefined {
+  if (!option) return undefined;
+  return option.queryTerm ?? option.label;
+}
+
+export function cardRarityQueryTerm(value: string | undefined): string | undefined {
+  return optionQueryTerm(findOption(CARD_RARITY_FILTERS, value));
+}
+
+export function cardPrintingQueryTerm(
+  value: string | undefined,
+): string | undefined {
+  return optionQueryTerm(findOption(CARD_PRINTING_FILTERS, value));
+}
+
+export function cardLanguageQueryTerm(
+  value: string | undefined,
+): string | undefined {
+  const language = parseCardLanguage(value);
+  if (!language || language === "english") return undefined;
+  return cardLanguageLabel(language);
+}
+
+/** `PSA 10` when both are set, otherwise just `PSA`. Raw is never injected. */
 export function cardGraderQueryTerm(
   selection: Pick<CardCatalogSelection, "grader" | "cardGrade">,
 ): string | undefined {
+  if (!isSlabGrader(selection.grader)) return undefined;
   const grader = cardGraderLabel(selection.grader);
   if (!grader) return undefined;
   const grade = cardGradeLabel(selection.cardGrade);
   return grade ? `${grader} ${grade}` : grader;
 }
 
+export function cardExcludeWords(
+  selection: Pick<
+    CardCatalogSelection,
+    "grader" | "cardNoReprints" | "cardNoProxy" | "cardSet" | "rarity"
+  > & {
+    cardGame?: string;
+    cardCategory?: string;
+  },
+): string[] {
+  const words: string[] = [];
+  if (selection.grader === "raw") words.push(...CARD_RAW_EXCLUDE_WORDS);
+  const cardActive = Boolean(
+    selection.grader ||
+      selection.cardSet ||
+      selection.rarity ||
+      selection.cardGame ||
+      selection.cardCategory,
+  );
+  if (!cardActive) return words;
+  if (selection.cardNoReprints !== false) {
+    words.push(...CARD_REPRINT_EXCLUDE_WORDS);
+  }
+  if (selection.cardNoProxy !== false) {
+    words.push(...CARD_PROXY_EXCLUDE_WORDS);
+  }
+  words.push(...CARD_CUSTOM_EXCLUDE_WORDS);
+  return words;
+}
+
+const CARD_RESERVED_EXCLUDES = [
+  ...CARD_RAW_EXCLUDE_WORDS,
+  ...CARD_REPRINT_EXCLUDE_WORDS,
+  ...CARD_PROXY_EXCLUDE_WORDS,
+  ...CARD_CUSTOM_EXCLUDE_WORDS,
+].map((word) => word.toLowerCase());
+
+export function isCardExcludeWord(word: string): boolean {
+  return CARD_RESERVED_EXCLUDES.includes(word.toLowerCase());
+}
+
+export function withoutCardExcludeWords(words: string[]): string[] {
+  return words.filter((word) => !isCardExcludeWord(word));
+}
+
+export function cardSkippedDefaultExcludes(
+  selection: Pick<
+    CardCatalogSelection,
+    "cardNoReprints" | "cardNoProxy" | "grader" | "cardSet" | "rarity"
+  > & {
+    cardGame?: string;
+    cardCategory?: string;
+  },
+): string[] {
+  const cardActive = Boolean(
+    selection.grader ||
+      selection.cardSet ||
+      selection.rarity ||
+      selection.cardGame ||
+      selection.cardCategory,
+  );
+  if (!cardActive) return [];
+  const skip: string[] = [];
+  if (selection.cardNoReprints === false) skip.push("reprint", "reprints");
+  if (selection.cardNoProxy === false) skip.push("proxy");
+  return skip;
+}
+
 /** Labels / keywords that should be appended to the eBay keyword query. */
 export function catalogQueryTerms(selection: CatalogSelection): string[] {
   const terms: string[] = [];
   const set = cardSetLabel(selection.cardSet);
-  const rarity = cardRarityLabel(selection.rarity);
-  const printing = cardPrintingLabel(selection.printing);
-  const language = cardLanguageLabel(selection.language);
+  const rarity = cardRarityQueryTerm(selection.rarity);
+  const printing = cardPrintingQueryTerm(selection.printing);
+  const language = cardLanguageQueryTerm(selection.language);
   const grader = cardGraderQueryTerm(selection);
   if (set) terms.push(set);
   if (rarity) terms.push(rarity);
@@ -873,6 +876,8 @@ export function catalogQueryTerms(selection: CatalogSelection): string[] {
   if (language) terms.push(language);
   if (grader) terms.push(grader);
   terms.push(...brickQueryTerms(selection));
+  terms.push(...wheelsQueryTerms(selection));
+  terms.push(...figureQueryTerms(selection));
   return terms;
 }
 
@@ -888,6 +893,7 @@ export function queryIncludesPhrase(query: string, phrase: string): boolean {
 function allGraderLabels(): string[] {
   const labels: string[] = [];
   for (const grader of CARD_GRADER_FILTERS) {
+    if (grader.value === "raw") continue;
     for (const grade of CARD_GRADE_FILTERS) {
       labels.push(`${grader.label} ${grade.label}`);
     }
@@ -896,15 +902,42 @@ function allGraderLabels(): string[] {
   return labels;
 }
 
+const LEGACY_CATALOG_LABELS = [
+  "Holofoil",
+  "Non-holo",
+  "Reverse Holofoil",
+  "Special Illustration Rare",
+  "Illustration Rare",
+  "Base Set Shadowless",
+  "XY Evolutions",
+  "Scarlet & Violet 151",
+];
+
 function allCatalogLabels(includeGraders = true): string[] {
-  return [
-    ...CARD_SET_FILTERS.map((option) => option.label),
-    ...CARD_RARITY_FILTERS.map((option) => option.label),
-    ...CARD_PRINTING_FILTERS.map((option) => option.label),
+  const terms = [
+    ...CARD_SET_FILTERS.flatMap((option) =>
+      [option.label, option.queryTerm].filter(
+        (term): term is string => Boolean(term),
+      ),
+    ),
+    ...CARD_RARITY_FILTERS.flatMap((option) =>
+      [option.label, option.queryTerm].filter(
+        (term): term is string => Boolean(term),
+      ),
+    ),
+    ...CARD_PRINTING_FILTERS.flatMap((option) =>
+      [option.label, option.queryTerm].filter(
+        (term): term is string => Boolean(term),
+      ),
+    ),
     ...CARD_LANGUAGE_FILTERS.map((option) => option.label),
+    ...LEGACY_CATALOG_LABELS,
     ...(includeGraders ? allGraderLabels() : []),
     ...allBrickQueryTerms(),
-  ].sort((a, b) => b.length - a.length);
+    ...allWheelsQueryTerms(),
+    ...allFigureQueryTerms(),
+  ];
+  return [...new Set(terms)].sort((a, b) => b.length - a.length);
 }
 
 export function stripCatalogTerms(
@@ -931,7 +964,7 @@ export function stripAllCatalogLabels(
 }
 
 function quoteTerm(term: string): string {
-  if (/^(PSA|CGC|BGS|SGC) \d+$/i.test(term)) return term;
+  if (/^(PSA|CGC|BGS|SGC) \d+(?:\.\d+)?$/i.test(term)) return term;
   return /\s/.test(term) ? `"${term}"` : term;
 }
 

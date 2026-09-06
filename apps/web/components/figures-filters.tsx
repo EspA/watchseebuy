@@ -1,11 +1,17 @@
 "use client";
 
-import type { ChangeEvent } from "react";
+import { useState, type ChangeEvent } from "react";
 import { submitSearchForm } from "@/components/auto-search";
+import { useFilterGroup } from "@/components/filter-accordion";
 import { syncCatalogSearchForm } from "@/components/catalog-search-sync";
 import {
   FIGURE_CATEGORY_FILTERS,
   FIGURE_CATEGORY_GROUPS,
+  FIGURE_COMPLETENESS_FILTERS,
+  FIGURE_PACKAGING_FILTERS,
+  FIGURE_PUNCH_FILTERS,
+  FIGURE_SCALE_FILTERS,
+  categorySupportsFigureScale,
 } from "@waitseebuy/domain";
 
 const SEARCH_FORM = "search-form";
@@ -17,23 +23,65 @@ function onFilterChange(event: ChangeEvent<HTMLSelectElement>) {
   submitSearchForm(form);
 }
 
+function setSelectValue(
+  form: HTMLFormElement | null,
+  name: string,
+  value: string,
+) {
+  const field = form?.elements.namedItem(name);
+  if (field instanceof HTMLSelectElement) field.value = value;
+}
+
 export function FiguresFilters({
   figureCategory,
+  figureScale,
+  figurePackaging,
+  figureCompleteness,
+  figurePunch,
 }: {
   figureCategory?: string;
+  figureScale?: string;
+  figurePackaging?: string;
+  figureCompleteness?: string;
+  figurePunch?: string;
 }) {
-  const hasSelection = Boolean(figureCategory);
+  const [selectedCategory, setSelectedCategory] = useState(
+    figureCategory ?? "any",
+  );
+  const [selectedPackaging, setSelectedPackaging] = useState(
+    figurePackaging ?? "any",
+  );
+  const showScale =
+    selectedCategory === "any" || categorySupportsFigureScale(selectedCategory);
+  const showCompleteness = selectedPackaging === "loose";
+  const showPunch = selectedPackaging === "carded";
+  const hasSelection = Boolean(
+    figureCategory ||
+      figureScale ||
+      figurePackaging ||
+      figureCompleteness ||
+      figurePunch,
+  );
+
+  const { open, onToggle } = useFilterGroup("figures", hasSelection);
 
   return (
-    <details className="filter-group" {...(hasSelection ? { open: true } : {})}>
-      <summary>Figures Filters</summary>
+    <details className="filter-group" open={open} onToggle={onToggle}>
+      <summary>Figures</summary>
       <label>
         Category
         <select
           form={SEARCH_FORM}
           name="figureCategory"
           defaultValue={figureCategory ?? "any"}
-          onChange={onFilterChange}
+          onChange={(event) => {
+            const next = event.currentTarget.value;
+            setSelectedCategory(next);
+            if (next !== "any" && !categorySupportsFigureScale(next)) {
+              setSelectValue(event.currentTarget.form, "figureScale", "any");
+            }
+            onFilterChange(event);
+          }}
         >
           <option value="any">Any</option>
           {FIGURE_CATEGORY_FILTERS.filter((option) => !option.group).map(
@@ -53,6 +101,83 @@ export function FiguresFilters({
                 </option>
               ))}
             </optgroup>
+          ))}
+        </select>
+      </label>
+      <label hidden={!showScale}>
+        Scale
+        <select
+          form={SEARCH_FORM}
+          name="figureScale"
+          defaultValue={showScale ? (figureScale ?? "any") : "any"}
+          onChange={onFilterChange}
+        >
+          <option value="any">Any</option>
+          {FIGURE_SCALE_FILTERS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label>
+        Packaging
+        <select
+          form={SEARCH_FORM}
+          name="figurePackaging"
+          defaultValue={figurePackaging ?? "any"}
+          onChange={(event) => {
+            const next = event.currentTarget.value;
+            setSelectedPackaging(next);
+            const form = event.currentTarget.form;
+            if (next !== "loose") {
+              setSelectValue(form, "figureCompleteness", "any");
+            }
+            if (next !== "carded") {
+              setSelectValue(form, "figurePunch", "any");
+            }
+            onFilterChange(event);
+          }}
+        >
+          <option value="any">Any</option>
+          {FIGURE_PACKAGING_FILTERS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label hidden={!showCompleteness}>
+        Completeness
+        <select
+          form={SEARCH_FORM}
+          name="figureCompleteness"
+          defaultValue={
+            showCompleteness ? (figureCompleteness ?? "any") : "any"
+          }
+          onChange={onFilterChange}
+        >
+          <option value="any">Any</option>
+          {FIGURE_COMPLETENESS_FILTERS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label hidden={!showPunch}>
+        Card punch
+        <select
+          form={SEARCH_FORM}
+          name="figurePunch"
+          defaultValue={showPunch ? (figurePunch ?? "any") : "any"}
+          onChange={onFilterChange}
+        >
+          <option value="any">Any</option>
+          {FIGURE_PUNCH_FILTERS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
           ))}
         </select>
       </label>

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
-import { AppNav } from "@/components/app-nav";
+import { DEFAULT_EBAY_SITE, parseEbaySite } from "@waitseebuy/domain";
+import { HeaderTools } from "@/components/header";
 import { BrandMark } from "@/components/brand-mark";
+import { EbaySiteSwitch } from "@/components/ebay-site-switch";
 
 export const metadata: Metadata = {
   title: "WaitSeeBuy — Live soon",
@@ -22,7 +24,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ComingSoonPage() {
+export default async function ComingSoonPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ site?: string }>;
+}) {
+  const query = await searchParams;
+  const site = parseEbaySite(query.site) ?? DEFAULT_EBAY_SITE;
   return (
     <div className="tease">
       <div className="tease-inner">
@@ -31,7 +39,7 @@ export default function ComingSoonPage() {
           {process.env.COMING_SOON === "1" ? (
             <p className="tease-status">Live soon</p>
           ) : (
-            <AppNav />
+            <HeaderTools />
           )}
         </header>
 
@@ -55,16 +63,27 @@ export default function ComingSoonPage() {
           </p>
 
           {process.env.COMING_SOON === "1" ? null : (
-            <form className="search tease-search" action="/search" method="get">
-              <input
-                name="q"
-                type="search"
-                required
-                placeholder="PSA 10 1986 Fleer Jordan"
-                aria-label="Search collectibles"
+            <>
+              <form className="search tease-search" action="/search" method="get">
+                {site !== DEFAULT_EBAY_SITE ? (
+                  <input type="hidden" name="site" value={site} />
+                ) : null}
+                <input
+                  name="q"
+                  type="search"
+                  required
+                  placeholder="Find eBay pieces"
+                  aria-label="Search collectibles"
+                />
+                <button type="submit">See prices</button>
+              </form>
+              <EbaySiteSwitch
+                site={site}
+                hrefFor={(next) =>
+                  next === DEFAULT_EBAY_SITE ? "/" : `/?site=${next}`
+                }
               />
-              <button type="submit">See prices</button>
-            </form>
+            </>
           )}
 
           <ul className="tease-beats">

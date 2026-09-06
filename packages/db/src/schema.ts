@@ -16,6 +16,8 @@ export const user = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").notNull().default(false),
   image: text("image"),
+  shipToPostal: text("ship_to_postal"),
+  timezone: text("timezone"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -49,6 +51,7 @@ export const account = pgTable(
   "account",
   {
     id: text("id").primaryKey(),
+    issuer: text("issuer").notNull(),
     accountId: text("account_id").notNull(),
     providerId: text("provider_id").notNull(),
     userId: text("user_id")
@@ -72,7 +75,10 @@ export const account = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (t) => [index("account_user_id_idx").on(t.userId)],
+  (t) => [
+    index("account_user_id_idx").on(t.userId),
+    uniqueIndex("account_issuer_account_id_uidx").on(t.issuer, t.accountId),
+  ],
 );
 
 export const verification = pgTable("verification", {
@@ -112,6 +118,7 @@ export const watches = pgTable(
     quietHoursStart: text("quiet_hours_start"),
     quietHoursEnd: text("quiet_hours_end"),
     onlyIfDeal: integer("only_if_deal").notNull().default(1),
+    alertFrequency: text("alert_frequency").notNull().default("on_change"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

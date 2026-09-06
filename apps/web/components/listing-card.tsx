@@ -1,7 +1,9 @@
 import {
   describePriceScore,
   describeSellerFeedback,
-  formatUsd,
+  ebaySiteCurrency,
+  ebaySiteHost,
+  formatMoney,
   landedCostCents,
   sellerConfidence,
   sellerConfidenceTone,
@@ -17,7 +19,15 @@ function listingMeta(listing: CandidateListing): string {
   return bits.join(" · ");
 }
 
-export function ListingCard({ listing }: { listing: CandidateListing }) {
+export function ListingCard({
+  listing,
+  site,
+}: {
+  listing: CandidateListing;
+  site?: string;
+}) {
+  const currency = ebaySiteCurrency(site);
+  const host = ebaySiteHost(site);
   const landed = landedCostCents({
     itemCents: listing.itemCents,
     shippingCents: listing.shippingCents,
@@ -25,18 +35,20 @@ export function ListingCard({ listing }: { listing: CandidateListing }) {
   const buyHref =
     epnItemUrl({
       itemId: listing.ebayItemId,
+      site: host,
       ...(process.env.EPN_CAMPAIGN_ID
         ? { campaignId: process.env.EPN_CAMPAIGN_ID }
         : {}),
       ...(process.env.EPN_TOOL_ID ? { toolId: process.env.EPN_TOOL_ID } : {}),
     }) ??
     listing.webUrl ??
-    plainItemUrl(listing.ebayItemId);
-  const fallback = listing.webUrl ?? plainItemUrl(listing.ebayItemId);
+    plainItemUrl(listing.ebayItemId, host);
+  const fallback = listing.webUrl ?? plainItemUrl(listing.ebayItemId, host);
+  const money = (cents: number) => formatMoney(cents, currency);
   const breakdown =
     listing.shippingCents === 0
-      ? `${formatUsd(listing.itemCents)} + shipping not shown or free`
-      : `${formatUsd(listing.itemCents)} + ${formatUsd(listing.shippingCents)} shipping`;
+      ? `${money(listing.itemCents)} + shipping not shown or free`
+      : `${money(listing.itemCents)} + ${money(listing.shippingCents)} shipping`;
 
   return (
     <li className="listing">
@@ -68,7 +80,7 @@ export function ListingCard({ listing }: { listing: CandidateListing }) {
             ) : null}
           </div>
           <div className="listing-price">
-            <p className="listing-landed">{formatUsd(landed)}</p>
+            <p className="listing-landed">{money(landed)}</p>
             <p className="listing-breakdown">{breakdown}</p>
             <div className="listing-scores">
               <PriceScoreCard
@@ -77,17 +89,27 @@ export function ListingCard({ listing }: { listing: CandidateListing }) {
               />
               <ConfidenceCard listing={listing} />
             </div>
+            <div className="listing-actions">
+              <a
+                className="btn"
+                href={buyHref}
+                rel="nofollow sponsored"
+                target="_blank"
+              >
+                Buy on eBay
+              </a>
+              {buyHref !== fallback ? (
+                <a
+                  className="btn secondary"
+                  href={fallback}
+                  rel="nofollow"
+                  target="_blank"
+                >
+                  Direct link
+                </a>
+              ) : null}
+            </div>
           </div>
-        </div>
-        <div className="listing-actions">
-          <a className="btn" href={buyHref} rel="nofollow sponsored" target="_blank">
-            Buy on eBay
-          </a>
-          {buyHref !== fallback ? (
-            <a className="btn secondary" href={fallback} rel="nofollow" target="_blank">
-              Direct link
-            </a>
-          ) : null}
         </div>
       </div>
     </li>
