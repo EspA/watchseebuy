@@ -1,11 +1,12 @@
 import { getSessionCookie } from "better-auth/cookies";
 import { NextResponse, type NextRequest } from "next/server";
+import { absoluteUrl } from "@/lib/absolute-url";
 
 export function middleware(request: NextRequest) {
   if (process.env.COMING_SOON === "1") {
     const { pathname } = request.nextUrl;
     if (pathname !== "/" && !pathname.startsWith("/out/")) {
-      return NextResponse.redirect(new URL("/", request.url));
+      return NextResponse.redirect(absoluteUrl("/", request));
     }
     return NextResponse.next();
   }
@@ -16,7 +17,7 @@ export function middleware(request: NextRequest) {
   ) {
     const session = getSessionCookie(request);
     if (!session) {
-      const signIn = new URL("/sign-in", request.url);
+      const signIn = absoluteUrl("/sign-in", request);
       signIn.searchParams.set("next", request.nextUrl.pathname);
       return NextResponse.redirect(signIn);
     }

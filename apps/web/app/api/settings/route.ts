@@ -1,6 +1,7 @@
 import { parseShipToPostal, parseUserTimeZone } from "@waitseebuy/domain";
 import { getDb, updateUserSettings } from "@waitseebuy/db";
 import { NextResponse } from "next/server";
+import { absoluteUrl } from "@/lib/absolute-url";
 import { getSession } from "@/lib/session";
 import { parseTheme, THEME_COOKIE_MAX_AGE, THEME_STORAGE_KEY } from "@/lib/theme";
 
@@ -41,7 +42,7 @@ function withThemeCookie(response: NextResponse, theme: string) {
 export async function POST(request: Request) {
   const session = await getSession();
   if (!session) {
-    const signIn = new URL("/sign-in", request.url);
+    const signIn = absoluteUrl("/sign-in", request);
     signIn.searchParams.set("next", "/settings");
     return NextResponse.redirect(signIn, 303);
   }
@@ -71,7 +72,7 @@ export async function POST(request: Request) {
   }
 
   const response = NextResponse.redirect(
-    new URL("/settings?saved=1", request.url),
+    absoluteUrl("/settings?saved=1", request),
     303,
   );
   return theme ? withThemeCookie(response, theme) : response;

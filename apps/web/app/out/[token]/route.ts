@@ -2,6 +2,7 @@ import { ebaySiteHost } from "@waitseebuy/domain";
 import { getAlertClick, getDb } from "@waitseebuy/db";
 import { epnConfigFromEnv, epnItemUrl, plainItemUrl } from "@waitseebuy/ebay";
 import { NextResponse } from "next/server";
+import { absoluteUrl } from "@/lib/absolute-url";
 import { clientMeta, persistUserEvent } from "@/lib/client-meta";
 import { getSession } from "@/lib/session";
 
@@ -12,7 +13,7 @@ export async function GET(
   const { token } = await params;
   const click = await getAlertClick(getDb(), token);
   if (!click) {
-    return NextResponse.redirect(new URL("/", request.url), 302);
+    return NextResponse.redirect(absoluteUrl("/", request), 302);
   }
 
   const session = await getSession();

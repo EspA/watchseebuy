@@ -1,6 +1,7 @@
 import { ebaySiteHost, parseEbaySite } from "@waitseebuy/domain";
 import { epnConfigFromEnv, epnItemUrl, plainItemUrl } from "@waitseebuy/ebay";
 import { NextResponse } from "next/server";
+import { absoluteUrl } from "@/lib/absolute-url";
 import { clientMeta, persistUserEvent } from "@/lib/client-meta";
 import { getSession } from "@/lib/session";
 
@@ -10,7 +11,7 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const itemId = url.searchParams.get("item")?.trim() ?? "";
   if (!ITEM_ID.test(itemId)) {
-    return NextResponse.redirect(new URL("/search", request.url), 302);
+    return NextResponse.redirect(absoluteUrl("/search", request), 302);
   }
 
   const site = parseEbaySite(url.searchParams.get("site") ?? undefined);
