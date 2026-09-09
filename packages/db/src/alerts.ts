@@ -216,7 +216,13 @@ export async function listUnsentMatchesForWatch(
     .from(matches)
     .innerJoin(listings, eq(matches.ebayItemId, listings.ebayItemId))
     .leftJoin(alerts, eq(alerts.matchId, matches.id))
-    .where(and(eq(matches.watchId, watchId), isNull(alerts.id)))
+    .where(
+      and(
+        eq(matches.watchId, watchId),
+        isNull(alerts.id),
+        isNull(matches.alertedAt),
+      ),
+    )
     .orderBy(matches.createdAt);
 
   return rows.map((row) => ({
@@ -260,6 +266,18 @@ export async function recordAlerts(
     })),
   );
   await db
+    .update(matches)
+    .set({ alertedAt: input.sentAt })
+    .where(
+      and(
+        inArray(
+          matches.id,
+          input.items.map((item) => item.matchId),
+        ),
+        isNull(matches.alertedAt),
+      ),
+    );
+  await db
     .update(watches)
     .set({ lastAlertedAt: input.sentAt })
     .where(eq(watches.id, input.watchId));
@@ -295,7 +313,13 @@ export async function listWatchIdsWithUnsentMatches(
     .select({ watchId: matches.watchId })
     .from(matches)
     .leftJoin(alerts, eq(alerts.matchId, matches.id))
-    .where(and(inArray(matches.watchId, watchIds), isNull(alerts.id)))
+    .where(
+      and(
+        inArray(matches.watchId, watchIds),
+        isNull(alerts.id),
+        isNull(matches.alertedAt),
+      ),
+    )
     .groupBy(matches.watchId);
   return new Set(rows.map((row) => row.watchId));
 }

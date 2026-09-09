@@ -65,6 +65,21 @@ export async function recordUserEvent(
     ip: input.ip ?? null,
     meta: input.meta ?? null,
   });
+
+  if (!input.userId) return;
+  if (input.kind === "search") {
+    await db
+      .update(user)
+      .set({ searchCount: sql`${user.searchCount} + 1` })
+      .where(eq(user.id, input.userId));
+    return;
+  }
+  if (input.kind === "buy_click") {
+    await db
+      .update(user)
+      .set({ buyClickCount: sql`${user.buyClickCount} + 1` })
+      .where(eq(user.id, input.userId));
+  }
 }
 
 export async function recordConsumerLogin(

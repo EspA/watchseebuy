@@ -45,6 +45,12 @@ export {
   type UserEventKind,
 } from "./telemetry";
 export {
+  maybeRunDailyPurge,
+  RETENTION,
+  type DailyPurgeResult,
+  type PurgeDeleted,
+} from "./purge";
+export {
   countUsers,
   ebayApiBreakdown,
   ebayApiStatusBreakdown,

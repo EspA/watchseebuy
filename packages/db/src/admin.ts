@@ -73,23 +73,6 @@ function asInt(value: unknown) {
 }
 
 export async function listAdminUsers(db: Database): Promise<AdminUserListRow[]> {
-  const eventCounts = db
-    .select({
-      userId: userEvents.userId,
-      searchCount:
-        sql<number>`count(*) filter (where ${userEvents.kind} = 'search')::int`.as(
-          "search_count",
-        ),
-      buyClickCount:
-        sql<number>`count(*) filter (where ${userEvents.kind} = 'buy_click')::int`.as(
-          "buy_click_count",
-        ),
-    })
-    .from(userEvents)
-    .where(sql`${userEvents.userId} is not null`)
-    .groupBy(userEvents.userId)
-    .as("event_counts");
-
   const watchCounts = db
     .select({
       userId: watches.userId,
@@ -112,12 +95,11 @@ export async function listAdminUsers(db: Database): Promise<AdminUserListRow[]> 
       loginCount: user.loginCount,
       createdAt: user.createdAt,
       watchesCount: watchCounts.watchesCount,
-      searchCount: eventCounts.searchCount,
-      buyClickCount: eventCounts.buyClickCount,
+      searchCount: user.searchCount,
+      buyClickCount: user.buyClickCount,
     })
     .from(user)
     .leftJoin(watchCounts, eq(watchCounts.userId, user.id))
-    .leftJoin(eventCounts, eq(eventCounts.userId, user.id))
     .orderBy(desc(user.createdAt));
 
   const accounts = await db

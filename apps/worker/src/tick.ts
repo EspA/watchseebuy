@@ -19,6 +19,7 @@ import {
   listUnsentMatchesForWatch,
   listWatchesForCoverage,
   markCoveragePolled,
+  maybeRunDailyPurge,
   recordAlerts,
   upsertListings,
   type CoverageToPoll,
@@ -54,7 +55,19 @@ export async function tick(now = new Date()) {
   }
 
   const sent = await sendDueAlerts(db, now);
-  return { polled, newMatches, ...sent };
+  let purge: Awaited<ReturnType<typeof maybeRunDailyPurge>> | {
+    ran: false;
+    error: string;
+  } = { ran: false };
+  try {
+    purge = await maybeRunDailyPurge(db, now);
+  } catch (error) {
+    purge = {
+      ran: false,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+  return { polled, newMatches, ...sent, purge };
 }
 
 async function pollCoverage(
