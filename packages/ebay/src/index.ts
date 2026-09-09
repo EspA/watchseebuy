@@ -23,6 +23,21 @@ export {
   type SearchResult,
 } from "./client";
 export {
+  authorizePartnerBrowse,
+  browseApiNameFromPath,
+  ebayBrowseError,
+  partnerBrowseOriginFromEnv,
+  partnerBrowsePath,
+  partnerBrowseStatusFromEnv,
+  partnerBrowseTokensFromEnv,
+  pickUpstreamBrowseHeaders,
+  rewriteBrowseHrefs,
+  PARTNER_BROWSE_PATH_PREFIX,
+  PARTNER_BROWSE_TOKEN_MIN_LENGTH,
+  type PartnerBrowseAuth,
+  type PartnerBrowseStatus,
+} from "./partner-browse";
+export {
   EPN_PROBE_HOST,
   epnConfigFromEnv,
   epnEnabledFromEnv,

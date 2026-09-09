@@ -11,6 +11,7 @@ import {
 } from "@waitseebuy/db";
 import {
   fetchApplicationToken,
+  forwardBrowseRequest,
   getItemsByRestId,
   getNotificationPublicKey,
   hostsForEnv,
@@ -18,6 +19,7 @@ import {
   searchItemSummaries,
   type EbayApiRecorder,
 } from "./browse";
+import { browseApiNameFromPath } from "./partner-browse";
 import {
   parseEbaySignatureHeader,
   verifyNotificationSignature,
@@ -209,6 +211,32 @@ export class EbayClient {
           : undefined) ?? byLegacyId.get(listing.ebayItemId);
       const merged = detail ? mergeHydratedListing(listing, detail) : listing;
       return applyListingIdentity(merged);
+    });
+  }
+
+  /**
+   * Official Browse request/response, using this app's OAuth token.
+   * Used by the partner proxy so The Timeless Vault can keep eBay's
+   * Browse contract while sharing WaitSeeBuy's quota.
+   */
+  async proxyBrowse(input: {
+    method: string;
+    pathname: string;
+    search: string;
+    headers: Headers;
+    body?: string | null;
+  }): Promise<{ status: number; body: string; headers: Headers }> {
+    const token = await this.token();
+    return forwardBrowseRequest({
+      hosts: hostsForEnv(this.env()),
+      token,
+      method: input.method,
+      pathname: input.pathname,
+      search: input.search,
+      headers: input.headers,
+      api: browseApiNameFromPath(input.pathname),
+      ...(input.body ? { body: input.body } : {}),
+      record: this.record,
     });
   }
 

@@ -476,6 +476,69 @@ type PublicKeyResponse = {
   key?: string;
 };
 
+const BROWSE_FORWARD_HEADER_NAMES = [
+  "x-ebay-c-marketplace-id",
+  "x-ebay-c-enduserctx",
+  "accept",
+  "accept-language",
+  "content-language",
+  "content-type",
+];
+
+/**
+ * Transparent Browse forward. Query string and JSON body stay as the
+ * caller sent them so a partner can keep the official eBay contract.
+ */
+export async function forwardBrowseRequest(input: {
+  hosts: BrowseHosts;
+  token: string;
+  method: string;
+  pathname: string;
+  search: string;
+  headers: Headers;
+  body?: string | null;
+  api: EbayApiCallEvent["api"];
+  record?: EbayApiRecorder;
+}): Promise<{ status: number; body: string; headers: Headers }> {
+  const url = new URL(`${input.pathname}${input.search}`, `${input.hosts.buy}/`);
+  const headers = new Headers();
+  headers.set("Authorization", `Bearer ${input.token}`);
+  for (const name of BROWSE_FORWARD_HEADER_NAMES) {
+    const value = input.headers.get(name);
+    if (value) headers.set(name, value);
+  }
+
+  const started = Date.now();
+  let httpStatus = 0;
+  try {
+    const res = await fetch(url, {
+      method: input.method,
+      cache: "no-store",
+      headers,
+      ...((input.method === "GET" || input.method === "HEAD" || !input.body)
+        ? {}
+        : { body: input.body }),
+    });
+    httpStatus = res.status;
+    const body = await res.text();
+    await noteCall(input.record, {
+      api: input.api,
+      ok: res.ok,
+      httpStatus,
+      durationMs: Date.now() - started,
+    });
+    return { status: res.status, body, headers: res.headers };
+  } catch (error) {
+    await noteCall(input.record, {
+      api: input.api,
+      ok: false,
+      httpStatus,
+      durationMs: Date.now() - started,
+    });
+    throw error;
+  }
+}
+
 export async function getNotificationPublicKey(input: {
   hosts: BrowseHosts;
   token: string;

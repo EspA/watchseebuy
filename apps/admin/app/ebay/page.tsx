@@ -5,7 +5,10 @@ import {
   getDb,
   listRecentEbayAccountDeletions,
 } from "@waitseebuy/db";
-import { notificationEndpointStatusFromEnv } from "@waitseebuy/ebay";
+import {
+  notificationEndpointStatusFromEnv,
+  partnerBrowseStatusFromEnv,
+} from "@waitseebuy/ebay";
 import { requireAdmin } from "@/lib/require-admin";
 import { formatDate } from "@/lib/format";
 
@@ -23,13 +26,16 @@ export default async function EbayStatsPage() {
     listRecentEbayAccountDeletions(db),
   ]);
   const deletionEndpoint = notificationEndpointStatusFromEnv();
+  const partnerBrowse = partnerBrowseStatusFromEnv();
 
   return (
     <main className="page">
       <h1>eBay API</h1>
       <p className="lede">
-        Calls through the shared client. Use these numbers for the Application
-        Growth Check.
+        Calls through the shared client, including the partner Browse proxy.
+        Use these numbers for the Application Growth Check. Source{" "}
+        <code>partner_browse</code> is The Timeless Vault; it shares this
+        app&apos;s eBay quota.
       </p>
       <div className="cards">
         <div className="stat">
@@ -58,6 +64,22 @@ export default async function EbayStatsPage() {
         </div>
       </div>
       <div className="panel">
+        <h2>Partner Browse proxy</h2>
+        <p className="muted">
+          The Timeless Vault can call official eBay Browse through this app at{" "}
+          <code>/buy/browse/v1/*</code> with{" "}
+          <code>Authorization: Bearer</code> matching{" "}
+          <code>PARTNER_BROWSE_TOKEN</code>. Unset the token to turn the
+          proxy off.
+        </p>
+        <dl className="dl">
+          <dt>Path</dt>
+          <dd>{partnerBrowse.publicPath}</dd>
+          <dt>Partner token</dt>
+          <dd>{partnerBrowse.tokenSet ? "Set" : "Missing (proxy off)"}</dd>
+        </dl>
+      </div>
+      <div className="panel" style={{ marginTop: 16 }}>
         <h2>Last 30 days by API and source</h2>
         {breakdown.length === 0 ? (
           <p className="muted">No eBay calls recorded yet.</p>

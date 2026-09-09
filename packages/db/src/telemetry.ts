@@ -8,7 +8,11 @@ export type EbayApiName =
   | "get_items"
   | "get_item"
   | "notification_public_key";
-export type EbayApiSource = "web_search" | "worker_poll" | "account_deletion";
+export type EbayApiSource =
+  | "web_search"
+  | "worker_poll"
+  | "account_deletion"
+  | "partner_browse";
 
 export type EmailKind = "alert" | "magic_link" | "password_reset" | "contact";
 export type EmailSendStatus = "delivered" | "failed" | "logged_only";

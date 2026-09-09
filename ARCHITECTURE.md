@@ -86,6 +86,8 @@ Cloud Scheduler ──► Cloud Run: worker
 
 Search in the browser hits eBay through **our** API so we attach EPN IDs, compute landed cost, and attach comps. The user never talks to eBay’s API directly. Search is **public** (rate-limited and cached). Auth is required only to persist a watch.
 
+**Partner Browse proxy.** `GET/POST /buy/browse/v1/*` on `web` is a token-gated pass-through of the official eBay Browse contract (same path, query, headers, and JSON). The only caller today is The Timeless Vault admin (`admin.thetimelessvault.com`). `Authorization: Bearer` must match `PARTNER_BROWSE_TOKEN` (Secret Manager, 32+ characters). WaitSeeBuy swaps in its own application token and records the call as source `partner_browse`. Browse `itemHref` / `href` / `next` URLs are rewritten onto `APP_URL` so follow-up getItem calls stay on this host; public `itemWebUrl` is not rewritten. These calls share the same eBay quota as search and the worker.
+
 ---
 
 ## The scale design to implement on day one
@@ -228,6 +230,7 @@ EPN software-application approval is a separate gate from developer API quota. F
 - No “eBay” or “Bay” in hostnames or brand
 - Least-privilege service accounts per Cloud Run service
 - **Marketplace user account deletion.** Production eBay keys require a public HTTPS endpoint eBay can challenge and then notify. `GET/POST /api/ebay/account-deletion` on `web`. GET answers the SHA-256 challenge (`challengeCode + verificationToken + exact endpoint URL`). POST verifies `X-EBAY-SIGNATURE` via Notification API `getPublicKey`, then strips that seller’s username from cached listing snapshots. Token in Secret Manager (`EBAY_NOTIFICATION_VERIFICATION_TOKEN`); public URL in `EBAY_NOTIFICATION_ENDPOINT` or derived from `APP_URL`.
+- **Partner Browse proxy.** `PARTNER_BROWSE_TOKEN` in Secret Manager. Unset disables the endpoint (503). Admin → eBay API shows `partner_browse` separately from `web_search` / `worker_poll` so the Application Growth Check can tell first-party traffic from The Timeless Vault.
 
 ---
 
