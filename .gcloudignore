@@ -1,0 +1,13 @@
+.git
+.cursor
+.turbo
+.next
+node_modules
+**/.env
+**/.env.*
+!.env.example
+.gcp-secrets
+*.log
+.DS_Store
+*.tsbuildinfo
+apps/coming-soon

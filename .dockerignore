@@ -1,0 +1,15 @@
+.git
+.cursor
+.turbo
+.next
+**/.next
+node_modules
+**/node_modules
+**/*.tsbuildinfo
+**/.env
+**/.env.*
+!.env.example
+.gcp-secrets
+apps/coming-soon
+*.log
+.DS_Store

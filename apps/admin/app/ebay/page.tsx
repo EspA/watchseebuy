@@ -1,4 +1,9 @@
-import { ebayApiBreakdown, ebayApiWindowStats, getDb } from "@waitseebuy/db";
+import {
+  ebayApiBreakdown,
+  ebayApiStatusBreakdown,
+  ebayApiWindowStats,
+  getDb,
+} from "@waitseebuy/db";
 import { requireAdmin } from "@/lib/require-admin";
 
 export const dynamic = "force-dynamic";
@@ -6,11 +11,12 @@ export const dynamic = "force-dynamic";
 export default async function EbayStatsPage() {
   await requireAdmin();
   const db = getDb();
-  const [today, week, month, breakdown] = await Promise.all([
+  const [today, week, month, breakdown, failures] = await Promise.all([
     ebayApiWindowStats(db, 1),
     ebayApiWindowStats(db, 7),
     ebayApiWindowStats(db, 30),
     ebayApiBreakdown(db, 30),
+    ebayApiStatusBreakdown(db, 30),
   ]);
 
   return (
@@ -71,6 +77,31 @@ export default async function EbayStatsPage() {
                   <td>{row.success}</td>
                   <td>{row.failure}</td>
                   <td>{row.rateLimited}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+      <div className="panel" style={{ marginTop: 16 }}>
+        <h2>Failed calls by HTTP status (30d)</h2>
+        {failures.length === 0 ? (
+          <p className="muted">No failed calls in this window.</p>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>API</th>
+                <th>HTTP status</th>
+                <th>Count</th>
+              </tr>
+            </thead>
+            <tbody>
+              {failures.map((row) => (
+                <tr key={`${row.api}:${row.httpStatus ?? "none"}`}>
+                  <td>{row.api}</td>
+                  <td>{row.httpStatus ?? "—"}</td>
+                  <td>{row.total}</td>
                 </tr>
               ))}
             </tbody>

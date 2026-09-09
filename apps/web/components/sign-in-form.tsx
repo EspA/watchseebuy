@@ -103,9 +103,8 @@ export function SignInForm({
       {sent ? (
         <div className="stack">
           <p>
-            No inbox yet in local — open the sign-in link from the web server
-            log
-            {devLink ? ", or use the link below." : "."}
+            An email has been sent to your inbox, open the sign-in link from
+            there.
           </p>
           {devLink ? (
             <p>

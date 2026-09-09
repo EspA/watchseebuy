@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
     "@waitseebuy/db",
     "@waitseebuy/notify",
   ],
-  serverExternalPackages: ["drizzle-orm"],
+  serverExternalPackages: ["drizzle-orm", "postgres"],
   webpack: (config) => {
     config.watchOptions = {
       ignored: ["**/node_modules/**", "**/.git/**", "**/.next/**"],

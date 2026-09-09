@@ -140,8 +140,9 @@ export class EbayClient {
   }
 
   /**
-   * One Browse getItems call per 20 listings. Call only after local filters
-   * so search itself stays a single item_summary request.
+   * Public getItem per listing (PRODUCT field group). Call only after local
+   * filters so search itself stays a single item_summary request. Bulk
+   * getItems is Limited Release and is not used.
    */
   async hydrateProductSignals(
     listings: CandidateListing[],

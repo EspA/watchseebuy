@@ -11,4 +11,5 @@ dist/
 *.log
 .cursor/*.data.json
 *.tsbuildinfo
+.gcp-secrets/
 
