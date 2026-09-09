@@ -213,7 +213,7 @@ function mergeAspects(item: BrowseItem): TypedNameValue[] {
 }
 
 export type EbayApiCallEvent = {
-  api: "oauth" | "browse_search" | "get_items";
+  api: "oauth" | "browse_search" | "get_items" | "get_item";
   ok: boolean;
   httpStatus: number;
   durationMs: number;
@@ -349,8 +349,13 @@ export function browseFilter(input: BrowseFilterInput): string | undefined {
   return parts.length > 0 ? parts.join(",") : undefined;
 }
 
-const GET_ITEMS_CHUNK = 20;
+const GET_ITEM_CONCURRENCY = 5;
 
+/**
+ * Public getItem (one REST id). Bulk getItems (/item/?item_ids=) is a
+ * Limited Release partner API and rejects ordinary production keys; it also
+ * does not accept fieldgroups=PRODUCT.
+ */
 export async function getItemsByRestId(input: {
   hosts: BrowseHosts;
   token: string;
@@ -360,53 +365,66 @@ export async function getItemsByRestId(input: {
 }): Promise<CandidateListing[]> {
   const unique = [...new Set(input.itemIds.filter(Boolean))];
   const listings: CandidateListing[] = [];
-  for (let i = 0; i < unique.length; i += GET_ITEMS_CHUNK) {
-    const chunk = unique.slice(i, i + GET_ITEMS_CHUNK);
-    const url = new URL(`${input.hosts.buy}/buy/browse/v1/item/`);
-    url.searchParams.set("item_ids", chunk.join(","));
-    url.searchParams.set("fieldgroups", "PRODUCT");
-    const started = Date.now();
-    let httpStatus = 0;
-    try {
-      const res = await fetch(url, {
-        cache: "no-store",
-        headers: {
-          Authorization: `Bearer ${input.token}`,
-          "X-EBAY-C-MARKETPLACE-ID": input.marketplaceId,
-        },
-      });
-      httpStatus = res.status;
-      const body = (await res.json()) as ItemsResponse;
-      await noteCall(input.record, {
-        api: "get_items",
-        ok: res.ok,
-        httpStatus,
-        durationMs: Date.now() - started,
-      });
-      if (!res.ok) {
-        throw new Error(
-          body.errors?.[0]?.longMessage ??
-            body.errors?.[0]?.message ??
-            `eBay getItems HTTP ${res.status}`,
-        );
-      }
-      for (const item of body.items ?? []) {
-        const listing = mapBrowseItem(item);
-        if (listing) listings.push(listing);
-      }
-    } catch (error) {
-      if (httpStatus === 0) {
-        await noteCall(input.record, {
-          api: "get_items",
-          ok: false,
-          httpStatus,
-          durationMs: Date.now() - started,
-        });
-      }
-      throw error;
+  for (let i = 0; i < unique.length; i += GET_ITEM_CONCURRENCY) {
+    const chunk = unique.slice(i, i + GET_ITEM_CONCURRENCY);
+    const found = await Promise.all(
+      chunk.map((itemId) =>
+        getItemByRestId({
+          hosts: input.hosts,
+          token: input.token,
+          marketplaceId: input.marketplaceId,
+          itemId,
+          ...(input.record ? { record: input.record } : {}),
+        }),
+      ),
+    );
+    for (const listing of found) {
+      if (listing) listings.push(listing);
     }
   }
   return listings;
+}
+
+export async function getItemByRestId(input: {
+  hosts: BrowseHosts;
+  token: string;
+  marketplaceId: string;
+  itemId: string;
+  record?: EbayApiRecorder;
+}): Promise<CandidateListing | null> {
+  const url = new URL(
+    `${input.hosts.buy}/buy/browse/v1/item/${encodeURIComponent(input.itemId)}`,
+  );
+  url.searchParams.set("fieldgroups", "PRODUCT");
+  const started = Date.now();
+  let httpStatus = 0;
+  try {
+    const res = await fetch(url, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${input.token}`,
+        "X-EBAY-C-MARKETPLACE-ID": input.marketplaceId,
+      },
+    });
+    httpStatus = res.status;
+    const body = (await res.json()) as BrowseItem & ItemsResponse;
+    await noteCall(input.record, {
+      api: "get_item",
+      ok: res.ok,
+      httpStatus,
+      durationMs: Date.now() - started,
+    });
+    if (!res.ok) return null;
+    return mapBrowseItem(body);
+  } catch {
+    await noteCall(input.record, {
+      api: "get_item",
+      ok: false,
+      httpStatus,
+      durationMs: Date.now() - started,
+    });
+    return null;
+  }
 }
 
 export function mergeHydratedListing(

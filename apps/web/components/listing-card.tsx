@@ -3,7 +3,6 @@ import {
   describePriceScore,
   describeSellerFeedback,
   ebaySiteCurrency,
-  ebaySiteHost,
   formatMoney,
   landedCostCents,
   sellerConfidence,
@@ -11,7 +10,6 @@ import {
 } from "@waitseebuy/domain";
 import type { CandidateListing, PriceScore } from "@waitseebuy/domain";
 import { ListingDescription } from "@/components/listing-description";
-import { epnEnabledFromEnv, plainItemUrl } from "@waitseebuy/ebay";
 
 function listingMeta(listing: CandidateListing): string {
   const bits: string[] = [];
@@ -28,7 +26,6 @@ export function ListingCard({
   site?: string;
 }) {
   const currency = ebaySiteCurrency(site);
-  const host = ebaySiteHost(site);
   const landed = landedCostCents({
     itemCents: listing.itemCents,
     shippingCents: listing.shippingCents,
@@ -36,8 +33,6 @@ export function ListingCard({
   const buyParams = new URLSearchParams({ item: listing.ebayItemId });
   if (site) buyParams.set("site", site);
   const buyHref = `/go/buy?${buyParams.toString()}`;
-  const fallback = listing.webUrl ?? plainItemUrl(listing.ebayItemId, host);
-  const showDirect = epnEnabledFromEnv();
   const money = (cents: number) => formatMoney(cents, currency);
   const location = describeListingLocation(listing.itemLocationCountry);
   const breakdown =
@@ -89,16 +84,6 @@ export function ListingCard({
               >
                 Buy on eBay
               </a>
-              {showDirect ? (
-                <a
-                  className="btn secondary"
-                  href={fallback}
-                  rel="nofollow"
-                  target="_blank"
-                >
-                  Direct link
-                </a>
-              ) : null}
             </div>
           </div>
         </div>

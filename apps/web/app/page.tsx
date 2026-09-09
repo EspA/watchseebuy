@@ -6,11 +6,11 @@ import { EbaySiteSwitch } from "@/components/ebay-site-switch";
 import { SiteFooter } from "@/components/site-footer";
 
 export const metadata: Metadata = {
-  title: "WaitSeeBuy — Live soon",
+  title: "WaitSeeBuy",
   description:
     "The PSA 10. The factory-sealed set. The carded figure. We watch with you and tell you when the price to your door is worth buying.",
   openGraph: {
-    title: "WaitSeeBuy — Live soon",
+    title: "WaitSeeBuy",
     description:
       "The PSA 10. The factory-sealed set. The carded figure. We watch with you and tell you when the price to your door is worth buying.",
     url: "https://waitseebuy.com",
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary",
-    title: "WaitSeeBuy — Live soon",
+    title: "WaitSeeBuy",
     description:
       "The PSA 10. The factory-sealed set. The carded figure. We watch with you and tell you when the price to your door is worth buying.",
   },

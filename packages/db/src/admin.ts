@@ -1,4 +1,4 @@
-import { desc, eq, gte, sql } from "drizzle-orm";
+import { and, desc, eq, gte, sql } from "drizzle-orm";
 import type { Database } from "./client";
 import { account, ebayApiCalls, emailSends, user, userEvents, watches } from "./schema";
 
@@ -45,6 +45,12 @@ export type EbayApiBreakdownRow = {
   success: number;
   failure: number;
   rateLimited: number;
+};
+
+export type EbayApiStatusRow = {
+  api: string;
+  httpStatus: number | null;
+  total: number;
 };
 
 export type EmailWindowStats = {
@@ -230,6 +236,33 @@ export async function ebayApiBreakdown(
     success: asInt(row.success),
     failure: asInt(row.failure),
     rateLimited: asInt(row.rateLimited),
+  }));
+}
+
+export async function ebayApiStatusBreakdown(
+  db: Database,
+  days: number,
+): Promise<EbayApiStatusRow[]> {
+  const rows = await db
+    .select({
+      api: ebayApiCalls.api,
+      httpStatus: ebayApiCalls.httpStatus,
+      total: sql<number>`count(*)::int`,
+    })
+    .from(ebayApiCalls)
+    .where(
+      and(
+        gte(ebayApiCalls.calledAt, windowStart(days)),
+        sql`not ${ebayApiCalls.ok}`,
+      ),
+    )
+    .groupBy(ebayApiCalls.api, ebayApiCalls.httpStatus)
+    .orderBy(ebayApiCalls.api, ebayApiCalls.httpStatus);
+
+  return rows.map((row) => ({
+    api: row.api,
+    httpStatus: row.httpStatus,
+    total: asInt(row.total),
   }));
 }
 

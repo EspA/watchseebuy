@@ -2,7 +2,7 @@ import { eq, sql } from "drizzle-orm";
 import type { Database } from "./client";
 import { ebayApiCalls, emailSends, user, userEvents } from "./schema";
 
-export type EbayApiName = "oauth" | "browse_search" | "get_items";
+export type EbayApiName = "oauth" | "browse_search" | "get_items" | "get_item";
 export type EbayApiSource = "web_search" | "worker_poll";
 
 export type EmailKind = "alert" | "magic_link" | "password_reset" | "contact";

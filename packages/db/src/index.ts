@@ -47,6 +47,7 @@ export {
 export {
   countUsers,
   ebayApiBreakdown,
+  ebayApiStatusBreakdown,
   ebayApiWindowStats,
   emailBreakdown,
   emailWindowStats,
@@ -55,6 +56,7 @@ export {
   type AdminUserDetail,
   type AdminUserListRow,
   type EbayApiBreakdownRow,
+  type EbayApiStatusRow,
   type EbayApiWindowStats,
   type EmailBreakdownRow,
   type EmailWindowStats,

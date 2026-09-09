@@ -1,0 +1,21 @@
+substitutions:
+  _DOCKERFILE: apps/web/Dockerfile
+  _IMAGE: us-east1-docker.pkg.dev/waitseebuy/cloud-run-source-deploy/web
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - ${_DOCKERFILE}
+      - -t
+      - ${_IMAGE}
+      - .
+
+images:
+  - ${_IMAGE}
+
+timeout: 1800s
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: E2_HIGHCPU_8

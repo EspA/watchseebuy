@@ -126,9 +126,8 @@ export function TermsOfServiceContent() {
       </p>
       <p>
         An ad blocker may break an affiliate redirect. If we detect that, we
-        may show a banner and offer a direct listing URL so you can still open
-        the item. We do not hide affiliate links or invent workarounds to evade
-        filters.
+        may show a banner. Buy still opens the listing. We do not hide
+        affiliate links or invent workarounds to evade filters.
       </p>
 
       <h2>Third-party services and links</h2>

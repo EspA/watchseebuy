@@ -37,8 +37,7 @@ export function AdblockBanner() {
     <div className="banner" role="status">
       <span>
         An ad blocker may strip the tracking on Buy. The listing should still
-        open; use the direct eBay link if you want a clean URL. Those links
-        fund the free product.
+        open. Those links fund the free product.
       </span>
       <button
         type="button"

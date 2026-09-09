@@ -1,4 +1,3 @@
-import { DEFAULT_ADMIN_EMAIL } from "@waitseebuy/domain";
 import { redirect } from "next/navigation";
 import { GoogleSignIn } from "@/components/google-sign-in";
 import { getSession } from "@/lib/session";
@@ -19,10 +18,6 @@ export default async function SignInPage({
     <main className="page">
       <div className="panel sign-in-card">
         <h1>Admin sign-in</h1>
-        <p className="lede">
-          Google only. The allowlisted mailbox is{" "}
-          {process.env.ADMIN_ALLOWED_EMAIL ?? DEFAULT_ADMIN_EMAIL}.
-        </p>
         {error === "forbidden" ? (
           <p className="error">That Google account is not allowed here.</p>
         ) : null}
