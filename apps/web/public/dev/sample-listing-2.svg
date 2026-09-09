@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="224" height="224" viewBox="0 0 224 224">
+  <rect width="224" height="224" rx="12" fill="#e7e0d4"/>
+  <rect x="36" y="24" width="152" height="176" rx="10" fill="#7c2d12"/>
+  <rect x="48" y="36" width="128" height="88" rx="6" fill="#fff7ed"/>
+  <text x="112" y="88" text-anchor="middle" font-family="Georgia, serif" font-size="28" fill="#7c2d12">10</text>
+  <text x="112" y="150" text-anchor="middle" font-family="Georgia, serif" font-size="16" fill="#fffdf8">Charizard</text>
+  <text x="112" y="172" text-anchor="middle" font-family="ui-sans-serif, sans-serif" font-size="11" fill="#fed7aa">Holo · Unlimited</text>
+</svg>

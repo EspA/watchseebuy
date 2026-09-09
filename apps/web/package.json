@@ -12,7 +12,9 @@
     "@waitseebuy/db": "*",
     "@waitseebuy/domain": "*",
     "@waitseebuy/ebay": "*",
+    "@waitseebuy/notify": "*",
     "better-auth": "^1.3.7",
+    "drizzle-orm": "^0.45.2",
     "next": "^15.5.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"

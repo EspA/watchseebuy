@@ -36,9 +36,9 @@ export function AdblockBanner() {
   return (
     <div className="banner" role="status">
       <span>
-        An ad blocker may stop eBay listing links from opening. If Buy fails,
-        allow this site or use the direct eBay link. Those links fund the free
-        product.
+        An ad blocker may strip the tracking on Buy. The listing should still
+        open; use the direct eBay link if you want a clean URL. Those links
+        fund the free product.
       </span>
       <button
         type="button"

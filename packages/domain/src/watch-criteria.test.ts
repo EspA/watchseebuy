@@ -4,6 +4,7 @@ import {
   parseBrickCategory,
   parseBrickStatus,
   parseBrickType,
+  SEALED_EXCLUDE_WORDS,
   SET_EXCLUDE_WORDS,
 } from "./brick-filters.ts";
 import {
@@ -38,14 +39,17 @@ import {
 } from "./ebay-sites.ts";
 import {
   applyWatchOverrides,
+  asWatchCriteria,
   browseFilterParts,
+  describeListingLocation,
   describeWatch,
   ebaySearchQuery,
   excludeWordsField,
   listingMatchesCondition,
+  listingMatchesItemLocation,
   listingMatchesListingType,
-  listingPassesExcludeKeywords,
   mergeExcludeKeywords,
+  UNOFFICIAL_EXCLUDE_WORDS,
   parseAvailableTo,
   parseConditionFilter,
   parseExcludeWords,
@@ -55,6 +59,12 @@ import {
   toCoverageQuery,
   userExcludeWords,
 } from "./watch-criteria.ts";
+
+function sortedUserExcludes(...extra: string[]) {
+  return [...UNOFFICIAL_EXCLUDE_WORDS, ...extra].sort((a, b) =>
+    a.localeCompare(b),
+  );
+}
 
 
 test("different landed maxes share one coverage query", () => {
@@ -125,6 +135,26 @@ test("item location and available-to change coverage, confidence does not", () =
   assert.match(describeWatch(priceScore), /price score 8\+/);
 });
 
+test("listing location copy uses the country name", () => {
+  assert.equal(describeListingLocation("US"), "Located in United States");
+  assert.equal(describeListingLocation("jp"), "Located in Japan");
+  assert.equal(describeListingLocation("GB"), "Located in United Kingdom");
+  assert.equal(describeListingLocation(""), undefined);
+  assert.equal(describeListingLocation("USA"), undefined);
+});
+
+test("stored watches without excludeKeywords still poll and describe", () => {
+  const criteria = asWatchCriteria({ query: "charizard psa 10" });
+  assert.ok(criteria);
+  assert.deepEqual(criteria.excludeKeywords, []);
+  assert.equal(criteria.condition, "any");
+  assert.equal(criteria.listingType, "all");
+  assert.equal(criteria.ebaySite, DEFAULT_EBAY_SITE);
+  assert.ok(toCoverageQuery(criteria).key);
+  assert.match(describeWatch(criteria), /charizard psa 10/i);
+  assert.equal(userExcludeWords(undefined).length, 0);
+});
+
 test("listing and location filters parse eBay values", () => {
   assert.equal(parseListingTypeFilter("bin"), "bin");
   assert.equal(parseListingTypeFilter("best_offer"), "best_offer");
@@ -156,7 +186,32 @@ test("browse filter uses region and auction buying option", () => {
       listingType: "auction",
       itemLocation: "region:NORTH_AMERICA",
     }),
-    ["buyingOptions:{AUCTION}", "itemLocationRegion:{NORTH_AMERICA}"],
+    ["buyingOptions:{AUCTION}", "itemLocationCountry:{US|CA|MX}"],
+  );
+});
+
+test("item location matcher keeps North America and drops Germany", () => {
+  assert.equal(
+    listingMatchesItemLocation(
+      { itemLocationCountry: "US" },
+      "region:NORTH_AMERICA",
+    ),
+    true,
+  );
+  assert.equal(
+    listingMatchesItemLocation(
+      { itemLocationCountry: "DE" },
+      "region:NORTH_AMERICA",
+    ),
+    false,
+  );
+  assert.equal(
+    listingMatchesItemLocation({ itemLocationCountry: "DE" }, "country:DE"),
+    true,
+  );
+  assert.equal(
+    listingMatchesItemLocation({ itemLocationCountry: "DE" }, "any"),
+    true,
   );
 });
 
@@ -189,20 +244,28 @@ test("user exclude words parse, cover, and hide from the field defaults", () => 
   ]);
   assert.deepEqual(parseExcludeWords("lot broken"), ["lot", "broken"]);
   const base = parseSearchIntent("Lego Star Wars");
-  assert.equal(excludeWordsField(base.excludeKeywords), "");
+  assert.equal(base.excludeUnofficial, true);
+  assert.equal(
+    excludeWordsField(base.excludeKeywords),
+    UNOFFICIAL_EXCLUDE_WORDS.join(", "),
+  );
   const withUser = applyWatchOverrides(base, {
     excludeKeywords: mergeExcludeKeywords(["lot"]),
   });
-  assert.equal(excludeWordsField(withUser.excludeKeywords), "lot");
+  assert.deepEqual(
+    userExcludeWords(withUser.excludeKeywords).sort((a, b) =>
+      a.localeCompare(b),
+    ),
+    sortedUserExcludes("lot"),
+  );
   assert.notEqual(toCoverageQuery(withUser).key, toCoverageQuery(base).key);
-  assert.equal(
-    listingPassesExcludeKeywords({ title: "Lego Star Wars lot" }, withUser.excludeKeywords),
-    false,
-  );
-  assert.equal(
-    listingPassesExcludeKeywords({ title: "Lego Star Wars UCS" }, withUser.excludeKeywords),
-    true,
-  );
+  assert.ok(toCoverageQuery(withUser).excludeKeywords?.includes("lot"));
+  assert.ok(toCoverageQuery(withUser).excludeKeywords?.includes("moc"));
+  const unofficialOff = applyWatchOverrides(withUser, {
+    excludeUnofficial: false,
+  });
+  assert.equal(unofficialOff.excludeUnofficial, false);
+  assert.deepEqual(userExcludeWords(unofficialOff.excludeKeywords), ["lot"]);
   assert.equal(ebaySearchQuery("lego star wars", ["lot"]), "lego star wars -lot");
 });
 
@@ -427,7 +490,7 @@ test("building bricks type and status inject keywords; Set excludes instead", ()
     userExcludeWords(setWatch.excludeKeywords).sort((a, b) =>
       a.localeCompare(b),
     ),
-    [...SET_EXCLUDE_WORDS, "lot"].sort((a, b) => a.localeCompare(b)),
+    sortedUserExcludes(...SET_EXCLUDE_WORDS, "lot"),
   );
   const setCoverage = toCoverageQuery(setWatch);
   assert.equal(setCoverage.keywords, "lego star wars");
@@ -438,16 +501,54 @@ test("building bricks type and status inject keywords; Set excludes instead", ()
   assert.ok(setCoverage.excludeKeywords?.includes("panel"));
   assert.ok(setCoverage.excludeKeywords?.includes("tile"));
   assert.ok(setCoverage.excludeKeywords?.includes("slope"));
+  assert.ok(setCoverage.excludeKeywords?.includes("case"));
+  assert.ok(setCoverage.excludeKeywords?.includes("display"));
+  assert.ok(setCoverage.excludeKeywords?.includes("sticker"));
+  assert.ok(setCoverage.excludeKeywords?.includes("incomplete"));
+  assert.ok(setCoverage.excludeKeywords?.includes("led"));
+  assert.ok(setCoverage.excludeKeywords?.includes("protector"));
   assert.match(describeWatch(setWatch), /Set/);
   assert.match(describeWatch(setWatch), /excluding/);
 
   const minifig = applyWatchOverrides(base, { brickType: "minifigure" });
   assert.equal(toCoverageQuery(minifig).keywords, "lego star wars minifigure");
-  assert.deepEqual(userExcludeWords(minifig.excludeKeywords), []);
+  assert.deepEqual(
+    userExcludeWords(minifig.excludeKeywords).sort((a, b) =>
+      a.localeCompare(b),
+    ),
+    sortedUserExcludes(),
+  );
   assert.match(describeWatch(minifig), /Minifigure/);
 
   const cleared = applyWatchOverrides(setWatch, { clearBrickType: true });
-  assert.deepEqual(userExcludeWords(cleared.excludeKeywords), ["lot"]);
+  assert.deepEqual(
+    userExcludeWords(cleared.excludeKeywords).sort((a, b) =>
+      a.localeCompare(b),
+    ),
+    sortedUserExcludes("lot"),
+  );
+
+  const sealed = applyWatchOverrides(base, {
+    brickStatus: "factory-sealed",
+    excludeKeywords: mergeExcludeKeywords(["lot"]),
+  });
+  assert.deepEqual(
+    userExcludeWords(sealed.excludeKeywords).sort((a, b) =>
+      a.localeCompare(b),
+    ),
+    sortedUserExcludes(...SEALED_EXCLUDE_WORDS, "lot"),
+  );
+  const sealedCoverage = toCoverageQuery(sealed);
+  assert.equal(sealedCoverage.keywords, "lego star wars sealed");
+  assert.ok(sealedCoverage.excludeKeywords?.includes("incomplete"));
+  assert.ok(sealedCoverage.excludeKeywords?.includes("missing"));
+  const sealedCleared = applyWatchOverrides(sealed, { clearBrickStatus: true });
+  assert.deepEqual(
+    userExcludeWords(sealedCleared.excludeKeywords).sort((a, b) =>
+      a.localeCompare(b),
+    ),
+    sortedUserExcludes("lot"),
+  );
 });
 
 test("building toys category is a Browse category_ids, not a keyword", () => {
@@ -567,7 +668,12 @@ test("figure packaging, completeness, and punch inject keywords", () => {
   });
   assert.equal(loose.figurePunch, undefined);
   assert.equal(toCoverageQuery(loose).keywords, "kenner luke loose incomplete");
-  assert.deepEqual(userExcludeWords(loose.excludeKeywords), []);
+  assert.deepEqual(
+    userExcludeWords(loose.excludeKeywords).sort((a, b) =>
+      a.localeCompare(b),
+    ),
+    sortedUserExcludes(),
+  );
   assert.match(describeWatch(loose), /Loose/);
   assert.match(describeWatch(loose), /Incomplete/);
 });
@@ -654,7 +760,7 @@ test("hot wheels packaging injects keywords; Carded excludes uncarded", () => {
     userExcludeWords(carded.excludeKeywords).sort((a, b) =>
       a.localeCompare(b),
     ),
-    [...CARDED_EXCLUDE_WORDS, "lot"].sort((a, b) => a.localeCompare(b)),
+    sortedUserExcludes(...CARDED_EXCLUDE_WORDS, "lot"),
   );
   assert.equal(toCoverageQuery(carded).keywords, "hot wheels bone shaker carded");
   assert.ok(toCoverageQuery(carded).excludeKeywords?.includes("uncarded"));
@@ -662,11 +768,21 @@ test("hot wheels packaging injects keywords; Carded excludes uncarded", () => {
 
   const loose = applyWatchOverrides(base, { wheelsPackaging: "loose" });
   assert.equal(toCoverageQuery(loose).keywords, "hot wheels bone shaker loose");
-  assert.deepEqual(userExcludeWords(loose.excludeKeywords), []);
+  assert.deepEqual(
+    userExcludeWords(loose.excludeKeywords).sort((a, b) =>
+      a.localeCompare(b),
+    ),
+    sortedUserExcludes(),
+  );
   assert.match(describeWatch(loose), /Loose/);
 
   const cleared = applyWatchOverrides(carded, { clearWheelsPackaging: true });
-  assert.deepEqual(userExcludeWords(cleared.excludeKeywords), ["lot"]);
+  assert.deepEqual(
+    userExcludeWords(cleared.excludeKeywords).sort((a, b) =>
+      a.localeCompare(b),
+    ),
+    sortedUserExcludes("lot"),
+  );
 });
 
 test("graded condition stays on the coverage query", () => {

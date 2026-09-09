@@ -1,5 +1,6 @@
 import {
   describeWatch,
+  FREE_WATCH_LIMIT,
   parseWatchFrequency,
   type WatchCriteria,
 } from "@waitseebuy/domain";
@@ -34,7 +35,7 @@ export default async function WatchesPage({
     <main className="page">
       {saved ? (
         <p className="banner">
-          Watch saved. Alerts come next — quiet, and only when it is a deal.
+          Watch saved. Alerts come on the schedule you pick.
         </p>
       ) : null}
 
@@ -47,7 +48,13 @@ export default async function WatchesPage({
           </p>
         </div>
       ) : (
-        <ul className="watch-list">
+        <>
+          <p className="muted watch-count">
+            {items.length >= FREE_WATCH_LIMIT
+              ? `${items.length} of ${FREE_WATCH_LIMIT} watches. Stop one to add another.`
+              : `${items.length} of ${FREE_WATCH_LIMIT} watches.`}
+          </p>
+          <ul className="watch-list">
           {items.map((watch) => {
             const criteria = asCriteria(watch.criteria);
             const href = searchHrefForWatch({
@@ -57,12 +64,17 @@ export default async function WatchesPage({
             });
             return (
               <li className="panel watch-card" key={watch.id}>
-                <h2>
-                  <Link href={href}>{watch.label}</Link>
-                </h2>
-                <p className="muted">
-                  {criteria ? describeWatch(criteria) : watch.coverageKeywords}
-                </p>
+                <div className="watch-card-top">
+                  <h2>
+                    <Link href={href}>{watch.label}</Link>
+                  </h2>
+                  <div className="watch-actions">
+                    <Link className="btn" href={href}>
+                      Open search
+                    </Link>
+                    <DeleteWatchForm watchId={watch.id} />
+                  </div>
+                </div>
                 <WatchSettingsForm
                   watchId={watch.id}
                   frequency={parseWatchFrequency(watch.alertFrequency)}
@@ -70,16 +82,19 @@ export default async function WatchesPage({
                     ? { maxLandedCents: criteria.maxLandedCents }
                     : {})}
                 />
-                <div className="watch-actions">
-                  <Link className="btn secondary" href={href}>
-                    Open search
-                  </Link>
-                  <DeleteWatchForm watchId={watch.id} />
-                </div>
+                <details className="watch-criteria">
+                  <summary>Criteria</summary>
+                  <p className="muted">
+                    {criteria
+                      ? describeWatch(criteria)
+                      : watch.coverageKeywords}
+                  </p>
+                </details>
               </li>
             );
           })}
         </ul>
+        </>
       )}
     </main>
   );

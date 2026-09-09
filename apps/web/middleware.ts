@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   if (process.env.COMING_SOON === "1") {
     const { pathname } = request.nextUrl;
-    if (pathname !== "/") {
+    if (pathname !== "/" && !pathname.startsWith("/out/")) {
       return NextResponse.redirect(new URL("/", request.url));
     }
     return NextResponse.next();

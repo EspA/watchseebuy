@@ -5,21 +5,27 @@ import {
   excludeWordsField,
   listingMatchesCondition,
   listingMatchesConfidence,
+  listingMatchesItemLocation,
   listingMatchesListingType,
   listingMatchesPriceScore,
-  listingPassesExcludeKeywords,
+  suggestFilterGroup,
   toCoverageQuery,
   withinLandedRange,
+  atWatchLimit,
+  FREE_WATCH_LIMIT,
 } from "@waitseebuy/domain";
 import { createEbayClientFromEnv } from "@waitseebuy/ebay";
+import Link from "next/link";
 import { EbaySiteSelect } from "@/components/ebay-site-select";
 import { ExcludeWords } from "@/components/exclude-words";
 import { ListingCard } from "@/components/listing-card";
 import { SaveWatchForm } from "@/components/save-watch-form";
 import { SearchSort } from "@/components/search-sort";
-import { getDb, getUserSettings } from "@waitseebuy/db";
+import { getDb, getUserSettings, countWatchesForUser } from "@waitseebuy/db";
+import { headers } from "next/headers";
+import { clientMeta, persistUserEvent } from "@/lib/client-meta";
 import { intentFromSearchQuery, searchBarQuery } from "@/lib/search-params";
-import { priceSortFromQuery } from "@/lib/search-sort";
+import { compareSearchListings, searchSortFromQuery } from "@/lib/search-sort";
 import { getSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -54,6 +60,7 @@ export default async function SearchPage({
     cardGame?: string;
     cardNoReprints?: string;
     cardNoProxy?: string;
+    unofficial?: string;
     figureCategory?: string;
     figureScale?: string;
     figurePackaging?: string;
@@ -66,16 +73,22 @@ export default async function SearchPage({
     wheelsScale?: string;
     wheelsPackaging?: string;
     site?: string;
+    error?: string;
   }>;
 }) {
   noStore();
   const query = await searchParams;
   const q = query.q ?? "";
-  const sort = priceSortFromQuery(query.sort);
+  const sort = searchSortFromQuery(query.sort);
   const session = await getSession();
   const settings = session
     ? await getUserSettings(getDb(), session.user.id)
     : null;
+  const watchCount = session
+    ? await countWatchesForUser(getDb(), session.user.id)
+    : 0;
+  const watchLimitReached =
+    Boolean(session) && !query.watch && atWatchLimit(watchCount);
   const zip =
     query.zip !== undefined ? query.zip : (settings?.shipToPostal ?? undefined);
   const intent = intentFromSearchQuery({
@@ -108,6 +121,7 @@ export default async function SearchPage({
     ...(query.cardNoProxy !== undefined
       ? { cardNoProxy: query.cardNoProxy }
       : {}),
+    ...(query.unofficial !== undefined ? { unofficial: query.unofficial } : {}),
     ...(query.figureCategory !== undefined
       ? { figureCategory: query.figureCategory }
       : {}),
@@ -134,7 +148,19 @@ export default async function SearchPage({
     ...(query.site !== undefined ? { site: query.site } : {}),
   });
   const coverage = toCoverageQuery(intent);
-  const ebay = createEbayClientFromEnv();
+  if (q.trim()) {
+    const meta = clientMeta(await headers());
+    await persistUserEvent({
+      kind: "search",
+      userId: session?.user.id ?? null,
+      ip: meta.ip,
+      meta: {
+        q: q.trim().slice(0, 200),
+        site: intent.ebaySite,
+      },
+    });
+  }
+  const ebay = createEbayClientFromEnv("web_search");
   const result = q.trim()
     ? await ebay.search(coverage, {
         ...(intent.maxLandedCents !== undefined
@@ -156,28 +182,19 @@ export default async function SearchPage({
         landedOk &&
         listingMatchesCondition(listing, intent.condition) &&
         listingMatchesListingType(listing, intent.listingType) &&
-        listingMatchesConfidence(listing, intent.minConfidence) &&
-        listingPassesExcludeKeywords(listing, intent.excludeKeywords)
+        listingMatchesItemLocation(listing, intent.itemLocation) &&
+        listingMatchesConfidence(listing, intent.minConfidence)
       );
-    })
-    .sort((a, b) => {
-      const left = landedCostCents({
-        itemCents: a.itemCents,
-        shippingCents: a.shippingCents,
-      });
-      const right = landedCostCents({
-        itemCents: b.itemCents,
-        shippingCents: b.shippingCents,
-      });
-      return sort === "price-desc" ? right - left : left - right;
     });
   const identified =
     q.trim() && filtered.length > 0
       ? await ebay.hydrateProductSignals(filtered, coverage.ebaySite)
       : filtered;
-  const listings = attachPriceScores(identified).filter((listing) =>
-    listingMatchesPriceScore(listing, intent.minPriceScore),
-  );
+  const listings = attachPriceScores(identified)
+    .filter((listing) =>
+      listingMatchesPriceScore(listing, intent.minPriceScore),
+    )
+    .sort((a, b) => compareSearchListings(a, b, sort));
   const scoreScope = [
     q,
     query.min,
@@ -201,6 +218,7 @@ export default async function SearchPage({
     query.cardGame,
     query.cardNoReprints,
     query.cardNoProxy,
+    query.unofficial,
     query.figureCategory,
     query.figureScale,
     query.figurePackaging,
@@ -216,9 +234,16 @@ export default async function SearchPage({
     query.sort,
   ].join("|");
   const filteredOut = result.listings.length > 0 && listings.length === 0;
+  const suggestedGroup = suggestFilterGroup(result.listings);
 
   return (
     <main className="page">
+      {query.error === "limit" ? (
+        <p className="banner">
+          You can watch {FREE_WATCH_LIMIT} pieces at a time. Stop one on{" "}
+          <Link href="/watches">Watches</Link> to add another.
+        </p>
+      ) : null}
       <form id="search-form" className="search-block" action="/search" method="get">
         <div className="search">
           <div className="search-combo">
@@ -248,6 +273,11 @@ export default async function SearchPage({
             intent={intent}
             signedIn={Boolean(session)}
             {...(query.watch ? { watchId: query.watch } : {})}
+            {...(settings?.shipToPostal
+              ? { settingsPostal: settings.shipToPostal }
+              : {})}
+            {...(suggestedGroup ? { suggestedGroup } : {})}
+            {...(watchLimitReached ? { atWatchLimit: true } : {})}
           />
           {listings.length > 0 ? (
             <div className="results">

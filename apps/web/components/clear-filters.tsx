@@ -6,16 +6,24 @@ import { useRouter } from "next/navigation";
 const SEARCH_FORM = "search-form";
 
 function resetFilterField(field: Element) {
-  if (field instanceof HTMLSelectElement) {
-    if (field.name === "listing") field.value = "all";
-    else if (field.name === "grade") field.value = "10";
-    else if (field.name === "score" || field.name === "confidence") {
-      field.value = "";
-    } else {
-      field.value = "any";
+    if (field instanceof HTMLSelectElement) {
+      if (field.name === "listing") field.value = "all";
+      else if (field.name === "grade") field.value = "10";
+      else if (field.name === "score" || field.name === "confidence") {
+        field.value = "";
+      } else {
+        field.value = "any";
+      }
+      return;
     }
-    return;
-  }
+    if (
+      field instanceof HTMLInputElement &&
+      field.type === "hidden" &&
+      field.name === "unofficial"
+    ) {
+      field.value = "1";
+      return;
+    }
   if (
     field instanceof HTMLInputElement &&
     field.type !== "hidden" &&

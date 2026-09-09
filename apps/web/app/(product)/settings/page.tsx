@@ -38,12 +38,8 @@ export default async function SettingsPage({
   const notice = passwordNotice(password);
 
   return (
-    <main className="page">
+    <main className="page settings-page">
       <h1>Settings</h1>
-      <p className="lede">
-        Defaults for search and watch alerts. Search stays public; this is only
-        for your account.
-      </p>
       {saved ? <p className="banner">Settings saved.</p> : null}
       {notice ? (
         <p className={password === "set" ? "banner" : "muted"}>{notice}</p>
@@ -55,6 +51,7 @@ export default async function SettingsPage({
           <SettingsForm
             shipToPostal={settings?.shipToPostal ?? ""}
             timezone={settings?.timezone ?? ""}
+            theme={settings?.theme ?? ""}
           />
         </section>
 

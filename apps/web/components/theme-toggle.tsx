@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { applyTheme, themeFromDocument } from "@/lib/theme";
+import { authClient } from "@/lib/auth-client";
+import { applyTheme, themeFromDocument, type Theme } from "@/lib/theme";
 
 function MoonIcon() {
   return (
@@ -40,8 +41,21 @@ function SunIcon() {
   );
 }
 
+async function persistTheme(theme: Theme) {
+  try {
+    await fetch("/api/settings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ theme }),
+    });
+  } catch {
+    // Cookie and localStorage already hold the choice for this browser.
+  }
+}
+
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const { data: session } = authClient.useSession();
+  const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
     setTheme(themeFromDocument());
@@ -58,6 +72,7 @@ export function ThemeToggle() {
       onClick={() => {
         applyTheme(next);
         setTheme(next);
+        if (session) void persistTheme(next);
       }}
     >
       <span className="theme-icon theme-icon-moon">

@@ -8,7 +8,7 @@ export function ExcludeWords({
   form?: string;
 }) {
   return (
-    <details className="search-exclude" {...(value ? { open: true } : {})}>
+    <details className="search-exclude">
       <summary>Exclude words</summary>
       <AutoText
         {...(form ? { form } : {})}

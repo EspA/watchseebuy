@@ -7,8 +7,9 @@ import {
   type ReactNode,
   type SyntheticEvent,
 } from "react";
+import type { FilterGroupId } from "@waitseebuy/domain";
 
-export type FilterAccordionId = "cards" | "figures" | "vehicles" | "bricks";
+export type FilterAccordionId = FilterGroupId;
 
 const FilterAccordionContext = createContext<{
   openId?: FilterAccordionId;

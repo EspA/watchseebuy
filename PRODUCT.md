@@ -52,7 +52,7 @@ Homepage, examples, and alert copy should sound like a collector: name the condi
 2. **Intent watches** — the collector shares the piece and the precise criteria. Stored as meaning, not a raw saved search. Example: “PSA 10 Base Set Charizard, no reprints, under $X to my door, US or ships to me, not auction unless under Y.”
 3. **Price to your door as the number** — max price includes shipping and a simple import/tax estimate to the user’s address. Location is first-class.
 4. **Sold-comp context on every result and every alert** — condition-matched, “this is 18% below the 90-day sold median.” That is why people click, and why EPN converts. Price score is that judgment made visible.
-5. **Alerts on their schedule** — email first, then push. The collector chooses the cadence: **when a new listing appears**, a **daily note**, or a **weekly recap**. Instant is not the default; volume is not the goal. Quiet hours, exclude junk, seller-risk floor.
+5. **Alerts on their schedule** — email first, then push. The collector chooses the cadence: **when a new listing appears**, a **daily note**, or a **weekly recap**. Instant is not the default; volume is not the goal.
 6. **EPN-approved outbound buy** — one-tap from the alert, campaign IDs that can be re-attached. Design for a short cookie. In-app checkout (Buy APIs) is later, not v1. We curate what we send them to; we do not make eBay faster.
 
 Web first. Mobile is a notification surface after people already trust the watches.
@@ -92,7 +92,7 @@ eBay Partner Network, as an **approved software application**. Disclose the rela
 
 Assume a short attribution window. If the user opens a listing two days later from memory, we often earn nothing. The alert itself has to be the click.
 
-**Ad blockers.** Many lists block EPN hosts (for example `rover.ebay.com`) and strip affiliate query params. That can do two things: we do not get paid, and the Buy button can fail to open. Do not fight the blocker and do not cloak links.
+**Ad blockers.** Many lists block legacy EPN hosts (for example `rover.ebay.com`) and strip affiliate query params. Buy now lands on the eBay item URL, so the listing should still open; we may not get paid if params are stripped. Do not fight the blocker and do not cloak links.
 
 - Detect with a quiet client-side probe of the EPN host we actually use (image / fetch fail).
 - If blocked, show a dismissible banner — not a modal wall, not a guilt trip. Copy: the listing may not open; allow this site or use the direct eBay button. Mention that those links fund the free product only if it stays one sentence.

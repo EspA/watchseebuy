@@ -1,4 +1,5 @@
 import {
+  describeListingLocation,
   describePriceScore,
   describeSellerFeedback,
   ebaySiteCurrency,
@@ -10,7 +11,7 @@ import {
 } from "@waitseebuy/domain";
 import type { CandidateListing, PriceScore } from "@waitseebuy/domain";
 import { ListingDescription } from "@/components/listing-description";
-import { epnItemUrl, plainItemUrl } from "@waitseebuy/ebay";
+import { epnEnabledFromEnv, plainItemUrl } from "@waitseebuy/ebay";
 
 function listingMeta(listing: CandidateListing): string {
   const bits: string[] = [];
@@ -32,19 +33,13 @@ export function ListingCard({
     itemCents: listing.itemCents,
     shippingCents: listing.shippingCents,
   });
-  const buyHref =
-    epnItemUrl({
-      itemId: listing.ebayItemId,
-      site: host,
-      ...(process.env.EPN_CAMPAIGN_ID
-        ? { campaignId: process.env.EPN_CAMPAIGN_ID }
-        : {}),
-      ...(process.env.EPN_TOOL_ID ? { toolId: process.env.EPN_TOOL_ID } : {}),
-    }) ??
-    listing.webUrl ??
-    plainItemUrl(listing.ebayItemId, host);
+  const buyParams = new URLSearchParams({ item: listing.ebayItemId });
+  if (site) buyParams.set("site", site);
+  const buyHref = `/go/buy?${buyParams.toString()}`;
   const fallback = listing.webUrl ?? plainItemUrl(listing.ebayItemId, host);
+  const showDirect = epnEnabledFromEnv();
   const money = (cents: number) => formatMoney(cents, currency);
+  const location = describeListingLocation(listing.itemLocationCountry);
   const breakdown =
     listing.shippingCents === 0
       ? `${money(listing.itemCents)} + shipping not shown or free`
@@ -73,11 +68,7 @@ export function ListingCard({
                   .join(" · ")}
               </p>
             ) : null}
-            {listing.identity && listing.identity.confidence !== "low" ? (
-              <p className="listing-identity">
-                {listing.identity.label}
-              </p>
-            ) : null}
+            {location ? <p className="listing-location">{location}</p> : null}
           </div>
           <div className="listing-price">
             <p className="listing-landed">{money(landed)}</p>
@@ -98,7 +89,7 @@ export function ListingCard({
               >
                 Buy on eBay
               </a>
-              {buyHref !== fallback ? (
+              {showDirect ? (
                 <a
                   className="btn secondary"
                   href={fallback}

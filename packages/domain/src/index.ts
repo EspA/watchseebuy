@@ -28,6 +28,12 @@ export {
 } from "./price-score";
 export { matchListing, type CandidateListing, type MatchDecision } from "./matcher";
 export {
+  filterGroupForCategoryId,
+  filterGroupForListing,
+  suggestFilterGroup,
+  type FilterGroupId,
+} from "./filter-group";
+export {
   CONFIDENCE_FILTERS,
   describeSellerFeedback,
   listingMatchesConfidence,
@@ -64,6 +70,7 @@ export {
   BRICK_STATUS_FILTERS,
   BRICK_TYPE_FILTERS,
   SET_EXCLUDE_WORDS,
+  SEALED_EXCLUDE_WORDS,
   brickCategoryLabel,
   brickExcludeWords,
   brickStatusLabel,
@@ -71,6 +78,7 @@ export {
   parseBrickCategory,
   parseBrickStatus,
   parseBrickType,
+  withoutSealedExcludeWords,
   withoutSetExcludeWords,
   type BrickCatalogSelection,
   type BrickCategoryGroup,
@@ -205,6 +213,7 @@ export {
   browseFilterParts,
   AVAILABLE_TO_FILTERS,
   availableToLabel,
+  describeListingLocation,
   CONDITION_FILTERS,
   CONDITION_GROUPS,
   conditionLabel,
@@ -214,14 +223,18 @@ export {
   excludeWordsField,
   isEbayConditionId,
   ITEM_LOCATION_FILTERS,
+  itemLocationCountries,
   itemLocationLabel,
+  listingMatchesItemLocation,
   LISTING_TYPE_FILTERS,
   listingMatchesCondition,
   listingMatchesListingType,
-  listingPassesExcludeKeywords,
   listingTypeLabel,
   LOCATION_GROUPS,
   mergeExcludeKeywords,
+  unofficialExcludeWords,
+  UNOFFICIAL_EXCLUDE_WORDS,
+  withoutUnofficialExcludeWords,
   normalizeQuery,
   parseAvailableTo,
   parseConditionFilter,
@@ -229,6 +242,7 @@ export {
   parseItemLocation,
   parseListingTypeFilter,
   parseSearchIntent,
+  asWatchCriteria,
   toCoverageQuery,
   userExcludeWords,
   type BrowseFilterInput,
@@ -251,12 +265,19 @@ export {
 } from "./watch-frequency";
 export { parseShipToPostal } from "./ship-to-postal";
 export {
+  dollarsField,
+  searchParamsFromIntent,
+  searchPathForWatch,
+} from "./watch-search";
+export {
   SOCIAL_AUTH_PROVIDERS,
   canResetPassword,
   isSocialAuthProvider,
   socialAuthLabel,
   type SocialAuthProvider,
 } from "./user-auth";
+export { splitDisplayName } from "./display-name";
+export { DEFAULT_ADMIN_EMAIL, isAllowedAdminEmail } from "./admin-access";
 export {
   DEFAULT_USER_TIMEZONE,
   WATCH_DIGEST_HOUR,
@@ -269,3 +290,10 @@ export {
   timeZoneGroups,
   timeZoneLabel,
 } from "./user-timezone";
+export { isWatchDigestDue } from "./alert-schedule";
+export {
+  FREE_WATCH_LIMIT,
+  atWatchLimit,
+  watchLimitForPlan,
+  type WatchPlan,
+} from "./watch-limit";

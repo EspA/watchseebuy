@@ -58,6 +58,40 @@ export async function getWatchForUser(
   return row ?? null;
 }
 
+export async function countWatchesForUser(db: Database, userId: string) {
+  const [row] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(watches)
+    .where(eq(watches.userId, userId));
+  return row?.n ?? 0;
+}
+
+async function getWatchForCoverage(
+  db: Database,
+  input: { userId: string; coverageQueryId: string },
+) {
+  const [row] = await db
+    .select()
+    .from(watches)
+    .where(
+      and(
+        eq(watches.userId, input.userId),
+        eq(watches.coverageQueryId, input.coverageQueryId),
+      ),
+    )
+    .limit(1);
+  return row ?? null;
+}
+
+export type SaveWatchResult =
+  | {
+      ok: true;
+      watch: NonNullable<Awaited<ReturnType<typeof getWatchForUser>>>;
+      coverage: Awaited<ReturnType<typeof upsertCoverageQuery>>;
+      created: boolean;
+    }
+  | { ok: false; reason: "limit" };
+
 export async function saveWatch(
   db: Database,
   input: {
@@ -66,8 +100,9 @@ export async function saveWatch(
     criteria: unknown;
     coverage: CoverageQueryInput;
     watchId?: string;
+    watchLimit?: number;
   },
-) {
+): Promise<SaveWatchResult> {
   const coverage = await upsertCoverageQuery(db, input.coverage);
 
   if (input.watchId) {
@@ -93,7 +128,12 @@ export async function saveWatch(
           .set({ label: input.label, criteria: input.criteria })
           .where(eq(watches.id, collision.id));
         await db.delete(watches).where(eq(watches.id, owned.id));
-        return { watch: { ...collision, label: input.label }, coverage, created: false };
+        return {
+          ok: true,
+          watch: { ...collision, label: input.label },
+          coverage,
+          created: false,
+        };
       }
 
       const [updated] = await db
@@ -108,13 +148,40 @@ export async function saveWatch(
       if (!updated) {
         throw new Error("watch missing after update");
       }
-      return { watch: updated, coverage, created: false };
+      return { ok: true, watch: updated, coverage, created: false };
+    }
+  }
+
+  const existing = await getWatchForCoverage(db, {
+    userId: input.userId,
+    coverageQueryId: coverage.id,
+  });
+  if (existing) {
+    const [updated] = await db
+      .update(watches)
+      .set({
+        label: input.label,
+        criteria: input.criteria,
+      })
+      .where(eq(watches.id, existing.id))
+      .returning();
+    if (!updated) {
+      throw new Error("watch missing after update");
+    }
+    return { ok: true, watch: updated, coverage, created: false };
+  }
+
+  const limit = input.watchLimit ?? 10;
+  if (Number.isFinite(limit)) {
+    const count = await countWatchesForUser(db, input.userId);
+    if (count >= limit) {
+      return { ok: false, reason: "limit" };
     }
   }
 
   const id = crypto.randomUUID();
 
-  await db
+  const [watch] = await db
     .insert(watches)
     .values({
       id,
@@ -129,24 +196,14 @@ export async function saveWatch(
         label: input.label,
         criteria: input.criteria,
       },
-    });
-
-  const [watch] = await db
-    .select()
-    .from(watches)
-    .where(
-      and(
-        eq(watches.userId, input.userId),
-        eq(watches.coverageQueryId, coverage.id),
-      ),
-    )
-    .limit(1);
+    })
+    .returning();
 
   if (!watch) {
     throw new Error("watch missing after save");
   }
 
-  return { watch, coverage, created: watch.id === id };
+          return { ok: true, watch, coverage, created: watch.id === id };
 }
 
 export async function listWatchesForUser(db: Database, userId: string) {

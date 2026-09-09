@@ -191,17 +191,123 @@ body {
   line-height: 1.6;
 }
 
-.tease-foot {
-  display: flex;
-  justify-content: center;
+.site-footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: end;
+  gap: 16px 20px;
+  margin-top: auto;
   padding-top: 20px;
   border-top: 1px solid var(--line);
   color: var(--muted);
   font-size: 0.8rem;
 }
 
-.tease-foot p {
+.site-footer-credit {
   margin: 0;
+  justify-self: start;
+}
+
+.site-footer-legal {
+  position: relative;
+  justify-self: center;
+}
+
+.site-footer-legal-trigger {
+  list-style: none;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.site-footer-legal-trigger::-webkit-details-marker {
+  display: none;
+}
+
+.site-footer-legal-trigger:hover,
+.site-footer-legal-item:hover {
+  color: var(--ink);
+}
+
+.site-footer-legal-menu {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  z-index: 5;
+  margin: 0;
+  padding: 8px 0;
+  min-width: 11.5rem;
+  list-style: none;
+  transform: translateX(-50%);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+}
+
+.site-footer-legal-item {
+  display: block;
+  padding: 8px 14px;
+  color: inherit;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.site-footer-social {
+  justify-self: end;
+  display: inline-flex;
+  color: inherit;
+  text-decoration: none;
+}
+
+.site-footer-social:hover {
+  color: var(--ink);
+}
+
+.legal-page {
+  flex: 1;
+  padding: 48px 0 32px;
+}
+
+.legal-page h1 {
+  margin: 0 0 8px;
+  font-family: var(--font-serif), ui-serif, Georgia, serif;
+  font-weight: 500;
+}
+
+.legal-copy .legal-updated {
+  margin: 0 0 28px;
+  color: var(--muted);
+}
+
+.legal-copy h2 {
+  font-family: var(--font-serif), ui-serif, Georgia, serif;
+  font-weight: 500;
+  font-size: 1.35rem;
+  margin: 2rem 0 0.65rem;
+}
+
+.legal-copy h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 1.25rem 0 0.4rem;
+}
+
+.legal-copy p,
+.legal-copy li {
+  line-height: 1.55;
+}
+
+.legal-copy p {
+  margin: 0 0 0.85rem;
+}
+
+.legal-copy ul {
+  margin: 0 0 0.85rem;
+  padding-left: 1.2rem;
+}
+
+.legal-copy li + li {
+  margin-top: 0.45rem;
 }
 
 @keyframes tease-in {
@@ -212,6 +318,26 @@ body {
 }
 
 @media (max-width: 720px) {
+  .site-footer {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "legal legal"
+      "credit social";
+    align-items: center;
+  }
+
+  .site-footer-credit {
+    grid-area: credit;
+  }
+
+  .site-footer-legal {
+    grid-area: legal;
+  }
+
+  .site-footer-social {
+    grid-area: social;
+  }
+
   .tease-hero {
     padding: 36px 0 28px;
   }

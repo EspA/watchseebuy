@@ -1,0 +1,22 @@
+{
+  "name": "@waitseebuy/notify",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test src/*.test.ts"
+  },
+  "dependencies": {
+    "@waitseebuy/db": "*",
+    "@waitseebuy/domain": "*",
+    "nodemailer": "^7.0.11"
+  },
+  "devDependencies": {
+    "@types/nodemailer": "^7.0.2",
+    "typescript": "^5.9.2"
+  }
+}

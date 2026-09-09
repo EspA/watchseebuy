@@ -5,17 +5,24 @@ import {
   type CoverageQuery,
 } from "@waitseebuy/domain";
 import {
+  getDb,
+  recordEbayApiCall,
+  type EbayApiSource,
+} from "@waitseebuy/db";
+import {
   fetchApplicationToken,
   getItemsByRestId,
   hostsForEnv,
   mergeHydratedListing,
   searchItemSummaries,
+  type EbayApiRecorder,
 } from "./browse";
 
 export type EbayClientConfig = {
   clientId?: string;
   clientSecret?: string;
   env?: "sandbox" | "production";
+  source?: EbayApiSource;
 };
 
 export type SearchResult = {
@@ -28,11 +35,40 @@ type CachedToken = { token: string; expiresAtMs: number };
 
 let tokenCache: CachedToken | null = null;
 
+function persistEbayCall(
+  source: EbayApiSource,
+): EbayApiRecorder {
+  return async (event) => {
+    if (!process.env.DATABASE_URL) return;
+    try {
+      await recordEbayApiCall(getDb(), {
+        api: event.api,
+        source,
+        ok: event.ok,
+        httpStatus: event.httpStatus,
+        durationMs: event.durationMs,
+      });
+    } catch (error) {
+      console.error(
+        JSON.stringify({
+          at: new Date().toISOString(),
+          message: "ebay_api_calls insert failed",
+          error: error instanceof Error ? error.message : String(error),
+        }),
+      );
+    }
+  };
+}
+
 /**
  * Single eBay client. Every feature that wants "just one more search" goes here.
  */
 export class EbayClient {
-  constructor(private readonly config: EbayClientConfig) {}
+  private readonly record: EbayApiRecorder;
+
+  constructor(private readonly config: EbayClientConfig) {
+    this.record = persistEbayCall(config.source ?? "web_search");
+  }
 
   isConfigured(): boolean {
     return Boolean(this.config.clientId && this.config.clientSecret);
@@ -51,6 +87,7 @@ export class EbayClient {
       hostsForEnv(this.env()),
       this.config.clientId ?? "",
       this.config.clientSecret ?? "",
+      this.record,
     );
     tokenCache = { token, expiresAtMs: now + expiresInSec * 1000 };
     return token;
@@ -76,6 +113,7 @@ export class EbayClient {
         q: ebaySearchQuery(coverage.keywords, coverage.excludeKeywords),
         marketplaceId: coverage.ebaySite,
         listingType: coverage.listingType,
+        record: this.record,
         ...(bounds?.maxLandedCents !== undefined
           ? { priceMaxCents: bounds.maxLandedCents }
           : {}),
@@ -126,6 +164,7 @@ export class EbayClient {
           token,
           marketplaceId,
           itemIds: ids,
+          record: this.record,
         });
       } catch {
         details = [];
@@ -152,10 +191,13 @@ export class EbayClient {
   }
 }
 
-export function createEbayClientFromEnv(): EbayClient {
+export function createEbayClientFromEnv(
+  source: EbayApiSource = "web_search",
+): EbayClient {
   const rawEnv = (process.env.EBAY_ENV ?? "sandbox").toLowerCase();
   const config: EbayClientConfig = {
     env: rawEnv === "production" ? "production" : "sandbox",
+    source,
   };
   if (process.env.EBAY_CLIENT_ID) config.clientId = process.env.EBAY_CLIENT_ID;
   if (process.env.EBAY_CLIENT_SECRET) {

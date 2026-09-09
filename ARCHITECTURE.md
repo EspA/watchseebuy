@@ -10,7 +10,7 @@ The hard problem is not HTTP. It is **eBay API quota** plus **matching many watc
 
 | Choice | Decision |
 |---|---|
-| Shape | Modular monolith, one repo, two Cloud Run services when we split (`web`, `worker`) |
+| Shape | Modular monolith, one repo, Cloud Run services `web`, `worker`, and `admin` |
 | Language | TypeScript end to end |
 | Web | Next.js (App Router) |
 | Worker | Same repo, same language — a long-running Cloud Run service (or Cloud Run job on a schedule at first) |
@@ -19,7 +19,7 @@ The hard problem is not HTTP. It is **eBay API quota** plus **matching many watc
 | Jobs | Cloud Scheduler → worker. Pub/Sub + Cloud Tasks when fan-out needs it |
 | Host | GCP, single region first (`us-east1` unless users are clearly elsewhere) |
 | Auth | SSO: Google, Facebook, Apple. Sessions in Postgres (Better Auth). Keep email magic link as a fallback. |
-| Email | Transactional provider (Postmark or Resend), not Gmail SMTP |
+| Email | SMTP. Auth and alerts share the same sender. Local: Mailpit. Production: any SMTP you control. |
 | eBay | Official Browse / Feed APIs only, one shared client, one quota budget |
 
 **Not now:** GKE, a service mesh, a microservice per noun, Firebase as the system of record, scraping.
@@ -61,7 +61,10 @@ Collector
    ▼
  Cloud Load Balancing  →  Cloud Run: web (Next.js)
                                │
-                               ├── Postgres (users, watches, comps cache, alerts)
+ Operator  →  admin.waitseebuy.com  →  Cloud Run: admin
+                               │
+                               ├── Postgres (users, watches, comps cache, alerts,
+                               │            ebay_api_calls, email_sends, user_events)
                                └── Redis (seen listings, alert locks, quota tokens)
                                │
                                ▼  (creates / updates)
@@ -69,16 +72,16 @@ Collector
                                │
 Cloud Scheduler ──► Cloud Run: worker
                                │
-                               ├── poll eBay once per coverage query
+                               ├── poll eBay once per stale coverage query
                                ├── match listings → watches (in process)
-                               ├── write matches
-                               └── enqueue alerts (Cloud Tasks when volume needs it)
+                               ├── write listings + matches
+                               └── send due emails (on change, or 8pm digest)
                                │
                                ▼
-                          Postmark / Resend
+                          SMTP (Mailpit locally; your MTA in production)
                                │
                                ▼
-                          one-tap EPN link (short cookie)
+                          first-party /out/{token}  →  EPN (or plain item URL)
 ```
 
 Search in the browser hits eBay through **our** API so we attach EPN IDs, compute landed cost, and attach comps. The user never talks to eBay’s API directly. Search is **public** (rate-limited and cached). Auth is required only to persist a watch.
@@ -91,9 +94,9 @@ Even with 50 users, store watches as if we will have 50,000.
 
 **Coverage query.** A watch does not own an eBay poll. We compile structured criteria into a coarser eBay search (keywords, category, condition class, site). Many watches share one coverage query. The worker polls those, then filters in-process.
 
-**Seen listings.** `(ebay_item_id)` is unique. We never alert twice for the same watch + item. Redis lock, Postgres unique constraint as the source of truth.
+**Seen listings.** `(ebay_item_id)` is unique. We never alert twice for the same watch + item. Postgres unique `(watch_id, ebay_item_id)` is the source of truth. Redis locks come later under load.
 
-**Match, then decide to notify.** A match can exist without an alert (quiet hours, “only if it’s a deal,” below seller-risk floor). That keeps the product rule in our code, not in the poller.
+**Match, then decide when to send.** A match can exist without an alert until the watch cadence says so. On-change sends as soon as a new match is written. Daily and weekly hold unsent matches and send one email at **8pm local** (weekly on Sunday). `last_alerted_at` is the digest watermark. Price score and seller score are shown on the result; they do not gate send.
 
 **Normalized item key for comps.** Collectibles need a key like `psa|1986-fleer-jordan|10`, not the eBay title string. Comp cache lives in Postgres first. BigQuery is a later warehouse, not the serving path.
 
@@ -106,23 +109,26 @@ Even with 50 users, store watches as if we will have 50,000.
 | Module | Responsibility |
 |---|---|
 | `web` | Pages, auth, search UX, watch CRUD |
+| `admin` | Operator console on admin.waitseebuy.com; Google SSO allowlist |
 | `ebay` | Official API client, quota, EPN URL builder |
 | `watches` | Intent → structured criteria → coverage query |
 | `comps` | Sold stats, condition matching, “% vs median” |
 | `pricing` | Landed cost (item + shipping + simple duty/tax) |
 | `matcher` | Listing vs watches for a coverage query |
-| `notify` | Email templates, quiet hours, click tokens |
+| `notify` | Alert email HTML/text, subjects by cadence, SMTP send, click-token listings |
 
 These are packages, not repos.
 
 Repo layout:
 
 ```
-apps/web          Next.js
-apps/worker       poll / match / enqueue
-packages/domain   watches, comps, pricing, matcher
+apps/web          Next.js (public search, SSO, watches)
+apps/admin        Next.js operator console (port 3001 locally)
+apps/worker       poll / match / send
+packages/domain   watches, comps, pricing, matcher, digest clock
 packages/ebay     API + EPN
 packages/db       Postgres schema + queries
+packages/notify   email templates + send
 ```
 
 ---
@@ -132,6 +138,7 @@ packages/db       Postgres schema + queries
 **Day one (cheap, enough):**
 
 - Cloud Run for `web` (scale to zero in staging)
+- Cloud Run for `admin` (separate hostname, scale to zero)
 - Cloud Run for `worker` (min instances 0–1; 1 once watches are live)
 - Cloud SQL Postgres (small HA later, not now)
 - Secret Manager (eBay, EPN, auth, mail)
@@ -156,13 +163,18 @@ packages/db       Postgres schema + queries
 ## Data to lock early
 
 ```
-users
-watches              structured criteria, user_id, coverage_query_id, quiet rules
-coverage_queries     the eBay searches we actually poll
+users                email, name, first/last, timezone, ship_to, theme,
+                     last_login_at, last_ip, last_country, login_count
+watches              structured criteria, user_id, coverage_query_id,
+                     alert_frequency (on_change | daily | weekly), last_alerted_at
+coverage_queries     the eBay searches we actually poll (last_polled_at)
 listings             ebay item id, payload snapshot, first_seen
 matches              watch_id + listing_id, landed_price, comp_delta, unique(watch, listing)
 alerts               match_id, channel, sent_at, click_token
 sold_comp_cache      item_key, window, median, sample_size, fetched_at
+ebay_api_calls       api, source, ok, http_status, duration_ms
+email_sends          kind, status (delivered | failed | logged_only), error
+user_events          kind (search | buy_click), user_id, ip, meta
 ```
 
 Indexes on `coverage_query_id`, `ebay_item_id`, and `click_token`. That is the backbone.
@@ -212,7 +224,7 @@ EPN software-application approval is a separate gate from developer API quota. F
 - Secrets only in Secret Manager; never in the Next.js client
 - EPN campaign / custom IDs minted server-side on alert click (short cookie)
 - Disclose affiliate relationship in the UI
-- Outbound buy always goes through a first-party WaitSeeBuy click URL, then 302 to EPN. Client probes the EPN host; if an ad blocker kills it, the UI offers a plain item URL so the listing still opens. Do not cloak rover / affiliate params to evade filters.
+- Outbound buy always goes through a first-party WaitSeeBuy click URL (`/go/buy` from search, `/out/{token}` from alerts), then 302 to the eBay item URL with EPN query params (`campid`, `mkrid`, …). Client probes `rover.ebay.com` as a blocker heuristic; if filters are on, the UI offers a plain item URL. Do not cloak affiliate params to evade filters.
 - No “eBay” or “Bay” in hostnames or brand
 - Least-privilege service accounts per Cloud Run service
 
@@ -233,11 +245,29 @@ Launch prerequisites the providers will demand:
 
 Link accounts by verified email when a collector uses two providers. Do not silently merge on name.
 
+**Admin** is a separate Next.js app (`apps/admin`) on `https://admin.waitseebuy.com` (local port 3001). Its own Better Auth instance uses a distinct cookie prefix (`admin`) and Google only. `ADMIN_ALLOWED_EMAIL` (default `contact@waitseebuy.com`) is checked before user-create and session-create. Consumer logins increment `login_count`; admin sessions do not. A different port is a local convenience so cookies do not collide — production isolation is the hostname plus the allowlist. Cloud IAP can sit in front later.
+
+---
+
+## Alerts (what ships now)
+
+The worker tick (default every 60s) does two jobs:
+
+1. **Poll.** Coverage queries with at least one watch, whose `last_polled_at` is older than `COVERAGE_POLL_MS` (default 60 minutes), are searched once through the shared eBay client. Listings are hydrated, price-scored, upserted, then matched in-process to each watch on that query.
+2. **Send.** Unsent matches become one email per watch. Cadence:
+   - `on_change` — send as soon as a new match exists (**Potential new deal**)
+   - `daily` — next 8pm in the user’s IANA timezone
+   - `weekly` — Sunday 8pm local
+
+The email uses the search-page listing card (price to your door, sold-comp line, scores, **Buy on eBay**). **Open the watch** and **Stop this watch** land on the app (stop requires sign-in). Buy goes to `/out/{click_token}`, which 302s to EPN or a plain item URL.
+
+Without `SMTP_HOST`, the worker logs the email. `APP_URL` / `BETTER_AUTH_URL` mint absolute links. Local Mailpit is `127.0.0.1:1025` (UI on `:8025`). Production points the same vars at Postal, docker-mailserver, SES SMTP, or any other relay — the app does not lock an ESP.
+
 ---
 
 ## Local development
 
-Docker Compose: Postgres + Redis. Next.js and the worker run on the host. Same schema, same modules. No emulator zoo.
+Docker Compose: Postgres + Redis + Mailpit. Next.js and the worker run on the host (`npm run dev` or `dev:web` / `dev:worker` / `dev:admin`). Same schema, same modules. No emulator zoo. After schema changes, `npm run db:push`. Open http://localhost:8025 to read captured mail. Admin is http://localhost:3001.
 
 ---
 

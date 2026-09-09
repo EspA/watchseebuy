@@ -3,6 +3,7 @@ import { DEFAULT_EBAY_SITE, parseEbaySite } from "@waitseebuy/domain";
 import { HeaderTools } from "@/components/header";
 import { BrandMark } from "@/components/brand-mark";
 import { EbaySiteSwitch } from "@/components/ebay-site-switch";
+import { SiteFooter } from "@/components/site-footer";
 
 export const metadata: Metadata = {
   title: "WaitSeeBuy — Live soon",
@@ -118,9 +119,7 @@ export default async function ComingSoonPage({
           </p>
         </main>
 
-        <footer className="tease-foot">
-          <p>© 2026 WaitSeeBuy.com</p>
-        </footer>
+        <SiteFooter />
       </div>
     </div>
   );
