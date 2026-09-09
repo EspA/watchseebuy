@@ -1,6 +1,7 @@
 import {
   bigint,
   boolean,
+  date,
   index,
   integer,
   jsonb,
@@ -22,6 +23,8 @@ export const user = pgTable("user", {
   lastIp: text("last_ip"),
   lastCountry: text("last_country"),
   loginCount: integer("login_count").notNull().default(0),
+  searchCount: integer("search_count").notNull().default(0),
+  buyClickCount: integer("buy_click_count").notNull().default(0),
   shipToPostal: text("ship_to_postal"),
   timezone: text("timezone"),
   theme: text("theme"),
@@ -51,7 +54,10 @@ export const session = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
   },
-  (t) => [index("session_user_id_idx").on(t.userId)],
+  (t) => [
+    index("session_user_id_idx").on(t.userId),
+    index("session_expires_at_idx").on(t.expiresAt),
+  ],
 );
 
 export const account = pgTable(
@@ -88,14 +94,18 @@ export const account = pgTable(
   ],
 );
 
-export const verification = pgTable("verification", {
-  id: text("id").primaryKey(),
-  identifier: text("identifier").notNull(),
-  value: text("value").notNull(),
-  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
-});
+export const verification = pgTable(
+  "verification",
+  {
+    id: text("id").primaryKey(),
+    identifier: text("identifier").notNull(),
+    value: text("value").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (t) => [index("verification_expires_at_idx").on(t.expiresAt)],
+);
 
 export const coverageQueries = pgTable("coverage_queries", {
   id: text("id").primaryKey(),
@@ -156,11 +166,16 @@ export const matches = pgTable(
       .references(() => listings.ebayItemId),
     landedCents: bigint("landed_cents", { mode: "number" }).notNull(),
     compDeltaPct: integer("comp_delta_pct"),
+    alertedAt: timestamp("alerted_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
   },
-  (t) => [uniqueIndex("matches_watch_listing_uidx").on(t.watchId, t.ebayItemId)],
+  (t) => [
+    uniqueIndex("matches_watch_listing_uidx").on(t.watchId, t.ebayItemId),
+    index("matches_created_at_idx").on(t.createdAt),
+    index("matches_alerted_at_idx").on(t.alertedAt),
+  ],
 );
 
 export const alerts = pgTable(
@@ -177,7 +192,10 @@ export const alerts = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (t) => [index("alerts_click_token_idx").on(t.clickToken)],
+  (t) => [
+    index("alerts_click_token_idx").on(t.clickToken),
+    index("alerts_sent_at_idx").on(t.sentAt),
+  ],
 );
 
 export const soldCompCache = pgTable("sold_comp_cache", {
@@ -243,5 +261,27 @@ export const userEvents = pgTable(
   (t) => [
     index("user_events_kind_occurred_at_idx").on(t.kind, t.occurredAt),
     index("user_events_user_id_kind_idx").on(t.userId, t.kind),
+    index("user_events_occurred_at_idx").on(t.occurredAt),
   ],
 );
+
+export const ebayApiDaily = pgTable(
+  "ebay_api_daily",
+  {
+    day: date("day").notNull(),
+    api: text("api").notNull(),
+    source: text("source").notNull(),
+    total: integer("total").notNull(),
+    success: integer("success").notNull(),
+    failure: integer("failure").notNull(),
+    rateLimited: integer("rate_limited").notNull(),
+  },
+  (t) => [
+    uniqueIndex("ebay_api_daily_day_api_source_uidx").on(t.day, t.api, t.source),
+  ],
+);
+
+export const maintenanceRuns = pgTable("maintenance_runs", {
+  job: text("job").primaryKey(),
+  lastRanAt: timestamp("last_ran_at", { withTimezone: true }).notNull(),
+});
