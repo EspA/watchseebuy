@@ -145,14 +145,19 @@ export const watches = pgTable(
   ],
 );
 
-export const listings = pgTable("listings", {
-  ebayItemId: text("ebay_item_id").primaryKey(),
-  title: text("title").notNull(),
-  payload: jsonb("payload").notNull(),
-  firstSeenAt: timestamp("first_seen_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const listings = pgTable(
+  "listings",
+  {
+    ebayItemId: text("ebay_item_id").primaryKey(),
+    title: text("title").notNull(),
+    payload: jsonb("payload").notNull(),
+    sellerUsername: text("seller_username"),
+    firstSeenAt: timestamp("first_seen_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("listings_seller_username_idx").on(t.sellerUsername)],
+);
 
 export const matches = pgTable(
   "matches",
@@ -285,3 +290,20 @@ export const maintenanceRuns = pgTable("maintenance_runs", {
   job: text("job").primaryKey(),
   lastRanAt: timestamp("last_ran_at", { withTimezone: true }).notNull(),
 });
+
+export const ebayAccountDeletions = pgTable(
+  "ebay_account_deletions",
+  {
+    id: text("id").primaryKey(),
+    notificationId: text("notification_id").notNull().unique(),
+    topic: text("topic").notNull(),
+    username: text("username"),
+    ebayUserId: text("ebay_user_id"),
+    eventDate: timestamp("event_date", { withTimezone: true }),
+    listingsRedacted: integer("listings_redacted").notNull().default(0),
+    receivedAt: timestamp("received_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("ebay_account_deletions_received_at_idx").on(t.receivedAt)],
+);

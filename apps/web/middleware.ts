@@ -3,8 +3,12 @@ import { NextResponse, type NextRequest } from "next/server";
 import { absoluteUrl } from "@/lib/absolute-url";
 
 export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  if (pathname.startsWith("/api/ebay/account-deletion")) {
+    return NextResponse.next();
+  }
+
   if (process.env.COMING_SOON === "1") {
-    const { pathname } = request.nextUrl;
     if (pathname !== "/" && !pathname.startsWith("/out/")) {
       return NextResponse.redirect(absoluteUrl("/", request));
     }
@@ -34,5 +38,6 @@ export const config = {
     "/settings",
     "/settings/:path*",
     "/sign-in/:path*",
+    "/api/ebay/account-deletion",
   ],
 };

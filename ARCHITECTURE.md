@@ -227,6 +227,7 @@ EPN software-application approval is a separate gate from developer API quota. F
 - Outbound buy always goes through a first-party WaitSeeBuy click URL (`/go/buy` from search, `/out/{token}` from alerts), then 302 to the eBay item URL with EPN query params (`campid`, `mkrid`, …). Client probes `rover.ebay.com` as a blocker heuristic; if filters are on, the UI offers a plain item URL. Do not cloak affiliate params to evade filters.
 - No “eBay” or “Bay” in hostnames or brand
 - Least-privilege service accounts per Cloud Run service
+- **Marketplace user account deletion.** Production eBay keys require a public HTTPS endpoint eBay can challenge and then notify. `GET/POST /api/ebay/account-deletion` on `web`. GET answers the SHA-256 challenge (`challengeCode + verificationToken + exact endpoint URL`). POST verifies `X-EBAY-SIGNATURE` via Notification API `getPublicKey`, then strips that seller’s username from cached listing snapshots. Token in Secret Manager (`EBAY_NOTIFICATION_VERIFICATION_TOKEN`); public URL in `EBAY_NOTIFICATION_ENDPOINT` or derived from `APP_URL`.
 
 ---
 

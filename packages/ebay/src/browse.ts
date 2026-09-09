@@ -55,7 +55,11 @@ type ItemSummary = {
     postalCode?: string;
     country?: string;
   };
-  seller?: { feedbackScore?: number; feedbackPercentage?: string | number };
+  seller?: {
+    username?: string;
+    feedbackScore?: number;
+    feedbackPercentage?: string | number;
+  };
 };
 
 type BrowseItem = ItemSummary & {
@@ -157,6 +161,8 @@ export function mapBrowseItem(item: BrowseItem): CandidateListing | null {
     listing.conditionDescriptors = item.conditionDescriptors;
   }
   if (options.length > 0) listing.buyingOptions = options;
+  const sellerUsername = item.seller?.username?.trim();
+  if (sellerUsername) listing.sellerUsername = sellerUsername;
   if (item.seller?.feedbackScore !== undefined) {
     listing.sellerFeedbackScore = item.seller.feedbackScore;
   }
@@ -213,7 +219,12 @@ function mergeAspects(item: BrowseItem): TypedNameValue[] {
 }
 
 export type EbayApiCallEvent = {
-  api: "oauth" | "browse_search" | "get_items" | "get_item";
+  api:
+    | "oauth"
+    | "browse_search"
+    | "get_items"
+    | "get_item"
+    | "notification_public_key";
   ok: boolean;
   httpStatus: number;
   durationMs: number;
@@ -427,6 +438,57 @@ export async function getItemByRestId(input: {
   }
 }
 
+type PublicKeyResponse = {
+  algorithm?: string;
+  digest?: string;
+  key?: string;
+};
+
+export async function getNotificationPublicKey(input: {
+  hosts: BrowseHosts;
+  token: string;
+  keyId: string;
+  record?: EbayApiRecorder;
+}): Promise<{ key: string; algorithm?: string; digest?: string }> {
+  const url = `${input.hosts.identity}/commerce/notification/v1/public_key/${encodeURIComponent(input.keyId)}`;
+  const started = Date.now();
+  let httpStatus = 0;
+  try {
+    const res = await fetch(url, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${input.token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    httpStatus = res.status;
+    const body = (await res.json()) as PublicKeyResponse;
+    if (!res.ok || !body.key) {
+      throw new Error(`eBay public key HTTP ${res.status}`);
+    }
+    await noteCall(input.record, {
+      api: "notification_public_key",
+      ok: true,
+      httpStatus,
+      durationMs: Date.now() - started,
+    });
+    const result: { key: string; algorithm?: string; digest?: string } = {
+      key: body.key,
+    };
+    if (body.algorithm) result.algorithm = body.algorithm;
+    if (body.digest) result.digest = body.digest;
+    return result;
+  } catch (error) {
+    await noteCall(input.record, {
+      api: "notification_public_key",
+      ok: false,
+      httpStatus,
+      durationMs: Date.now() - started,
+    });
+    throw error;
+  }
+}
+
 export function mergeHydratedListing(
   listing: CandidateListing,
   detail: CandidateListing,
@@ -448,6 +510,9 @@ export function mergeHydratedListing(
       : {}),
     ...(!listing.itemLocationCountry && detail.itemLocationCountry
       ? { itemLocationCountry: detail.itemLocationCountry }
+      : {}),
+    ...(!listing.sellerUsername && detail.sellerUsername
+      ? { sellerUsername: detail.sellerUsername }
       : {}),
   };
 }

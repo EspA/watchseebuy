@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-const UPDATED = "September 7, 2026";
+const UPDATED = "September 9, 2026";
 
 export function PrivacyPolicyContent() {
   return (
@@ -106,6 +106,13 @@ export function PrivacyPolicyContent() {
         WaitSeeBuy today. To tell whether a blocker would break Buy, the
         browser may probe the affiliate host we actually use. That is not an ad
         tracker. Dismissing the banner is remembered for this visit only.
+      </p>
+      <h3>From eBay listings</h3>
+      <p>
+        Search and watches pull listing data through official eBay APIs. We may
+        cache item snapshots, including a seller username, so we can score
+        results and later remove that seller&apos;s identifiers if eBay tells
+        us the marketplace account was closed.
       </p>
 
       <h2>Where it comes from</h2>
@@ -276,7 +283,9 @@ export function PrivacyPolicyContent() {
           alerts, avoid duplicates, and attribute a Buy click
         </li>
         <li>
-          Cached listing and sold-comp data until it is refreshed or dropped
+          Cached listing and sold-comp data until it is refreshed or dropped.
+          If eBay notifies us that a marketplace user closed their account, we
+          remove that user&apos;s identifiers from listing snapshots we stored.
         </li>
         <li>
           Contact mail for as long as we need to reply and keep a record of the

@@ -25,6 +25,7 @@ export type CandidateListing = {
   importEstimateCents?: number;
   listingType: "bin" | "auction";
   buyingOptions?: string[];
+  sellerUsername?: string;
   sellerFeedbackScore?: number;
   sellerFeedbackPercentage?: number;
   currentBidCents?: number;

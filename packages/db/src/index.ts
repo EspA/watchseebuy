@@ -51,6 +51,11 @@ export {
   type PurgeDeleted,
 } from "./purge";
 export {
+  processEbayAccountDeletion,
+  listRecentEbayAccountDeletions,
+  type AccountDeletionRecord,
+} from "./account-deletion";
+export {
   countUsers,
   ebayApiBreakdown,
   ebayApiStatusBreakdown,
