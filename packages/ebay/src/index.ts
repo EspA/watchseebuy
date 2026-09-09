@@ -1,4 +1,22 @@
 export {
+  ACCOUNT_DELETION_PATH,
+  MARKETPLACE_ACCOUNT_DELETION,
+  VERIFICATION_TOKEN_PATTERN,
+  challengeResponse,
+  defaultNotificationEndpoint,
+  formatPublicKeyPem,
+  notificationEndpointFromEnv,
+  notificationEndpointStatusFromEnv,
+  parseAccountDeletionPayload,
+  parseEbaySignatureHeader,
+  redactSellerUsernameFromPayload,
+  verifyNotificationSignature,
+  type AccountDeletionEvent,
+  type EbaySignatureHeader,
+  type NotificationEndpointConfig,
+  type NotificationEndpointStatus,
+} from "./account-deletion";
+export {
   createEbayClientFromEnv,
   EbayClient,
   type EbayClientConfig,

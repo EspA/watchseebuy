@@ -44,6 +44,8 @@ Google / Facebook / Apple buttons appear once those client IDs are in `.env.loca
 
 eBay search stays empty until `EBAY_CLIENT_ID` / `EBAY_CLIENT_SECRET` are set. Coverage-query keys are already computed on every search.
 
+Production keys also need the Marketplace User Account Deletion endpoint. Set `EBAY_NOTIFICATION_VERIFICATION_TOKEN` (32–80 characters) and register `https://waitseebuy.com/api/ebay/account-deletion` in the eBay Developer Portal (Application Keys). Local: `GET http://localhost:3000/api/ebay/account-deletion?challenge_code=test`.
+
 ## Auth callbacks
 
 Point each provider at `http://localhost:3000/api/auth/callback/{google|facebook|apple}`. Production: `https://waitseebuy.com/api/auth/callback/...`.

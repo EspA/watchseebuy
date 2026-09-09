@@ -12,11 +12,16 @@ import {
 import {
   fetchApplicationToken,
   getItemsByRestId,
+  getNotificationPublicKey,
   hostsForEnv,
   mergeHydratedListing,
   searchItemSummaries,
   type EbayApiRecorder,
 } from "./browse";
+import {
+  parseEbaySignatureHeader,
+  verifyNotificationSignature,
+} from "./account-deletion";
 
 export type EbayClientConfig = {
   clientId?: string;
@@ -32,8 +37,11 @@ export type SearchResult = {
 };
 
 type CachedToken = { token: string; expiresAtMs: number };
+type CachedPublicKey = { key: string; expiresAtMs: number };
 
 let tokenCache: CachedToken | null = null;
+const publicKeyCache = new Map<string, CachedPublicKey>();
+const PUBLIC_KEY_TTL_MS = 60 * 60 * 1000;
 
 function persistEbayCall(
   source: EbayApiSource,
@@ -188,6 +196,36 @@ export class EbayClient {
           : undefined) ?? byLegacyId.get(listing.ebayItemId);
       const merged = detail ? mergeHydratedListing(listing, detail) : listing;
       return applyListingIdentity(merged);
+    });
+  }
+
+  async verifyAccountDeletionSignature(
+    rawBody: string,
+    signatureHeader: string | null,
+  ): Promise<boolean> {
+    const parsed = parseEbaySignatureHeader(signatureHeader);
+    if (!parsed || !this.isConfigured()) return false;
+    const now = Date.now();
+    const cached = publicKeyCache.get(parsed.kid);
+    let key = cached && cached.expiresAtMs > now ? cached.key : null;
+    if (!key) {
+      const token = await this.token();
+      const fetched = await getNotificationPublicKey({
+        hosts: hostsForEnv(this.env()),
+        token,
+        keyId: parsed.kid,
+        record: this.record,
+      });
+      key = fetched.key;
+      publicKeyCache.set(parsed.kid, {
+        key,
+        expiresAtMs: now + PUBLIC_KEY_TTL_MS,
+      });
+    }
+    return verifyNotificationSignature({
+      rawBody,
+      signature: parsed.signature,
+      publicKeyPem: key,
     });
   }
 }

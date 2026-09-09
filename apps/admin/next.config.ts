@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["@waitseebuy/domain", "@waitseebuy/db"],
+  transpilePackages: ["@waitseebuy/domain", "@waitseebuy/db", "@waitseebuy/ebay"],
   serverExternalPackages: ["drizzle-orm", "postgres"],
   webpack: (config) => {
     config.watchOptions = {

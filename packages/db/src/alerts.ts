@@ -8,6 +8,7 @@ import {
   user,
   watches,
 } from "./schema";
+import { deletedEbayUsernames } from "./account-deletion";
 
 export type CoverageToPoll = {
   id: string;
@@ -148,16 +149,56 @@ export async function upsertListings(
   rows: Array<{ ebayItemId: string; title: string; payload: unknown }>,
 ) {
   if (rows.length === 0) return;
+  const blocked = await deletedEbayUsernames(
+    db,
+    rows
+      .map((row) => sellerUsernameFromPayload(row.payload))
+      .filter((name): name is string => Boolean(name)),
+  );
+  const values = rows.map((row) => {
+    let payload = row.payload;
+    let sellerUsername = sellerUsernameFromPayload(payload);
+    if (sellerUsername && blocked.has(sellerUsername.toLowerCase())) {
+      payload = stripSellerUsername(payload);
+      sellerUsername = null;
+    }
+    return {
+      ebayItemId: row.ebayItemId,
+      title: row.title,
+      payload,
+      sellerUsername,
+    };
+  });
   await db
     .insert(listings)
-    .values(rows)
+    .values(values)
     .onConflictDoUpdate({
       target: listings.ebayItemId,
       set: {
         title: sql`excluded.title`,
         payload: sql`excluded.payload`,
+        sellerUsername: sql`excluded.seller_username`,
       },
     });
+}
+
+function sellerUsernameFromPayload(payload: unknown): string | null {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    return null;
+  }
+  const value = (payload as { sellerUsername?: unknown }).sellerUsername;
+  if (typeof value !== "string") return null;
+  const username = value.trim();
+  return username.length > 0 ? username : null;
+}
+
+function stripSellerUsername(payload: unknown): unknown {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    return payload;
+  }
+  const next = { ...(payload as Record<string, unknown>) };
+  delete next.sellerUsername;
+  return next;
 }
 
 export async function insertMatchIfNew(
