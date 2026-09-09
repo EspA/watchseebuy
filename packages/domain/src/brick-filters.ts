@@ -1,7 +1,8 @@
 /**
  * Building Toys facets. Category IDs are the official eBay US Taxonomy
  * subtree under Building Toys (183446). Type and status have no Browse
- * filter — selected values inject keywords (or exclude words for Set).
+ * filter — selected values inject keywords (or exclude words for Set
+ * and Factory Sealed).
  */
 
 export type BrickFilterOption = { value: string; label: string };
@@ -113,6 +114,14 @@ export const SET_EXCLUDE_WORDS = [
   "panel",
   "tile",
   "slope",
+  "case",
+  "display",
+  "sticker",
+  "stickers",
+  "incomplete",
+  "led",
+  "displaycase",
+  "protector",
 ];
 
 export type BrickCatalogSelection = {
@@ -195,6 +204,24 @@ export function withoutSetExcludeWords(words: string[]): string[] {
   return words.filter((word) => !isSetExcludeWord(word));
 }
 
-export function brickExcludeWords(brickType: string | undefined): string[] {
-  return brickType === "set" ? [...SET_EXCLUDE_WORDS] : [];
+/** Added to Exclude words when Status is Factory Sealed. */
+export const SEALED_EXCLUDE_WORDS = ["incomplete", "missing"];
+
+export function isSealedExcludeWord(word: string): boolean {
+  const key = word.toLowerCase();
+  return SEALED_EXCLUDE_WORDS.some((reserved) => reserved.toLowerCase() === key);
+}
+
+export function withoutSealedExcludeWords(words: string[]): string[] {
+  return words.filter((word) => !isSealedExcludeWord(word));
+}
+
+export function brickExcludeWords(
+  brickType: string | undefined,
+  brickStatus?: string,
+): string[] {
+  return [
+    ...(brickType === "set" ? SET_EXCLUDE_WORDS : []),
+    ...(brickStatus === "factory-sealed" ? SEALED_EXCLUDE_WORDS : []),
+  ];
 }

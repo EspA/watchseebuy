@@ -13,7 +13,8 @@
     "build": "turbo build",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
-    "test": "npm run test -w @waitseebuy/domain",
+    "test": "npm run test -w @waitseebuy/domain && npm run test -w @waitseebuy/ebay && npm run test -w @waitseebuy/notify",
+    "dev:admin": "npm run dev -w @waitseebuy/admin",
     "db:generate": "npm run generate -w @waitseebuy/db",
     "db:migrate": "npm run migrate -w @waitseebuy/db",
     "db:push": "npm run push -w @waitseebuy/db"

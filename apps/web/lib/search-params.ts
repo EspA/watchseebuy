@@ -2,7 +2,6 @@ import {
   applyWatchOverrides,
   composeCatalogQuery,
   dollarsToCents,
-  excludeWordsField,
   mergeExcludeKeywords,
   parseAvailableTo,
   parseBrickCategory,
@@ -21,7 +20,6 @@ import {
   parseCardGame,
   parseCardGrade,
   parseCardLine,
-  cardCategoryLineOf,
   parseCardGrader,
   parseCardLanguage,
   parseCardPrinting,
@@ -63,6 +61,7 @@ export type SearchQuery = {
   cardGame?: string;
   cardNoReprints?: string;
   cardNoProxy?: string;
+  unofficial?: string;
   figureCategory?: string;
   figureScale?: string;
   figurePackaging?: string;
@@ -172,6 +171,9 @@ export function intentFromSearchQuery(query: SearchQuery): WatchCriteria {
   if (query.cardNoProxy !== undefined) {
     overrides.cardNoProxy = query.cardNoProxy !== "0";
   }
+  if (query.unofficial !== undefined) {
+    overrides.excludeUnofficial = query.unofficial !== "0";
+  }
   if (query.figureCategory !== undefined) {
     const figureCategory = parseFigureCategory(query.figureCategory);
     if (figureCategory) overrides.figureCategory = figureCategory;
@@ -260,83 +262,7 @@ export function intentFromSearchQuery(query: SearchQuery): WatchCriteria {
   return intent;
 }
 
-export function dollarsField(cents: number | undefined): string {
-  if (cents === undefined) return "";
-  return cents % 100 === 0 ? String(cents / 100) : (cents / 100).toFixed(2);
-}
-
-export function searchParamsFromIntent(
-  q: string,
-  intent: WatchCriteria,
-  watchId?: string,
-): URLSearchParams {
-  const params = new URLSearchParams();
-  params.set("q", q);
-  if (watchId) params.set("watch", watchId);
-  if (intent.ebaySite && intent.ebaySite !== "EBAY_US") {
-    params.set("site", intent.ebaySite);
-  }
-  if (intent.minLandedCents !== undefined) {
-    params.set("min", dollarsField(intent.minLandedCents));
-  }
-  if (intent.maxLandedCents !== undefined) {
-    params.set("max", dollarsField(intent.maxLandedCents));
-  }
-  if (intent.shipToPostal) params.set("zip", intent.shipToPostal);
-  if (intent.condition !== "any" && intent.condition !== "graded") {
-    params.set("condition", intent.condition);
-  }
-  if (intent.itemLocation && intent.itemLocation !== "any") {
-    params.set("located", intent.itemLocation);
-  }
-  if (intent.shipToCountry) params.set("to", intent.shipToCountry);
-  if (intent.minConfidence !== undefined) {
-    params.set("confidence", String(intent.minConfidence));
-  }
-  if (intent.minPriceScore !== undefined) {
-    params.set("score", String(intent.minPriceScore));
-  }
-  if (intent.listingType !== "all") {
-    params.set(
-      "listing",
-      intent.listingType === "auction_below" ? "auction" : intent.listingType,
-    );
-  }
-  const excluded = excludeWordsField(intent.excludeKeywords);
-  if (excluded) params.set("exclude", excluded);
-  if (intent.cardSet) params.set("set", intent.cardSet);
-  if (intent.rarity) params.set("rarity", intent.rarity);
-  if (intent.printing) params.set("printing", intent.printing);
-  if (intent.language) params.set("language", intent.language);
-  if (intent.grader) params.set("grader", intent.grader);
-  if (intent.grader && intent.cardGrade) params.set("grade", intent.cardGrade);
-  if (intent.cardCategory) {
-    const line = cardCategoryLineOf(intent.cardCategory);
-    if (line) params.set("cardLine", line);
-    params.set("cardCategory", intent.cardCategory);
-  }
-  if (intent.cardGame) params.set("cardGame", intent.cardGame);
-  if (intent.cardNoReprints === false) params.set("cardNoReprints", "0");
-  if (intent.cardNoProxy === false) params.set("cardNoProxy", "0");
-  if (intent.figureCategory) params.set("figureCategory", intent.figureCategory);
-  if (intent.figureScale) params.set("figureScale", intent.figureScale);
-  if (intent.figurePackaging) {
-    params.set("figurePackaging", intent.figurePackaging);
-  }
-  if (intent.figureCompleteness) {
-    params.set("figureCompleteness", intent.figureCompleteness);
-  }
-  if (intent.figurePunch) params.set("figurePunch", intent.figurePunch);
-  if (intent.brickCategory) params.set("brickCategory", intent.brickCategory);
-  if (intent.brickType) params.set("brickType", intent.brickType);
-  if (intent.brickStatus) params.set("brickStatus", intent.brickStatus);
-  if (intent.wheelsCategory) params.set("wheelsCategory", intent.wheelsCategory);
-  if (intent.wheelsScale) params.set("wheelsScale", intent.wheelsScale);
-  if (intent.wheelsPackaging) {
-    params.set("wheelsPackaging", intent.wheelsPackaging);
-  }
-  return params;
-}
+export { dollarsField, searchParamsFromIntent } from "@waitseebuy/domain";
 
 export function searchBarQuery(q: string, intent: WatchCriteria): string {
   return composeCatalogQuery(q.trim() ? intent.query || q : q, intent);

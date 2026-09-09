@@ -1,38 +1,45 @@
-import { getDb } from "@waitseebuy/db";
+import { getDb, recordConsumerLogin } from "@waitseebuy/db";
 import { account, session, user, verification } from "@waitseebuy/db/schema";
+import { splitDisplayName } from "@waitseebuy/domain";
+import { sendTransactionalEmail, type EmailKind } from "@waitseebuy/notify";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { magicLink } from "better-auth/plugins";
 import { rememberDevMagicLink } from "./dev-magic-link";
+import { consumerUserFields } from "./user-fields";
 
 async function sendAuthEmail(input: {
   to: string;
   subject: string;
   text: string;
   url: string;
+  kind: EmailKind;
 }) {
-  if (process.env.RESEND_API_KEY) {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: process.env.EMAIL_FROM ?? "WaitSeeBuy <noreply@waitseebuy.com>",
-        to: input.to,
-        subject: input.subject,
-        text: input.text,
-      }),
-    });
-    if (!res.ok) {
-      throw new Error(`Resend failed: ${await res.text()}`);
-    }
-    return;
-  }
   rememberDevMagicLink(input.to, input.url);
-  console.log(`[waitseebuy] ${input.subject} for ${input.to}: ${input.url}`);
+  const sent = await sendTransactionalEmail({
+    to: input.to,
+    subject: input.subject,
+    text: input.text,
+    kind: input.kind,
+  });
+  if (!sent.delivered) {
+    console.log(`[waitseebuy] ${input.subject} for ${input.to}: ${input.url}`);
+  }
+}
+
+function namesFromProfile(input: {
+  firstName?: string;
+  lastName?: string;
+  name?: string;
+}) {
+  const split = splitDisplayName(input.name ?? "");
+  const firstName = input.firstName?.trim() || split.firstName;
+  const lastName = input.lastName?.trim() || split.lastName;
+  return {
+    ...(firstName ? { firstName } : {}),
+    ...(lastName ? { lastName } : {}),
+  };
 }
 
 function socialProviders() {
@@ -44,12 +51,26 @@ function socialProviders() {
     providers.google = {
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      mapProfileToUser: (profile) => ({
+        name: profile.name,
+        ...namesFromProfile({
+          firstName: profile.given_name,
+          lastName: profile.family_name,
+          name: profile.name,
+        }),
+      }),
     };
   }
   if (process.env.FACEBOOK_CLIENT_ID && process.env.FACEBOOK_CLIENT_SECRET) {
     providers.facebook = {
       clientId: process.env.FACEBOOK_CLIENT_ID,
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+      mapProfileToUser: (profile) => ({
+        name: profile.name,
+        ...namesFromProfile({
+          name: profile.name,
+        }),
+      }),
     };
   }
   if (process.env.APPLE_CLIENT_ID && process.env.APPLE_CLIENT_SECRET) {
@@ -69,6 +90,9 @@ export const auth = betterAuth({
     provider: "pg",
     schema: { user, session, account, verification },
   }),
+  user: {
+    additionalFields: consumerUserFields,
+  },
   socialProviders: socialProviders(),
   emailAndPassword: {
     enabled: true,
@@ -80,6 +104,7 @@ export const auth = betterAuth({
         subject: "Reset your WaitSeeBuy password",
         text: `Wait. See. Buy.\n\nReset your password: ${url}\n`,
         url,
+        kind: "password_reset",
       });
     },
   },
@@ -87,6 +112,46 @@ export const auth = betterAuth({
     accountLinking: {
       enabled: true,
       trustedProviders: ["google", "facebook", "apple"],
+    },
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (created) => {
+          const names = namesFromProfile({
+            firstName:
+              "firstName" in created && typeof created.firstName === "string"
+                ? created.firstName
+                : undefined,
+            lastName:
+              "lastName" in created && typeof created.lastName === "string"
+                ? created.lastName
+                : undefined,
+            name: created.name,
+          });
+          return { data: { ...created, ...names } };
+        },
+      },
+    },
+    session: {
+      create: {
+        after: async (created) => {
+          try {
+            await recordConsumerLogin(getDb(), {
+              userId: created.userId,
+              ...(created.ipAddress ? { ip: created.ipAddress } : {}),
+            });
+          } catch (error) {
+            console.error(
+              JSON.stringify({
+                at: new Date().toISOString(),
+                message: "consumer login telemetry failed",
+                error: error instanceof Error ? error.message : String(error),
+              }),
+            );
+          }
+        },
+      },
     },
   },
   plugins: [
@@ -97,6 +162,7 @@ export const auth = betterAuth({
           subject: "Your WaitSeeBuy sign-in link",
           text: `Wait. See. Buy.\n\nSign in: ${url}\n`,
           url,
+          kind: "magic_link",
         });
       },
     }),

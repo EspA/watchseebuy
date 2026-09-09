@@ -10,12 +10,9 @@ export default async function SignInPage({
   const callbackURL = safeNext(next);
 
   return (
-    <main className="page">
-      <h1>Sign in to watch</h1>
-      <p className="lede">
-        Search stays open. An account is only for watches and alerts.
-      </p>
-      <div className="panel" style={{ marginTop: 28, maxWidth: 420 }}>
+    <main className="page sign-in-page">
+      <div className="panel sign-in-card">
+        <h1>Sign in to watch</h1>
         <SignInForm
           callbackURL={callbackURL}
           available={{

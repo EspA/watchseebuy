@@ -1,25 +1,32 @@
-import { createEbayClientFromEnv } from "@waitseebuy/ebay";
+import { tick } from "./tick.ts";
 
 const INTERVAL_MS = Number(process.env.WORKER_INTERVAL_MS ?? 60_000);
 
-async function tick() {
-  const ebay = createEbayClientFromEnv();
-  console.log(
-    JSON.stringify({
-      at: new Date().toISOString(),
-      ebayConfigured: ebay.isConfigured(),
-      message:
-        "Worker tick. Next: load due coverage_queries, poll once each, match watches, enqueue alerts.",
-    }),
-  );
+async function runTick() {
+  try {
+    const result = await tick();
+    console.log(
+      JSON.stringify({
+        at: new Date().toISOString(),
+        ...result,
+      }),
+    );
+  } catch (error) {
+    console.error(
+      JSON.stringify({
+        at: new Date().toISOString(),
+        error: error instanceof Error ? error.message : String(error),
+      }),
+    );
+  }
 }
 
 async function main() {
   console.log("WaitSeeBuy worker started");
-  await tick();
+  await runTick();
   setInterval(() => {
-    void tick();
-  }, INTERVAL_MS);
+    void runTick();
+  }, Number.isFinite(INTERVAL_MS) && INTERVAL_MS > 0 ? INTERVAL_MS : 60_000);
 }
 
 void main();

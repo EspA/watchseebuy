@@ -78,7 +78,9 @@ export function EbaySiteSelect({ site }: { site: string }) {
                     setOpen(false);
                     window.location.assign(
                       searchUrlForSite(
-                        inputRef.current?.form ?? rootRef.current?.closest("form"),
+                        inputRef.current?.form ??
+                          rootRef.current?.closest("form") ??
+                          null,
                         option.value,
                       ),
                     );

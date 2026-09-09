@@ -11,8 +11,8 @@ import type {
 import { listingMatchesConfidence } from "./seller-confidence";
 import {
   listingMatchesCondition,
+  listingMatchesItemLocation,
   listingMatchesListingType,
-  listingPassesExcludeKeywords,
   type WatchCriteria,
 } from "./watch-criteria";
 
@@ -31,6 +31,8 @@ export type CandidateListing = {
   imageUrl?: string;
   condition?: string;
   conditionId?: string;
+  categoryIds?: string[];
+  itemLocationCountry?: string;
   webUrl?: string;
   description?: string;
   epid?: string;
@@ -62,10 +64,6 @@ export function matchListing(
       ? { importEstimateCents: listing.importEstimateCents }
       : {}),
   });
-
-  if (!listingPassesExcludeKeywords(listing, watch.excludeKeywords)) {
-    return { matches: false, landedCents, reasons: ["excluded word"] };
-  }
 
   const tokens = watch.query
     .toLowerCase()
@@ -99,6 +97,9 @@ export function matchListing(
 
   if (!listingMatchesListingType(listing, watch.listingType)) {
     return { matches: false, landedCents, reasons: ["listing type"] };
+  }
+  if (!listingMatchesItemLocation(listing, watch.itemLocation)) {
+    return { matches: false, landedCents, reasons: ["item location"] };
   }
   if (!listingMatchesConfidence(listing, watch.minConfidence)) {
     return { matches: false, landedCents, reasons: ["seller confidence"] };

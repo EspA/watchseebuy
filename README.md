@@ -12,16 +12,19 @@ Site: [waitseebuy.com](https://waitseebuy.com)
 
 ```
 apps/web          Next.js (public search, SSO, watches)
-apps/worker       coverage-query poll loop
+apps/admin        Next.js operator console (Google SSO allowlist)
+apps/worker       poll coverage queries, match, send alerts
 packages/domain   watches, comps, landed cost, matcher
 packages/ebay     official API client + EPN URLs
 packages/db       Drizzle schema (Postgres)
+packages/notify   alert email templates + SMTP send
 ```
 
 ## Local
 
 ```bash
 cp .env.example apps/web/.env.local
+cp .env.example apps/admin/.env.local
 # set BETTER_AUTH_SECRET to a long random string
 
 docker compose up -d
@@ -31,14 +34,18 @@ npm run dev
 ```
 
 - Web: http://localhost:3000
+- Admin: http://localhost:3001 (`npm run dev:admin`) — Google only, `ADMIN_ALLOWED_EMAIL`
 - Worker: starts with `npm run dev` (turbo) or `npm run dev:worker`
+- Mailpit: http://localhost:8025 (SMTP `127.0.0.1:1025`)
 
 Search works without an account. Saving a watch requires sign-in. Two collectors with the same keywords share one coverage query; landed max and ship-to stay on the watch.
 
-Google / Facebook / Apple buttons appear once those client IDs are in `.env.local`. Magic-link emails log to the web server console until `RESEND_API_KEY` is set. In local, the sign-in page also shows the last magic-link URL.
+Google / Facebook / Apple buttons appear once those client IDs are in `.env.local`. Magic-link and alert mail go to Mailpit when `SMTP_HOST` is set. Without it, they log to the server console. In local, the sign-in page also shows the last magic-link URL.
 
 eBay search stays empty until `EBAY_CLIENT_ID` / `EBAY_CLIENT_SECRET` are set. Coverage-query keys are already computed on every search.
 
 ## Auth callbacks
 
 Point each provider at `http://localhost:3000/api/auth/callback/{google|facebook|apple}`. Production: `https://waitseebuy.com/api/auth/callback/...`.
+
+Admin Google also needs `http://localhost:3001/api/auth/callback/google` and `https://admin.waitseebuy.com/api/auth/callback/google`.

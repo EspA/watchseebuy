@@ -16,8 +16,15 @@ export const user = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").notNull().default(false),
   image: text("image"),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
+  lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
+  lastIp: text("last_ip"),
+  lastCountry: text("last_country"),
+  loginCount: integer("login_count").notNull().default(0),
   shipToPostal: text("ship_to_postal"),
   timezone: text("timezone"),
+  theme: text("theme"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -115,10 +122,8 @@ export const watches = pgTable(
       .references(() => coverageQueries.id),
     label: text("label").notNull(),
     criteria: jsonb("criteria").notNull(),
-    quietHoursStart: text("quiet_hours_start"),
-    quietHoursEnd: text("quiet_hours_end"),
-    onlyIfDeal: integer("only_if_deal").notNull().default(1),
     alertFrequency: text("alert_frequency").notNull().default("on_change"),
+    lastAlertedAt: timestamp("last_alerted_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -184,3 +189,59 @@ export const soldCompCache = pgTable("sold_comp_cache", {
     .notNull()
     .defaultNow(),
 });
+
+export const ebayApiCalls = pgTable(
+  "ebay_api_calls",
+  {
+    id: text("id").primaryKey(),
+    calledAt: timestamp("called_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    api: text("api").notNull(),
+    source: text("source").notNull(),
+    ok: boolean("ok").notNull(),
+    httpStatus: integer("http_status"),
+    durationMs: integer("duration_ms").notNull(),
+  },
+  (t) => [
+    index("ebay_api_calls_called_at_idx").on(t.calledAt),
+    index("ebay_api_calls_api_called_at_idx").on(t.api, t.calledAt),
+  ],
+);
+
+export const emailSends = pgTable(
+  "email_sends",
+  {
+    id: text("id").primaryKey(),
+    sentAt: timestamp("sent_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    kind: text("kind").notNull(),
+    userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
+    status: text("status").notNull(),
+    ok: boolean("ok").notNull(),
+    error: text("error"),
+  },
+  (t) => [
+    index("email_sends_sent_at_idx").on(t.sentAt),
+    index("email_sends_kind_sent_at_idx").on(t.kind, t.sentAt),
+  ],
+);
+
+export const userEvents = pgTable(
+  "user_events",
+  {
+    id: text("id").primaryKey(),
+    occurredAt: timestamp("occurred_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
+    kind: text("kind").notNull(),
+    ip: text("ip"),
+    meta: jsonb("meta").$type<Record<string, unknown>>(),
+  },
+  (t) => [
+    index("user_events_kind_occurred_at_idx").on(t.kind, t.occurredAt),
+    index("user_events_user_id_kind_idx").on(t.userId, t.kind),
+  ],
+);

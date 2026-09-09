@@ -20,6 +20,9 @@ import {
   parseCardSet,
   parseExcludeWords,
   stripAllCatalogLabels,
+  unofficialExcludeWords,
+  withoutUnofficialExcludeWords,
+  withoutSealedExcludeWords,
   withoutSetExcludeWords,
   brickExcludeWords,
   parseFigureCompleteness,
@@ -104,6 +107,9 @@ export function syncCatalogSearchForm(
     gradeField.value = DEFAULT_CARD_GRADE;
   }
   const selection = readCatalogSelection(form);
+  const unofficial = form.elements.namedItem("unofficial");
+  const excludeUnofficial =
+    unofficial instanceof HTMLInputElement ? unofficial.value !== "0" : true;
   const cardCategory =
     parseCardCategory(selectValue(form, "cardCategory")) ??
     parseCardLine(selectValue(form, "cardLine"));
@@ -132,11 +138,16 @@ export function syncCatalogSearchForm(
         ...withoutCardExcludeWords(
           withoutFigureExcludeWords(
             withoutCardedExcludeWords(
-              withoutSetExcludeWords(parseExcludeWords(exclude.value)),
+              withoutUnofficialExcludeWords(
+                withoutSealedExcludeWords(
+                  withoutSetExcludeWords(parseExcludeWords(exclude.value)),
+                ),
+              ),
             ),
           ),
         ),
-        ...brickExcludeWords(selection.brickType),
+        ...unofficialExcludeWords(excludeUnofficial),
+        ...brickExcludeWords(selection.brickType, selection.brickStatus),
         ...wheelsExcludeWords(selection.wheelsPackaging),
         ...figureExcludeWords(selection.figurePackaging, selection.figurePunch),
         ...cardExcludeWords(cardSelection),

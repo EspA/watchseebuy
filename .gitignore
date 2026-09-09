@@ -10,4 +10,5 @@ dist/
 .vercel/
 *.log
 .cursor/*.data.json
+*.tsbuildinfo
 

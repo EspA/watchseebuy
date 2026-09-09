@@ -10,12 +10,15 @@ import {
   LOCATION_GROUPS,
   excludeWordsField,
   isEbayConditionId,
+  type FilterGroupId,
   type WatchCriteria,
+  FREE_WATCH_LIMIT,
 } from "@waitseebuy/domain";
 import { AutoSelect, AutoText } from "@/components/auto-search";
 import { BuildingBricksFilters } from "@/components/building-bricks-filters";
 import { CardFilters } from "@/components/card-filters";
 import { ClearFiltersLink } from "@/components/clear-filters";
+import { ExcludeUnofficialFilter } from "@/components/exclude-unofficial";
 import { FilterAccordion } from "@/components/filter-accordion";
 import { FiguresFilters } from "@/components/figures-filters";
 import { HotWheelsFilters } from "@/components/hot-wheels-filters";
@@ -28,11 +31,17 @@ export function SaveWatchForm({
   intent,
   signedIn,
   watchId,
+  settingsPostal,
+  suggestedGroup,
+  atWatchLimit,
 }: {
   q: string;
   intent: WatchCriteria;
   signedIn: boolean;
   watchId?: string;
+  settingsPostal?: string;
+  suggestedGroup?: FilterGroupId;
+  atWatchLimit?: boolean;
 }) {
   if (!q.trim()) return null;
 
@@ -88,11 +97,21 @@ export function SaveWatchForm({
         ? "vehicles"
         : bricksOpen
           ? "bricks"
-          : undefined;
+          : suggestedGroup;
 
   return (
     <div className="watch-save">
-      {signedIn ? (
+      {signedIn && atWatchLimit ? (
+        <>
+          <button className="btn" type="button" disabled>
+            Watch this
+          </button>
+          <p className="watch-note">
+            You can watch {FREE_WATCH_LIMIT} pieces at a time.{" "}
+            <Link href="/watches">Stop one</Link> to add another.
+          </p>
+        </>
+      ) : signedIn ? (
         <button
           className="btn"
           type="submit"
@@ -137,20 +156,40 @@ export function SaveWatchForm({
           />
         </label>
       </div>
-      <label>
-        <span className="filter-label-line">
-          Ship-to ZIP
-          <span className="watch-note">(fill for better price filtering)</span>
-        </span>
-        <AutoText
-          form={SEARCH_FORM}
-          name="zip"
-          type="text"
-          placeholder="optional"
-          autoComplete="postal-code"
-          defaultValue={intent.shipToPostal ?? ""}
-        />
-      </label>
+      {settingsPostal?.trim() ? (
+        <details className="filter-group">
+          <summary>
+            Ship-to ZIP
+            {intent.shipToPostal ? ` · ${intent.shipToPostal}` : ""}
+          </summary>
+          <label>
+            ZIP
+            <AutoText
+              form={SEARCH_FORM}
+              name="zip"
+              type="text"
+              placeholder="optional"
+              autoComplete="postal-code"
+              defaultValue={intent.shipToPostal ?? ""}
+            />
+          </label>
+        </details>
+      ) : (
+        <label>
+          <span className="filter-label-line">
+            Ship-to ZIP
+            <span className="watch-note">(fill for better price filtering)</span>
+          </span>
+          <AutoText
+            form={SEARCH_FORM}
+            name="zip"
+            type="text"
+            placeholder="optional"
+            autoComplete="postal-code"
+            defaultValue={intent.shipToPostal ?? ""}
+          />
+        </label>
+      )}
       <label>
         Condition
         <AutoSelect
@@ -212,6 +251,52 @@ export function SaveWatchForm({
           </AutoSelect>
         </label>
       </div>
+      <ExcludeUnofficialFilter checked={intent.excludeUnofficial !== false} />
+      <FilterAccordion
+        {...(specializedOpen ? { initialOpen: specializedOpen } : {})}
+      >
+      <BuildingBricksFilters
+        {...(intent.brickCategory
+          ? { brickCategory: intent.brickCategory }
+          : {})}
+        {...(intent.brickType ? { brickType: intent.brickType } : {})}
+        {...(intent.brickStatus ? { brickStatus: intent.brickStatus } : {})}
+      />
+      <CardFilters
+        {...(intent.cardCategory ? { cardCategory: intent.cardCategory } : {})}
+        {...(intent.cardGame ? { cardGame: intent.cardGame } : {})}
+        {...(intent.cardSet ? { cardSet: intent.cardSet } : {})}
+        {...(intent.rarity ? { rarity: intent.rarity } : {})}
+        {...(intent.printing ? { printing: intent.printing } : {})}
+        {...(intent.language ? { language: intent.language } : {})}
+        {...(intent.grader ? { grader: intent.grader } : {})}
+        {...(intent.cardGrade ? { cardGrade: intent.cardGrade } : {})}
+        {...(intent.cardNoReprints === false ? { cardNoReprints: false } : {})}
+        {...(intent.cardNoProxy === false ? { cardNoProxy: false } : {})}
+      />
+      <FiguresFilters
+        {...(intent.figureCategory
+          ? { figureCategory: intent.figureCategory }
+          : {})}
+        {...(intent.figureScale ? { figureScale: intent.figureScale } : {})}
+        {...(intent.figurePackaging
+          ? { figurePackaging: intent.figurePackaging }
+          : {})}
+        {...(intent.figureCompleteness
+          ? { figureCompleteness: intent.figureCompleteness }
+          : {})}
+        {...(intent.figurePunch ? { figurePunch: intent.figurePunch } : {})}
+      />
+      <HotWheelsFilters
+        {...(intent.wheelsCategory
+          ? { wheelsCategory: intent.wheelsCategory }
+          : {})}
+        {...(intent.wheelsScale ? { wheelsScale: intent.wheelsScale } : {})}
+        {...(intent.wheelsPackaging
+          ? { wheelsPackaging: intent.wheelsPackaging }
+          : {})}
+      />
+      </FilterAccordion>
       <details
         className="filter-group"
         {...(moreFiltersOpen ? { open: true } : {})}
@@ -273,51 +358,6 @@ export function SaveWatchForm({
           </label>
         </div>
       </details>
-      <FilterAccordion
-        {...(specializedOpen ? { initialOpen: specializedOpen } : {})}
-      >
-      <CardFilters
-        {...(intent.cardCategory ? { cardCategory: intent.cardCategory } : {})}
-        {...(intent.cardGame ? { cardGame: intent.cardGame } : {})}
-        {...(intent.cardSet ? { cardSet: intent.cardSet } : {})}
-        {...(intent.rarity ? { rarity: intent.rarity } : {})}
-        {...(intent.printing ? { printing: intent.printing } : {})}
-        {...(intent.language ? { language: intent.language } : {})}
-        {...(intent.grader ? { grader: intent.grader } : {})}
-        {...(intent.cardGrade ? { cardGrade: intent.cardGrade } : {})}
-        {...(intent.cardNoReprints === false ? { cardNoReprints: false } : {})}
-        {...(intent.cardNoProxy === false ? { cardNoProxy: false } : {})}
-      />
-      <FiguresFilters
-        {...(intent.figureCategory
-          ? { figureCategory: intent.figureCategory }
-          : {})}
-        {...(intent.figureScale ? { figureScale: intent.figureScale } : {})}
-        {...(intent.figurePackaging
-          ? { figurePackaging: intent.figurePackaging }
-          : {})}
-        {...(intent.figureCompleteness
-          ? { figureCompleteness: intent.figureCompleteness }
-          : {})}
-        {...(intent.figurePunch ? { figurePunch: intent.figurePunch } : {})}
-      />
-      <HotWheelsFilters
-        {...(intent.wheelsCategory
-          ? { wheelsCategory: intent.wheelsCategory }
-          : {})}
-        {...(intent.wheelsScale ? { wheelsScale: intent.wheelsScale } : {})}
-        {...(intent.wheelsPackaging
-          ? { wheelsPackaging: intent.wheelsPackaging }
-          : {})}
-      />
-      <BuildingBricksFilters
-        {...(intent.brickCategory
-          ? { brickCategory: intent.brickCategory }
-          : {})}
-        {...(intent.brickType ? { brickType: intent.brickType } : {})}
-        {...(intent.brickStatus ? { brickStatus: intent.brickStatus } : {})}
-      />
-      </FilterAccordion>
     </div>
   );
 }

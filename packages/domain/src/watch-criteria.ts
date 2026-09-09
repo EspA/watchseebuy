@@ -8,6 +8,7 @@ import {
   brickCategoryLabel,
   brickStatusLabel,
   brickTypeLabel,
+  withoutSealedExcludeWords,
   withoutSetExcludeWords,
 } from "./brick-filters.ts";
 import {
@@ -208,6 +209,115 @@ export function listingTypeLabel(listingType: ListingType): string {
   );
 }
 
+/** Browse `itemLocationRegion` is ignored on many marketplaces; country codes are reliable. */
+const REGION_COUNTRIES: Record<string, readonly string[]> = {
+  NORTH_AMERICA: ["US", "CA", "MX"],
+  UK_AND_IRELAND: ["GB", "IE"],
+  EUROPEAN_UNION: [
+    "AT",
+    "BE",
+    "BG",
+    "CY",
+    "CZ",
+    "DE",
+    "DK",
+    "EE",
+    "ES",
+    "FI",
+    "FR",
+    "GR",
+    "HR",
+    "HU",
+    "IE",
+    "IT",
+    "LT",
+    "LU",
+    "LV",
+    "MT",
+    "NL",
+    "PL",
+    "PT",
+    "RO",
+    "SE",
+    "SI",
+    "SK",
+  ],
+  CONTINENTAL_EUROPE: [
+    "AT",
+    "BE",
+    "BG",
+    "CH",
+    "CY",
+    "CZ",
+    "DE",
+    "DK",
+    "EE",
+    "ES",
+    "FI",
+    "FR",
+    "GR",
+    "HR",
+    "HU",
+    "IS",
+    "IT",
+    "LI",
+    "LT",
+    "LU",
+    "LV",
+    "MT",
+    "NL",
+    "NO",
+    "PL",
+    "PT",
+    "RO",
+    "SE",
+    "SI",
+    "SK",
+  ],
+  ASIA: [
+    "CN",
+    "HK",
+    "ID",
+    "IN",
+    "JP",
+    "KR",
+    "MY",
+    "PH",
+    "SG",
+    "TH",
+    "TW",
+    "VN",
+  ],
+};
+
+export function itemLocationCountries(
+  value: string | undefined,
+): string[] | undefined {
+  if (!value || value === "any" || value === "region:WORLDWIDE") {
+    return undefined;
+  }
+  if (value.startsWith("country:")) {
+    const code = value.slice("country:".length).toUpperCase();
+    return /^[A-Z]{2}$/.test(code) ? [code] : undefined;
+  }
+  if (value.startsWith("region:")) {
+    const countries = REGION_COUNTRIES[value.slice("region:".length)];
+    return countries ? [...countries] : undefined;
+  }
+  return undefined;
+}
+
+export function listingMatchesItemLocation(
+  listing: { itemLocationCountry?: string },
+  itemLocation: string | undefined,
+): boolean {
+  const allowed = itemLocationCountries(itemLocation);
+  if (!allowed) return true;
+  const country = listing.itemLocationCountry?.trim().toUpperCase();
+  if (!country) return true;
+  return allowed.includes(country);
+}
+
 export function parseItemLocation(raw: string | undefined): string {
   if (!raw) return "any";
   return ITEM_LOCATION_FILTERS.some((option) => option.value === raw)
@@ -238,6 +348,26 @@ export function availableToLabel(country: string | undefined): string {
   );
 }
 
+export function describeListingLocation(
+  countryCode: string | undefined,
+): string | undefined {
+  const code = countryCode?.trim().toUpperCase();
+  if (!code || !/^[A-Z]{2}$/.test(code)) return undefined;
+  const named =
+    AVAILABLE_TO_FILTERS.find((option) => option.value === code)?.label ??
+    regionDisplayName(code) ??
+    code;
+  return `Located in ${named}`;
+}
+
+function regionDisplayName(code: string): string | undefined {
+  try {
+    return new Intl.DisplayNames(["en"], { type: "region" }).of(code);
+  } catch {
+    return undefined;
+  }
+}
+
 export function parseExcludeWords(raw: string | undefined): string[] {
   if (!raw?.trim()) return [];
   const trimmed = raw.trim();
@@ -256,9 +386,13 @@ export function parseExcludeWords(raw: string | undefined): string[] {
   return words;
 }
 
-export function userExcludeWords(excludeKeywords: string[]): string[] {
+export function userExcludeWords(
+  excludeKeywords: string[] | undefined,
+): string[] {
   const defaults = new Set(DEFAULT_EXCLUDES.map((word) => word.toLowerCase()));
-  return excludeKeywords.filter((word) => !defaults.has(word.toLowerCase()));
+  return (excludeKeywords ?? []).filter(
+    (word) => !defaults.has(word.toLowerCase()),
+  );
 }
 
 export function mergeExcludeKeywords(
@@ -277,21 +411,10 @@ export function mergeExcludeKeywords(
   return words;
 }
 
-export function excludeWordsField(excludeKeywords: string[]): string {
+export function excludeWordsField(
+  excludeKeywords: string[] | undefined,
+): string {
   return userExcludeWords(excludeKeywords).join(", ");
-}
-
-export function listingPassesExcludeKeywords(
-  listing: { title?: string; description?: string },
-  excludeKeywords: string[],
-): boolean {
-  const haystack = [listing.title, listing.description]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-  return !excludeKeywords.some(
-    (word) => word && haystack.includes(word.toLowerCase()),
-  );
 }
 
 export function ebaySearchQuery(
@@ -336,6 +459,7 @@ export type WatchCriteria = {
   cardGame?: string;
   cardNoReprints?: boolean;
   cardNoProxy?: boolean;
+  excludeUnofficial?: boolean;
   figureCategory?: string;
   figureScale?: string;
   figurePackaging?: string;
@@ -349,6 +473,24 @@ export type WatchCriteria = {
   wheelsPackaging?: string;
   ebaySite: string;
 };
+
+export function asWatchCriteria(value: unknown): WatchCriteria | null {
+  if (!value || typeof value !== "object") return null;
+  if (!("query" in value) || typeof (value as { query?: unknown }).query !== "string") {
+    return null;
+  }
+  const raw = value as Partial<WatchCriteria> & { query: string };
+  return {
+    ...raw,
+    query: raw.query,
+    condition: raw.condition ?? "any",
+    excludeKeywords: Array.isArray(raw.excludeKeywords)
+      ? raw.excludeKeywords
+      : [],
+    listingType: raw.listingType ?? "all",
+    ebaySite: raw.ebaySite ?? DEFAULT_SITE,
+  };
+}
 
 export type CoverageQuery = {
   key: string;
@@ -367,6 +509,44 @@ export type CoverageQuery = {
 const DEFAULT_SITE = DEFAULT_EBAY_SITE;
 
 const DEFAULT_EXCLUDES = ["reprint", "reprints", "proxy", "for parts"];
+
+/** Added when Exclude unofficial pieces is on (default). */
+export const UNOFFICIAL_EXCLUDE_WORDS = [
+  "custom",
+  "moc",
+  "mock",
+  "replica",
+  "fake",
+  "compatible",
+  "copy",
+  "generic",
+  "unofficial",
+  "reproduction",
+  "imitation",
+  "dummy",
+  "duplicate",
+  "counterpart",
+  "unbranded",
+  "unlicensed",
+  "re-creation",
+];
+
+export function unofficialExcludeWords(
+  excludeUnofficial?: boolean,
+): string[] {
+  return excludeUnofficial === false ? [] : [...UNOFFICIAL_EXCLUDE_WORDS];
+}
+
+export function isUnofficialExcludeWord(word: string): boolean {
+  const key = word.toLowerCase();
+  return UNOFFICIAL_EXCLUDE_WORDS.some(
+    (reserved) => reserved.toLowerCase() === key,
+  );
+}
+
+export function withoutUnofficialExcludeWords(words: string[]): string[] {
+  return words.filter((word) => !isUnofficialExcludeWord(word));
+}
 
 const GRADE_RE = /\b(psa|bgs|sgc|cgc)\s*(\d+(?:\.\d+)?)\b/i;
 const MONEY_CAP = "(\\d[\\d,]*(?:\\.\\d{1,2})?)";
@@ -408,7 +588,8 @@ export function parseSearchIntent(raw: string): WatchCriteria {
   const criteria: WatchCriteria = {
     query: rest,
     condition: "any",
-    excludeKeywords: [...DEFAULT_EXCLUDES],
+    excludeKeywords: mergeExcludeKeywords([...UNOFFICIAL_EXCLUDE_WORDS]),
+    excludeUnofficial: true,
     listingType: "all",
     ebaySite: DEFAULT_SITE,
   };
@@ -472,6 +653,7 @@ export function applyWatchOverrides(
     cardGame?: string;
     cardNoReprints?: boolean;
     cardNoProxy?: boolean;
+    excludeUnofficial?: boolean;
     figureCategory?: string;
     figureScale?: string;
     figurePackaging?: string;
@@ -497,6 +679,7 @@ export function applyWatchOverrides(
     clearCardGame?: boolean;
     clearCardNoReprints?: boolean;
     clearCardNoProxy?: boolean;
+    clearExcludeUnofficial?: boolean;
     clearFigureCategory?: boolean;
     clearFigureScale?: boolean;
     clearFigurePackaging?: boolean;
@@ -603,6 +786,10 @@ export function applyWatchOverrides(
   else if (overrides.cardNoProxy !== undefined) {
     next.cardNoProxy = overrides.cardNoProxy;
   }
+  if (overrides.clearExcludeUnofficial) delete next.excludeUnofficial;
+  else if (overrides.excludeUnofficial !== undefined) {
+    next.excludeUnofficial = overrides.excludeUnofficial;
+  }
   if (overrides.clearFigureCategory) delete next.figureCategory;
   else if (overrides.figureCategory !== undefined) {
     next.figureCategory = overrides.figureCategory;
@@ -665,50 +852,27 @@ export function applyWatchOverrides(
   else if (overrides.wheelsPackaging !== undefined) {
     next.wheelsPackaging = overrides.wheelsPackaging;
   }
-  if (
-    overrides.clearBrickType ||
-    overrides.brickType !== undefined ||
-    next.brickType === "set" ||
-    overrides.clearWheelsPackaging ||
-    overrides.wheelsPackaging !== undefined ||
-    next.wheelsPackaging === "carded" ||
-    overrides.clearFigurePackaging ||
-    overrides.figurePackaging !== undefined ||
-    overrides.clearFigurePunch ||
-    overrides.figurePunch !== undefined ||
-    next.figurePackaging === "carded" ||
-    next.figurePunch === "punched" ||
-    overrides.clearGrader ||
-    overrides.grader !== undefined ||
-    next.grader === "raw" ||
-    overrides.clearCardCategory ||
-    overrides.cardCategory !== undefined ||
-    Boolean(next.cardCategory) ||
-    overrides.clearCardGame ||
-    overrides.cardGame !== undefined ||
-    Boolean(next.cardGame) ||
-    overrides.cardNoReprints !== undefined ||
-    overrides.clearCardNoReprints ||
-    overrides.cardNoProxy !== undefined ||
-    overrides.clearCardNoProxy
-  ) {
-    next.excludeKeywords = mergeExcludeKeywords(
-      [
-        ...withoutCardExcludeWords(
-          withoutFigureExcludeWords(
-            withoutCardedExcludeWords(
-              withoutSetExcludeWords(userExcludeWords(next.excludeKeywords)),
+  next.excludeKeywords = mergeExcludeKeywords(
+    [
+      ...withoutCardExcludeWords(
+        withoutFigureExcludeWords(
+          withoutCardedExcludeWords(
+            withoutUnofficialExcludeWords(
+              withoutSealedExcludeWords(
+                withoutSetExcludeWords(userExcludeWords(next.excludeKeywords)),
+              ),
             ),
           ),
         ),
-        ...brickExcludeWords(next.brickType),
-        ...wheelsExcludeWords(next.wheelsPackaging),
-        ...figureExcludeWords(next.figurePackaging, next.figurePunch),
-        ...cardExcludeWords(next),
-      ],
-      cardSkippedDefaultExcludes(next),
-    );
-  }
+      ),
+      ...unofficialExcludeWords(next.excludeUnofficial),
+      ...brickExcludeWords(next.brickType, next.brickStatus),
+      ...wheelsExcludeWords(next.wheelsPackaging),
+      ...figureExcludeWords(next.figurePackaging, next.figurePunch),
+      ...cardExcludeWords(next),
+    ],
+    cardSkippedDefaultExcludes(next),
+  );
   return next;
 }
 
@@ -955,12 +1119,7 @@ function buyingOptionsFilter(listingType: ListingType | undefined): string | und
 }
 
 function itemLocationFilter(value: string | undefined): string | undefined {
-  if (!value || value === "any") return undefined;
-  if (value.startsWith("region:")) {
-    return `itemLocationRegion:{${value.slice("region:".length)}}`;
-  }
-  if (value.startsWith("country:")) {
-    return `itemLocationCountry:{${value.slice("country:".length)}}`;
-  }
-  return undefined;
+  const countries = itemLocationCountries(value);
+  if (!countries?.length) return undefined;
+  return `itemLocationCountry:{${countries.join("|")}}`;
 }

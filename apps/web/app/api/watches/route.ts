@@ -1,4 +1,4 @@
-import { toCoverageQuery } from "@waitseebuy/domain";
+import { searchParamsFromIntent, toCoverageQuery, watchLimitForPlan } from "@waitseebuy/domain";
 import { getDb, saveWatch } from "@waitseebuy/db";
 import { NextResponse } from "next/server";
 import { intentFromSearchQuery } from "@/lib/search-params";
@@ -41,6 +41,7 @@ export async function POST(request: Request) {
     cardGame: String(form.get("cardGame") ?? ""),
     cardNoReprints: String(form.get("cardNoReprints") ?? ""),
     cardNoProxy: String(form.get("cardNoProxy") ?? ""),
+    unofficial: String(form.get("unofficial") ?? ""),
     figureCategory: String(form.get("figureCategory") ?? ""),
     figureScale: String(form.get("figureScale") ?? ""),
     figurePackaging: String(form.get("figurePackaging") ?? ""),
@@ -57,13 +58,20 @@ export async function POST(request: Request) {
   const coverage = toCoverageQuery(intent);
 
   const watchId = String(form.get("watch") ?? "").trim();
-  await saveWatch(getDb(), {
+  const saved = await saveWatch(getDb(), {
     userId: session.user.id,
     label: q,
     criteria: intent,
     coverage,
+    watchLimit: watchLimitForPlan("free"),
     ...(watchId ? { watchId } : {}),
   });
+
+  if (!saved.ok) {
+    const params = searchParamsFromIntent(q, intent, watchId || undefined);
+    params.set("error", "limit");
+    return NextResponse.redirect(new URL(`/search?${params}`, request.url), 303);
+  }
 
   return NextResponse.redirect(new URL("/watches?saved=1", request.url), 303);
 }

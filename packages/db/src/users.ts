@@ -7,6 +7,7 @@ export type UserSettings = {
   email: string;
   shipToPostal: string | null;
   timezone: string | null;
+  theme: string | null;
 };
 
 export type UserAuthSummary = {
@@ -24,6 +25,7 @@ export async function getUserSettings(
       email: user.email,
       shipToPostal: user.shipToPostal,
       timezone: user.timezone,
+      theme: user.theme,
     })
     .from(user)
     .where(eq(user.id, userId))
@@ -37,15 +39,18 @@ export async function updateUserSettings(
     userId: string;
     shipToPostal?: string | null;
     timezone?: string | null;
+    theme?: string | null;
   },
 ) {
   const patch: {
     shipToPostal?: string | null;
     timezone?: string | null;
+    theme?: string | null;
     updatedAt: Date;
   } = { updatedAt: new Date() };
   if (input.shipToPostal !== undefined) patch.shipToPostal = input.shipToPostal;
   if (input.timezone !== undefined) patch.timezone = input.timezone;
+  if (input.theme !== undefined) patch.theme = input.theme;
 
   const [updated] = await db
     .update(user)
@@ -56,6 +61,7 @@ export async function updateUserSettings(
       email: user.email,
       shipToPostal: user.shipToPostal,
       timezone: user.timezone,
+      theme: user.theme,
     });
   return updated ?? null;
 }
