@@ -1,5 +1,6 @@
 import { getSessionCookie } from "better-auth/cookies";
 import { NextResponse, type NextRequest } from "next/server";
+import { absoluteUrl } from "./lib/absolute-url";
 import { ADMIN_COOKIE_PREFIX } from "./lib/cookies";
 
 export function middleware(request: NextRequest) {
@@ -12,7 +13,7 @@ export function middleware(request: NextRequest) {
     cookiePrefix: ADMIN_COOKIE_PREFIX,
   });
   if (!session) {
-    return NextResponse.redirect(new URL("/sign-in", request.url));
+    return NextResponse.redirect(absoluteUrl("/sign-in", request));
   }
   return NextResponse.next();
 }

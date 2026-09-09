@@ -1,5 +1,6 @@
 import { deleteWatchForUser, getDb } from "@waitseebuy/db";
 import { NextResponse } from "next/server";
+import { absoluteUrl } from "@/lib/absolute-url";
 import { getSession } from "@/lib/session";
 
 export async function POST(
@@ -8,7 +9,7 @@ export async function POST(
 ) {
   const session = await getSession();
   if (!session) {
-    return NextResponse.redirect(new URL("/sign-in", request.url), 303);
+    return NextResponse.redirect(absoluteUrl("/sign-in", request), 303);
   }
 
   const { id } = await params;
@@ -17,5 +18,5 @@ export async function POST(
     watchId: id,
   });
 
-  return NextResponse.redirect(new URL("/watches", request.url), 303);
+  return NextResponse.redirect(absoluteUrl("/watches", request), 303);
 }

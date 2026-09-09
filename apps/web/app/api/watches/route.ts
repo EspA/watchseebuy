@@ -1,13 +1,14 @@
 import { searchParamsFromIntent, toCoverageQuery, watchLimitForPlan } from "@waitseebuy/domain";
 import { getDb, saveWatch } from "@waitseebuy/db";
 import { NextResponse } from "next/server";
+import { absoluteUrl } from "@/lib/absolute-url";
 import { intentFromSearchQuery } from "@/lib/search-params";
 import { getSession } from "@/lib/session";
 
 export async function POST(request: Request) {
   const session = await getSession();
   if (!session) {
-    const signIn = new URL("/sign-in", request.url);
+    const signIn = absoluteUrl("/sign-in", request);
     signIn.searchParams.set("next", "/search");
     return NextResponse.redirect(signIn, 303);
   }
@@ -15,7 +16,7 @@ export async function POST(request: Request) {
   const form = await request.formData();
   const q = String(form.get("q") ?? "").trim();
   if (!q) {
-    return NextResponse.redirect(new URL("/search?error=empty", request.url), 303);
+    return NextResponse.redirect(absoluteUrl("/search?error=empty", request), 303);
   }
 
   const intent = intentFromSearchQuery({
@@ -70,8 +71,8 @@ export async function POST(request: Request) {
   if (!saved.ok) {
     const params = searchParamsFromIntent(q, intent, watchId || undefined);
     params.set("error", "limit");
-    return NextResponse.redirect(new URL(`/search?${params}`, request.url), 303);
+    return NextResponse.redirect(absoluteUrl(`/search?${params}`, request), 303);
   }
 
-  return NextResponse.redirect(new URL("/watches?saved=1", request.url), 303);
+  return NextResponse.redirect(absoluteUrl("/watches?saved=1", request), 303);
 }

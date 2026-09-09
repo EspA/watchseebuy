@@ -1,12 +1,13 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
+import { absoluteUrl } from "@/lib/absolute-url";
 import { auth } from "@/lib/auth";
 import { getSession } from "@/lib/session";
 
 export async function POST(request: Request) {
   const session = await getSession();
   if (!session) {
-    const signIn = new URL("/sign-in", request.url);
+    const signIn = absoluteUrl("/sign-in", request);
     signIn.searchParams.set("next", "/settings");
     return NextResponse.redirect(signIn, 303);
   }
@@ -15,7 +16,7 @@ export async function POST(request: Request) {
   const password = String(form.get("password") ?? "");
   if (password.length < 8) {
     return NextResponse.redirect(
-      new URL("/settings?password=short", request.url),
+      absoluteUrl("/settings?password=short", request),
       303,
     );
   }
@@ -27,10 +28,10 @@ export async function POST(request: Request) {
     });
   } catch {
     return NextResponse.redirect(
-      new URL("/settings?password=failed", request.url),
+      absoluteUrl("/settings?password=failed", request),
       303,
     );
   }
 
-  return NextResponse.redirect(new URL("/settings?password=set", request.url), 303);
+  return NextResponse.redirect(absoluteUrl("/settings?password=set", request), 303);
 }
