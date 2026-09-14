@@ -28,6 +28,8 @@ export const user = pgTable("user", {
   shipToPostal: text("ship_to_postal"),
   timezone: text("timezone"),
   theme: text("theme"),
+  ebaySite: text("ebay_site"),
+  locale: text("locale"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

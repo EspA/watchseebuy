@@ -6,6 +6,16 @@
  * Packaging, completeness, and punch inject keywords.
  */
 
+import {
+  DEFAULT_APP_LOCALE,
+  type AppLocale,
+} from "./ebay-sites.ts";
+import {
+  localizeExcludeWords,
+  localizeQueryTerm,
+  reservedWordSet,
+} from "./store-query-terms.ts";
+
 export type FigureFilterOption = { value: string; label: string };
 
 export type FigureCategoryGroup =
@@ -265,7 +275,10 @@ export function figureScaleAspectFilter(
   return `categoryId:${category},Scale:{${aspect}}`;
 }
 
-export function figureQueryTerms(selection: FigureQuerySelection): string[] {
+export function figureQueryTerms(
+  selection: FigureQuerySelection,
+  locale: AppLocale = DEFAULT_APP_LOCALE,
+): string[] {
   const terms: string[] = [];
   const packaging = findOption(FIGURE_PACKAGING_FILTERS, selection.figurePackaging);
   const completeness = findOption(
@@ -273,9 +286,15 @@ export function figureQueryTerms(selection: FigureQuerySelection): string[] {
     selection.figureCompleteness,
   );
   const punch = findOption(FIGURE_PUNCH_FILTERS, selection.figurePunch);
-  if (packaging?.queryTerm) terms.push(packaging.queryTerm);
-  if (completeness?.queryTerm) terms.push(completeness.queryTerm);
-  if (punch?.queryTerm) terms.push(punch.queryTerm);
+  if (packaging?.queryTerm) {
+    terms.push(localizeQueryTerm(packaging.queryTerm, locale));
+  }
+  if (completeness?.queryTerm) {
+    terms.push(localizeQueryTerm(completeness.queryTerm, locale));
+  }
+  if (punch?.queryTerm) {
+    terms.push(localizeQueryTerm(punch.queryTerm, locale));
+  }
   return terms;
 }
 
@@ -289,13 +308,13 @@ export function allFigureQueryTerms(): string[] {
   return [...new Set(terms)].sort((a, b) => b.length - a.length);
 }
 
-const FIGURE_RESERVED_EXCLUDES = [
+const FIGURE_RESERVED_EXCLUDES = reservedWordSet([
   ...FIGURE_CARDED_EXCLUDE_WORDS,
   ...FIGURE_PUNCHED_EXCLUDE_WORDS,
-].map((word) => word.toLowerCase());
+]);
 
 export function isFigureExcludeWord(word: string): boolean {
-  return FIGURE_RESERVED_EXCLUDES.includes(word.toLowerCase());
+  return FIGURE_RESERVED_EXCLUDES.has(word.toLowerCase());
 }
 
 export function withoutFigureExcludeWords(words: string[]): string[] {
@@ -305,9 +324,10 @@ export function withoutFigureExcludeWords(words: string[]): string[] {
 export function figureExcludeWords(
   packaging: string | undefined,
   punch?: string,
+  locale: AppLocale = DEFAULT_APP_LOCALE,
 ): string[] {
   const words: string[] = [];
   if (packaging === "carded") words.push(...FIGURE_CARDED_EXCLUDE_WORDS);
   if (punch === "punched") words.push(...FIGURE_PUNCHED_EXCLUDE_WORDS);
-  return words;
+  return localizeExcludeWords(words, locale);
 }

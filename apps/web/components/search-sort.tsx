@@ -1,21 +1,25 @@
+"use client";
+
+import { useTranslations } from "next-intl";
 import { AutoSelect } from "@/components/auto-search";
 import type { SearchSort } from "@/lib/search-sort";
 
 export function SearchSort({ value }: { value: SearchSort }) {
+  const t = useTranslations("search");
   return (
     <label className="search-sort">
-      Sort
+      <span className="search-sort-label">{t("sort")}</span>
       <AutoSelect
         form="search-form"
         name="sort"
         defaultValue={value}
       >
-        <option value="price">Total price: low to high</option>
-        <option value="price-desc">Total price: high to low</option>
-        <option value="price-score">Price score: high to low</option>
-        <option value="price-score-asc">Price score: low to high</option>
-        <option value="seller-score">Seller score: high to low</option>
-        <option value="seller-score-asc">Seller score: low to high</option>
+        <option value="price">{t("sortPriceAsc")}</option>
+        <option value="price-desc">{t("sortPriceDesc")}</option>
+        <option value="price-score">{t("sortScoreDesc")}</option>
+        <option value="price-score-asc">{t("sortScoreAsc")}</option>
+        <option value="seller-score">{t("sortSellerDesc")}</option>
+        <option value="seller-score-asc">{t("sortSellerAsc")}</option>
       </AutoSelect>
     </label>
   );

@@ -46,6 +46,10 @@ export default async function UserDetailPage({
         <dd>{user.shipToPostal ?? "—"}</dd>
         <dt>Timezone</dt>
         <dd>{user.timezone ?? "—"}</dd>
+        <dt>eBay store</dt>
+        <dd>{user.ebaySite ?? "—"}</dd>
+        <dt>Language</dt>
+        <dd>{user.locale ?? "—"}</dd>
         <dt>Created</dt>
         <dd>{formatDate(user.createdAt)}</dd>
         <dt>Watches</dt>

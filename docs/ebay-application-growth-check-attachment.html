@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>WaitSeeBuy — eBay Application Growth Check</title>
+    <style>
+      @page {
+        size: letter;
+        margin: 0.7in 0.75in 0.75in;
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        padding: 0;
+        color: #1a1a1a;
+        font: 10.5pt/1.45 "Helvetica Neue", Helvetica, Arial, sans-serif;
+      }
+      h1 {
+        font-size: 18pt;
+        font-weight: 650;
+        letter-spacing: -0.02em;
+        margin: 0 0 4pt;
+      }
+      h2 {
+        font-size: 12pt;
+        font-weight: 650;
+        margin: 20pt 0 8pt;
+        padding-bottom: 3pt;
+        border-bottom: 1px solid #ccc;
+      }
+      h3 {
+        font-size: 10.5pt;
+        font-weight: 650;
+        margin: 12pt 0 4pt;
+      }
+      p, li { margin: 0 0 7pt; }
+      ul { margin: 0 0 8pt; padding-left: 1.15em; }
+      .kicker {
+        font-size: 8.5pt;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #555;
+        margin: 0 0 6pt;
+      }
+      .lede { font-size: 11pt; color: #333; }
+      .meta {
+        margin: 10pt 0 0;
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .meta th, .meta td, table.data th, table.data td {
+        border: 1px solid #d0d0d0;
+        padding: 5pt 7pt;
+        text-align: left;
+        vertical-align: top;
+      }
+      .meta th, table.data th {
+        width: 32%;
+        background: #f4f4f4;
+        font-weight: 600;
+      }
+      table.data { width: 100%; border-collapse: collapse; margin: 0 0 8pt; }
+      table.data th { width: auto; font-size: 8.5pt; }
+      table.data td { font-size: 9.5pt; }
+      .foot {
+        margin-top: 16pt;
+        padding-top: 8pt;
+        border-top: 1px solid #ccc;
+        font-size: 8.5pt;
+        color: #555;
+      }
+      .avoid, ul, table.data, table.meta { break-inside: avoid; page-break-inside: avoid; }
+      h2 { break-after: avoid; page-break-after: avoid; }
+      h3 { break-after: avoid; page-break-after: avoid; }
+    </style>
+  </head>
+  <body>
+    <p class="kicker">eBay Developers Program · Application Growth Check</p>
+    <h1>WaitSeeBuy application brief</h1>
+    <p class="lede">
+      Live consumer web application at
+      <strong>https://waitseebuy.com</strong>. This attachment describes the
+      product, official eBay APIs we call, why we need a higher Browse call
+      limit, and security and compliance details that do not fit on the
+      growth-check form.
+    </p>
+
+    <table class="meta">
+      <tr><th>Application title</th><td>WaitSeeBuy</td></tr>
+      <tr><th>Application URL</th><td>https://waitseebuy.com</td></tr>
+      <tr><th>Production App ID</th><td>your-production-app-id</td></tr>
+      <tr><th>Purpose of request</th><td>Increase Buy Browse API call limit to 50,000 calls/day</td></tr>
+      <tr><th>eBay Partner Network</th><td>Yes · publisher ID 1000001</td></tr>
+      <tr><th>Reviewer test path</th><td>https://waitseebuy.com/search (public search; no eBay user token)</td></tr>
+      <tr><th>Privacy / terms</th><td>https://waitseebuy.com/privacy · https://waitseebuy.com/terms</td></tr>
+      <tr><th>Account deletion</th><td>https://waitseebuy.com/api/ebay/account-deletion</td></tr>
+      <tr><th>Contact</th><td>contact@waitseebuy.com</td></tr>
+    </table>
+
+    <h2>1. What WaitSeeBuy is</h2>
+    <p>
+      WaitSeeBuy helps collectible buyers — cards, LEGO, vintage toys, and
+      similar lines — decide whether an eBay listing is worth buying at the
+      <strong>price to their door</strong> (item + shipping + a simple
+      import/tax estimate). Collectors search listings, save intent watches,
+      and receive email when a match appears. Purchase always happens on eBay.
+      We are not a seller tool, not a scraper, and not an auction sniper.
+    </p>
+    <p>
+      The product is live. The number of users is growing quickly, which
+      increases public searches and saved watches. Search and watch coverage
+      share one Browse daily quota. The default 5,000 calls/day cannot sustain
+      that growth. We request 50,000 Browse calls/day as soon as possible so
+      search and alerts remain available.
+    </p>
+
+    <h2>2. Main features</h2>
+    <div class="avoid">
+      <h3>Public search</h3>
+      <p>
+        Anyone can search without an account. The collector types the piece
+        (for example a PSA 10 card, a factory-sealed set, or a carded figure)
+        and optional filters: condition language, listing type, item location,
+        ship-to ZIP or country, and a maximum price to their door. Results
+        come only from the official Buy Browse API. The browser never calls
+        eBay.
+      </p>
+    </div>
+    <div class="avoid">
+      <h3>Price to your door, price score, seller score</h3>
+      <p>
+        Every result shows the all-in price to the collector’s address, a
+        price score versus similar listings in that result set, and a seller
+        score from feedback. We do not hide fees behind a sign-in wall.
+      </p>
+    </div>
+    <div class="avoid">
+      <h3>Intent watches</h3>
+      <p>
+        Saving a watch and receiving alerts requires a WaitSeeBuy account
+        (Google, Apple, Facebook, or email magic link). A watch stores the
+        collector’s meaning — piece, condition, max price to their door,
+        location — not a raw clone of eBay saved-search parameters. Free
+        accounts may save a limited number of watches.
+      </p>
+    </div>
+    <div class="avoid">
+      <h3>Quiet alerts</h3>
+      <p>
+        The collector chooses cadence: when a new matching listing appears, a
+        daily note, or a weekly recap (8pm in their timezone). Emails include
+        the same listing card as search. Volume is not the product; accuracy
+        is. We do not compete on sub-minute polling.
+      </p>
+    </div>
+    <div class="avoid">
+      <h3>Buy on eBay (EPN)</h3>
+      <p>
+        Buy always lands on the eBay item page. Clicks go through a
+        first-party WaitSeeBuy URL, then to eBay with Partner Network
+        parameters for publisher <strong>1000001</strong>. We use a text
+        “Buy on eBay” link, not the eBay logo. If an ad blocker strips
+        affiliate parameters, we still open the plain item URL so the
+        collector can complete the purchase. In-app checkout (Buy APIs) is
+        not used.
+      </p>
+    </div>
+
+    <h2>3. Official eBay APIs only</h2>
+    <p>
+      One shared TypeScript client, one application (client-credentials)
+      OAuth token. Users never authenticate to eBay through us. We do not
+      collect eBay passwords or user tokens.
+    </p>
+    <table class="data">
+      <thead>
+        <tr>
+          <th>API</th>
+          <th>Call</th>
+          <th>Use</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Buy Browse</td>
+          <td>GET /buy/browse/v1/item_summary/search</td>
+          <td>Public search and hourly coverage polls. Limit 24. Field group EXTENDED.</td>
+        </tr>
+        <tr>
+          <td>Buy Browse</td>
+          <td>GET /buy/browse/v1/item/{itemId}</td>
+          <td>Hydrate filtered listings only (PRODUCT). Unique IDs. Concurrency cap 5.</td>
+        </tr>
+        <tr>
+          <td>Identity</td>
+          <td>POST /identity/v1/oauth2/token</td>
+          <td>Application token, cached in process until near expiry.</td>
+        </tr>
+        <tr>
+          <td>Commerce Notification</td>
+          <td>GET /commerce/notification/v1/public_key/{kid}</td>
+          <td>Verify X-EBAY-SIGNATURE on marketplace account-deletion POSTs. Key cached 1 hour.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      We do <strong>not</strong> call Trading, Finding, Feed, bulk getItems
+      (Limited Release), or Order / in-app checkout APIs.
+    </p>
+
+    <div class="avoid">
+    <h2>4. Efficient use of quota</h2>
+    <p>
+      The hard problem is eBay quota, not HTTP. We designed the data model so
+      we never poll once per user.
+    </p>
+    <ul>
+      <li>
+        <strong>Coverage-query coalescing.</strong> Many watches compile to
+        the same coarser eBay search (keywords, category, condition class,
+        site). The worker polls each due query about once per hour, then
+        matches listings in process.
+      </li>
+      <li>
+        <strong>getItem after local filters.</strong> Landed-cost, condition,
+        listing type, location, and confidence filters run on search
+        summaries first. Only remaining listings are hydrated.
+      </li>
+      <li>
+        <strong>Seen listings.</strong> Postgres unique (watch, item) so we
+        do not alert twice or re-fetch for a duplicate match.
+      </li>
+      <li>
+        <strong>Single client.</strong> Token cache, concurrency cap of 5,
+        no tight retry loop on failure. Search returns an empty result;
+        getItem returns null.
+      </li>
+    </ul>
+    <p>
+      As users grow, both public searches and distinct coverage queries
+      increase, but they share one Browse daily bucket. Formula we use for
+      capacity planning (not a claim of current measured volume):
+    </p>
+    <p>
+      <strong>calls/day ≈ (shared coverage queries × 24 hourly polls + public
+      searches) × (1 + getItems after filters)</strong>
+    </p>
+    <p>
+      Requested Browse capacity: <strong>50,000 calls/day</strong>. Peak-hour
+      planning: about 200 searches and 1,000 getItem calls if a search burst
+      coincides with a worker tick. Identity and Notification traffic stays
+      small.
+    </p>
+    </div>
+
+    <h2>5. Security (not on the short form)</h2>
+    <table class="data">
+      <thead>
+        <tr><th>Topic</th><th>How WaitSeeBuy handles it</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Password collection</td>
+          <td>No eBay passwords. Collectors sign in to WaitSeeBuy only (SSO or magic link). Optional WaitSeeBuy password is hashed. eBay credentials live in GCP Secret Manager, never in the browser or a public repo.</td>
+        </tr>
+        <tr>
+          <td>Auth / OAuth</td>
+          <td>Application client-credentials token only. There is no end-user Auth’n’Auth or user-token flow for reviewers to click through. Test public search at https://waitseebuy.com/search.</td>
+        </tr>
+        <tr>
+          <td>Denial of service</td>
+          <td>Public search is the only unauthenticated eBay-backed surface. Watch create and alerts require a session. We log every eBay call and stop hydrating when search fails. HTTPS on Cloud Run. We will not add per-user eBay polling.</td>
+        </tr>
+        <tr>
+          <td>XSS</td>
+          <td>Next.js / React escapes rendered text. Collector queries are parsed server-side into structured criteria, then sent as Browse query parameters. Users cannot inject HTML or arbitrary eBay payloads. Listing titles and images are data, not markup.</td>
+        </tr>
+        <tr>
+          <td>SQL injection</td>
+          <td>Postgres via Drizzle parameterized queries. Search strings are not concatenated into SQL. Coverage keys and item IDs are bound parameters.</td>
+        </tr>
+        <tr>
+          <td>CSRF</td>
+          <td>Watch create is a same-origin form POST behind a Better Auth session cookie. Collectors cannot make our server call eBay as another user. There is no end-user eBay token to steal.</td>
+        </tr>
+        <tr>
+          <td>System / application errors</td>
+          <td>Every eBay call is logged with API name, source (web search, worker poll, account deletion), success, HTTP status, and duration — including 429s. We do not hammer retries. Process errors go to Cloud Logging. Operators review call health in an internal admin console.</td>
+        </tr>
+        <tr>
+          <td>Logging / messages</td>
+          <td>We log status and timing for operator review, not full listing dumps or secrets.</td>
+        </tr>
+        <tr>
+          <td>Simultaneous threads</td>
+          <td>getItem concurrency is 5. The worker polls coverage queries sequentially in a tick. A small number of Cloud Run web instances may run in parallel under load.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>6. Marketplace user account deletion</h2>
+    <p>
+      Production keys register
+      <strong>https://waitseebuy.com/api/ebay/account-deletion</strong>.
+    </p>
+    <ul>
+      <li>
+        <strong>GET</strong> answers eBay’s SHA-256 challenge
+        (challengeCode + verificationToken + exact endpoint URL).
+      </li>
+      <li>
+        <strong>POST</strong> verifies <code>X-EBAY-SIGNATURE</code> via
+        Notification API getPublicKey, then strips that seller’s username
+        from cached listing snapshots.
+      </li>
+    </ul>
+
+    <h2>7. Privacy and affiliate disclosure</h2>
+    <p>
+      Privacy policy and terms are public. Search may include an optional
+      ship-to ZIP. Account data is email and profile fields from the
+      sign-in provider. We do not post to social accounts. Affiliate
+      relationship is disclosed in the product UI. We do not cloak EPN
+      links.
+    </p>
+
+    <h2>8. What this application is not</h2>
+    <ul>
+      <li>Not a scraper or unofficial HTML harvest.</li>
+      <li>Not auction sniping or a 15-second flipper alert.</li>
+      <li>Not a multi-marketplace reseller dashboard.</li>
+      <li>Not a clone of eBay browse; we do not use “eBay” or “Bay” in the brand or domain.</li>
+      <li>Not in-app checkout. Buy is a handoff to the eBay item page.</li>
+    </ul>
+
+    <p class="foot">
+      WaitSeeBuy · https://waitseebuy.com · contact@waitseebuy.com ·
+      Production App ID your-production-app-id ·
+      EPN 1000001 · Attachment for Application Growth Check
+    </p>
+  </body>
+</html>

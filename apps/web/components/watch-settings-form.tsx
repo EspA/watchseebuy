@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { WATCH_FREQUENCY_FILTERS, type WatchFrequency } from "@waitseebuy/domain";
 import { dollarsField } from "@/lib/search-params";
 
@@ -12,6 +13,12 @@ export function WatchSettingsForm({
   maxLandedCents?: number;
   frequency: WatchFrequency;
 }) {
+  const t = useTranslations("watches");
+  const frequencyLabel: Record<string, string> = {
+    on_change: t("frequencyOnChange"),
+    daily: t("frequencyDaily"),
+    weekly: t("frequencyWeekly"),
+  };
   return (
     <form
       className="watch-settings"
@@ -19,18 +26,18 @@ export function WatchSettingsForm({
       method="post"
     >
       <label>
-        Max price
+        {t("maxPrice")}
         <input
           name="max"
           type="text"
           inputMode="decimal"
-          placeholder="optional"
+          placeholder={t("optional")}
           defaultValue={dollarsField(maxLandedCents)}
           onBlur={(event) => event.currentTarget.form?.requestSubmit()}
         />
       </label>
       <label className="watch-settings-frequency">
-        Frequency
+        {t("frequency")}
         <select
           name="frequency"
           defaultValue={frequency}
@@ -38,7 +45,7 @@ export function WatchSettingsForm({
         >
           {WATCH_FREQUENCY_FILTERS.map((option) => (
             <option key={option.value} value={option.value}>
-              {option.label}
+              {frequencyLabel[option.value] ?? option.label}
             </option>
           ))}
         </select>

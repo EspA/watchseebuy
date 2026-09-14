@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState, type ChangeEvent } from "react";
 import { submitSearchForm } from "@/components/auto-search";
 import { useFilterGroup } from "@/components/filter-accordion";
@@ -116,12 +117,13 @@ export function CardFilters({
   );
 
   const { open, onToggle } = useFilterGroup("cards", hasSelection);
+  const t = useTranslations("filters");
 
   return (
     <details className="filter-group" open={open} onToggle={onToggle}>
-      <summary>Cards</summary>
+      <summary>{t("cards")}</summary>
       <label>
-        Category
+        {t("category")}
         <select
           form={SEARCH_FORM}
           name="cardLine"
@@ -146,7 +148,7 @@ export function CardFilters({
             onFilterChange(event);
           }}
         >
-          <option value="any">Any</option>
+          <option value="any">{t("any")}</option>
           {CARD_CATEGORY_LINES.map((option) => (
             <optgroup key={option.group} label={option.group}>
               <option value={option.value}>{option.label}</option>
@@ -155,7 +157,7 @@ export function CardFilters({
         </select>
       </label>
       <label hidden={selectedLine === "any"}>
-        Type
+        {t("type")}
         <select
           form={SEARCH_FORM}
           name="cardCategory"
@@ -176,7 +178,7 @@ export function CardFilters({
           }}
         >
           <option value={selectedLine === "any" ? "any" : selectedLine}>
-            Any
+            {t("any")}
           </option>
           {typeOptions.map((option) => (
             <option key={option.value} value={option.value}>
@@ -186,7 +188,7 @@ export function CardFilters({
         </select>
       </label>
       <label hidden={!showGame}>
-        Game
+        {t("game")}
         <select
           form={SEARCH_FORM}
           name="cardGame"
@@ -206,22 +208,22 @@ export function CardFilters({
             onFilterChange(event);
           }}
         >
-          <option value="any">Any</option>
-          <optgroup label="Popular">
+          <option value="any">{t("any")}</option>
+          <optgroup label={t("popular")}>
             {popularGames.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
             ))}
           </optgroup>
-          <optgroup label="Launch lines">
+          <optgroup label={t("launchLines")}>
             {wedgeGames.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
             ))}
           </optgroup>
-          <optgroup label="More games">
+          <optgroup label={t("moreGames")}>
             {otherGames.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
@@ -231,7 +233,7 @@ export function CardFilters({
         </select>
       </label>
       <label>
-        Grader
+        {t("grader")}
         <select
           form={SEARCH_FORM}
           name="grader"
@@ -241,7 +243,7 @@ export function CardFilters({
             onFilterChange(event);
           }}
         >
-          <option value="any">Any</option>
+          <option value="any">{t("any")}</option>
           {CARD_GRADER_FILTERS.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
@@ -250,7 +252,7 @@ export function CardFilters({
         </select>
       </label>
       <label hidden={!showGrade}>
-        Grade
+        {t("grade")}
         <select
           form={SEARCH_FORM}
           name="grade"
@@ -265,14 +267,14 @@ export function CardFilters({
         </select>
       </label>
       <label hidden={!showPokemonFacets}>
-        Set
+        {t("set")}
         <select
           form={SEARCH_FORM}
           name="set"
           defaultValue={showPokemonFacets ? (cardSet ?? "any") : "any"}
           onChange={onFilterChange}
         >
-          <option value="any">Any</option>
+          <option value="any">{t("any")}</option>
           {CARD_SET_GROUPS.map((group) => (
             <optgroup key={group} label={group}>
               {CARD_SET_FILTERS.filter((option) => option.group === group).map(
@@ -287,14 +289,14 @@ export function CardFilters({
         </select>
       </label>
       <label>
-        Printing
+        {t("printing")}
         <select
           form={SEARCH_FORM}
           name="printing"
           defaultValue={printing ?? "any"}
           onChange={onFilterChange}
         >
-          <option value="any">Any</option>
+          <option value="any">{t("any")}</option>
           {CARD_PRINTING_FILTERS.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
@@ -303,14 +305,14 @@ export function CardFilters({
         </select>
       </label>
       <label>
-        Language
+        {t("language")}
         <select
           form={SEARCH_FORM}
           name="language"
           defaultValue={language ?? "any"}
           onChange={onFilterChange}
         >
-          <option value="any">Any</option>
+          <option value="any">{t("any")}</option>
           {CARD_LANGUAGE_FILTERS.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
@@ -319,14 +321,14 @@ export function CardFilters({
         </select>
       </label>
       <label hidden={!showPokemonFacets}>
-        Rarity
+        {t("rarity")}
         <select
           form={SEARCH_FORM}
           name="rarity"
           defaultValue={showPokemonFacets ? (rarity ?? "any") : "any"}
           onChange={onFilterChange}
         >
-          <option value="any">Any</option>
+          <option value="any">{t("any")}</option>
           {CARD_RARITY_FILTERS.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
@@ -357,7 +359,7 @@ export function CardFilters({
               submitIntegrityChange("cardNoReprints", on);
             }}
           />
-          No reprints
+          {t("noReprints")}
         </label>
         <label className="filter-chip">
           <input
@@ -369,7 +371,7 @@ export function CardFilters({
               submitIntegrityChange("cardNoProxy", on);
             }}
           />
-          No proxy
+          {t("noProxy")}
         </label>
       </div>
     </details>

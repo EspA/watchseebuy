@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
-import { DEFAULT_EBAY_SITE, parseEbaySite } from "@waitseebuy/domain";
-import { HeaderTools } from "@/components/header";
+import { getTranslations } from "next-intl/server";
+import { DEFAULT_EBAY_SITE } from "@waitseebuy/domain";
+import { getDb, getUserSettings } from "@waitseebuy/db";
+import { BrandLink, HeaderTools } from "@/components/header";
 import { BrandMark } from "@/components/brand-mark";
 import { EbaySiteSwitch } from "@/components/ebay-site-switch";
+import { PreferenceCookieSync } from "@/components/preference-cookie-sync";
+import { SearchSubmit } from "@/components/search-submit";
 import { SiteFooter } from "@/components/site-footer";
+import { getRequestPreferences } from "@/lib/request-preferences";
+import { getSession } from "@/lib/session";
 
 export const metadata: Metadata = {
   title: "WaitSeeBuy",
@@ -31,14 +37,24 @@ export default async function ComingSoonPage({
   searchParams: Promise<{ site?: string }>;
 }) {
   const query = await searchParams;
-  const site = parseEbaySite(query.site) ?? DEFAULT_EBAY_SITE;
+  const session = await getSession();
+  const settings = session
+    ? await getUserSettings(getDb(), session.user.id)
+    : null;
+  const prefs = await getRequestPreferences({
+    urlSite: query.site,
+    settings,
+  });
+  const site = prefs.site;
+  const t = await getTranslations("home");
   return (
     <div className="tease">
+      <PreferenceCookieSync site={prefs.defaultSite} locale={prefs.locale} />
       <div className="tease-inner">
         <header className="tease-top">
-          <p className="tease-brand">WaitSeeBuy.com</p>
+          <BrandLink />
           {process.env.COMING_SOON === "1" ? (
-            <p className="tease-status">Live soon</p>
+            <p className="tease-status">{t("liveSoon")}</p>
           ) : (
             <HeaderTools />
           )}
@@ -47,7 +63,7 @@ export default async function ComingSoonPage({
         <main className="tease-hero">
           <div className="tease-headline">
             <div className="tease-headline-copy">
-              <p className="tease-kicker">For the exacting collector</p>
+              <p className="tease-kicker">{t("kicker")}</p>
               <h1 className="tease-title" aria-label="Wait. See. Buy.">
                 <span>Wait.</span>
                 <span>See.</span>
@@ -58,10 +74,7 @@ export default async function ComingSoonPage({
               <BrandMark className="tease-mark" alt="WaitSeeBuy" />
             </div>
           </div>
-          <p className="tease-lede">
-            The PSA 10. The factory-sealed set. The carded figure. We watch
-            with you and tell you when the price to your door is worth buying.
-          </p>
+          <p className="tease-lede">{t("lede")}</p>
 
           {process.env.COMING_SOON === "1" ? null : (
             <>
@@ -73,43 +86,31 @@ export default async function ComingSoonPage({
                   name="q"
                   type="search"
                   required
-                  placeholder="Find eBay pieces"
-                  aria-label="Search collectibles"
+                  placeholder={t("placeholder")}
+                  aria-label={t("searchLabel")}
                 />
-                <button type="submit">See prices</button>
+                <SearchSubmit />
               </form>
               <EbaySiteSwitch
                 site={site}
-                hrefFor={(next) =>
-                  next === DEFAULT_EBAY_SITE ? "/" : `/?site=${next}`
-                }
+                leadSite={prefs.defaultSite}
+                homeLinks
               />
             </>
           )}
 
           <ul className="tease-beats">
             <li>
-              <h2>Wait</h2>
-              <p>
-                You share the piece and the precise criteria. We watch for you,
-                and alert you on your schedule: a new listing, a daily note, or
-                a weekly recap.
-              </p>
+              <h2>{t("waitTitle")}</h2>
+              <p>{t("waitBody")}</p>
             </li>
             <li>
-              <h2>See</h2>
-              <p>
-                Search is quick and obvious. Every listing shows a confidence
-                score, a price score, and the price to your door. Nothing
-                hidden.
-              </p>
+              <h2>{t("seeTitle")}</h2>
+              <p>{t("seeBody")}</p>
             </li>
             <li>
-              <h2>Buy</h2>
-              <p>
-                We curate for collectors, not a faster marketplace. When
-                it is worth it, you buy.
-              </p>
+              <h2>{t("buyTitle")}</h2>
+              <p>{t("buyBody")}</p>
             </li>
           </ul>
 

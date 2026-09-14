@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { authClient } from "@/lib/auth-client";
 
 function UserIcon() {
@@ -25,6 +26,7 @@ function UserIcon() {
 }
 
 export function AccountMenu() {
+  const t = useTranslations("account");
   const { data: session, isPending } = authClient.useSession();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -65,7 +67,7 @@ export function AccountMenu() {
         className="account-signin"
         href={`/sign-in?next=${encodeURIComponent(next)}`}
       >
-        Sign in
+        {t("signIn")}
       </Link>
     );
   }
@@ -77,7 +79,7 @@ export function AccountMenu() {
         className="account-trigger"
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label="Account"
+        aria-label={t("account")}
         onClick={() => setOpen((value) => !value)}
       >
         {session.user.image ? (
@@ -89,7 +91,7 @@ export function AccountMenu() {
       {open ? (
         <div className="account-menu" role="menu">
           <Link className="account-menu-item" role="menuitem" href="/settings">
-            Settings
+            {t("settings")}
           </Link>
           <button
             type="button"
@@ -113,7 +115,7 @@ export function AccountMenu() {
               router.refresh();
             }}
           >
-            Sign out
+            {t("signOut")}
           </button>
         </div>
       ) : null}

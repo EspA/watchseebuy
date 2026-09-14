@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { describeWatch, type WatchCriteria } from "@waitseebuy/domain";
 import { getDb, getWatchForUser } from "@waitseebuy/db";
 import Link from "next/link";
@@ -20,19 +21,17 @@ export default async function StopWatchPage({
   if (!session) {
     redirect(`/sign-in?next=/watches/${id}/stop`);
   }
+  const t = await getTranslations("watches");
   if (id === "preview-watch") {
     return (
       <main className="page">
         <div className="panel stop-watch">
-          <h1>Stop this watch?</h1>
+          <h1>{t("stopTitle")}</h1>
           <p>PSA 10 Base Set Charizard</p>
-          <p className="muted">
-            This is the email-preview destination. A real stop link asks you to
-            sign in, then removes the watch and its alerts.
-          </p>
+          <p className="muted">{t("stopPreview")}</p>
           <div className="watch-actions">
             <Link className="btn secondary" href="/watches">
-              Keep watching
+              {t("keepWatching")}
             </Link>
           </div>
         </div>
@@ -50,22 +49,20 @@ export default async function StopWatchPage({
   return (
     <main className="page">
       <div className="panel stop-watch">
-        <h1>Stop this watch?</h1>
+        <h1>{t("stopTitle")}</h1>
         <p>{watch.label}</p>
         <p className="muted">
           {criteria ? describeWatch(criteria) : watch.label}
         </p>
-        <p className="muted">
-          Alerts stop. You can always start a new watch from search.
-        </p>
+        <p className="muted">{t("stopNote")}</p>
         <div className="watch-actions">
           <form action={`/api/watches/${watch.id}/delete`} method="post">
             <button className="btn" type="submit">
-              Stop watching
+              {t("stopWatching")}
             </button>
           </form>
           <Link className="btn secondary" href="/watches">
-            Keep watching
+            {t("keepWatching")}
           </Link>
         </div>
       </div>

@@ -8,6 +8,8 @@ export type UserSettings = {
   shipToPostal: string | null;
   timezone: string | null;
   theme: string | null;
+  ebaySite: string | null;
+  locale: string | null;
 };
 
 export type UserAuthSummary = {
@@ -26,6 +28,8 @@ export async function getUserSettings(
       shipToPostal: user.shipToPostal,
       timezone: user.timezone,
       theme: user.theme,
+      ebaySite: user.ebaySite,
+      locale: user.locale,
     })
     .from(user)
     .where(eq(user.id, userId))
@@ -40,17 +44,23 @@ export async function updateUserSettings(
     shipToPostal?: string | null;
     timezone?: string | null;
     theme?: string | null;
+    ebaySite?: string | null;
+    locale?: string | null;
   },
 ) {
   const patch: {
     shipToPostal?: string | null;
     timezone?: string | null;
     theme?: string | null;
+    ebaySite?: string | null;
+    locale?: string | null;
     updatedAt: Date;
   } = { updatedAt: new Date() };
   if (input.shipToPostal !== undefined) patch.shipToPostal = input.shipToPostal;
   if (input.timezone !== undefined) patch.timezone = input.timezone;
   if (input.theme !== undefined) patch.theme = input.theme;
+  if (input.ebaySite !== undefined) patch.ebaySite = input.ebaySite;
+  if (input.locale !== undefined) patch.locale = input.locale;
 
   const [updated] = await db
     .update(user)
@@ -62,6 +72,8 @@ export async function updateUserSettings(
       shipToPostal: user.shipToPostal,
       timezone: user.timezone,
       theme: user.theme,
+      ebaySite: user.ebaySite,
+      locale: user.locale,
     });
   return updated ?? null;
 }

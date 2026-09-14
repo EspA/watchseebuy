@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { submitSearchForm } from "@/components/auto-search";
 import { syncCatalogSearchForm } from "@/components/catalog-search-sync";
@@ -13,6 +14,7 @@ function searchForm(): HTMLFormElement | null {
 
 export function ExcludeUnofficialFilter({ checked }: { checked: boolean }) {
   const [on, setOn] = useState(checked);
+  const t = useTranslations("filters");
 
   return (
     <div className="filter-chip">
@@ -39,21 +41,19 @@ export function ExcludeUnofficialFilter({ checked }: { checked: boolean }) {
             submitSearchForm(form);
           }}
         />
-        Exclude unofficial pieces
+        {t("excludeUnofficial")}
       </label>
       <span className="filter-tip">
         <button
           type="button"
           className="filter-tip-link"
-          aria-label="What we exclude"
+          aria-label={t("unofficialTip")}
           aria-describedby="unofficial-tip"
         >
           ?
         </button>
         <span id="unofficial-tip" role="tooltip" className="filter-tip-bubble">
-          When this is on, we ask eBay to skip custom, replica, fake, MOC,
-          compatible, unlicensed, and other unofficial listings so we maximize
-          your chances to see the real pieces.
+          {t("unofficialHelp")}
         </span>
       </span>
     </div>

@@ -2,6 +2,7 @@
 
 import { useState, type ChangeEvent } from "react";
 import { submitSearchForm } from "@/components/auto-search";
+import { useTranslations } from "next-intl";
 import { useFilterGroup } from "@/components/filter-accordion";
 import { syncCatalogSearchForm } from "@/components/catalog-search-sync";
 import {
@@ -40,12 +41,17 @@ export function HotWheelsFilters({
   );
 
   const { open, onToggle } = useFilterGroup("vehicles", hasSelection);
+  const t = useTranslations("filters");
+  const packagingLabel = {
+    carded: t("carded"),
+    loose: t("loose"),
+  };
 
   return (
     <details className="filter-group" open={open} onToggle={onToggle}>
-      <summary>Vehicles</summary>
+      <summary>{t("vehicles")}</summary>
       <label>
-        Category
+        {t("category")}
         <select
           form={SEARCH_FORM}
           name="wheelsCategory"
@@ -67,7 +73,7 @@ export function HotWheelsFilters({
             onFilterChange(event);
           }}
         >
-          <option value="any">Any</option>
+          <option value="any">{t("any")}</option>
           {WHEELS_CATEGORY_FILTERS.filter((option) => !option.group).map(
             (option) => (
               <option key={option.value} value={option.value}>
@@ -89,14 +95,14 @@ export function HotWheelsFilters({
         </select>
       </label>
       <label hidden={!showScale}>
-        Scale
+        {t("scale")}
         <select
           form={SEARCH_FORM}
           name="wheelsScale"
           defaultValue={showScale ? (wheelsScale ?? "any") : "any"}
           onChange={onFilterChange}
         >
-          <option value="any">Any</option>
+          <option value="any">{t("any")}</option>
           {WHEELS_SCALE_FILTERS.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
@@ -105,17 +111,17 @@ export function HotWheelsFilters({
         </select>
       </label>
       <label>
-        Packaging
+        {t("packaging")}
         <select
           form={SEARCH_FORM}
           name="wheelsPackaging"
           defaultValue={wheelsPackaging ?? "any"}
           onChange={onFilterChange}
         >
-          <option value="any">Any</option>
+          <option value="any">{t("any")}</option>
           {WHEELS_PACKAGING_FILTERS.map((option) => (
             <option key={option.value} value={option.value}>
-              {option.label}
+              {packagingLabel[option.value]}
             </option>
           ))}
         </select>

@@ -29,6 +29,8 @@ import {
   parseFigurePackaging,
   parseFigurePunch,
   parseWheelsPackaging,
+  parseEbaySite,
+  storeLocaleOf,
   cardExcludeWords,
   figureExcludeWords,
   wheelsExcludeWords,
@@ -114,6 +116,12 @@ export function syncCatalogSearchForm(
     parseCardCategory(selectValue(form, "cardCategory")) ??
     parseCardLine(selectValue(form, "cardLine"));
   const cardGame = parseCardGame(selectValue(form, "cardGame"));
+  const siteField = form.elements.namedItem("site");
+  const storeLocale = storeLocaleOf(
+    siteField instanceof HTMLInputElement
+      ? parseEbaySite(siteField.value)
+      : undefined,
+  );
   const input = form.elements.namedItem("q");
   if (input instanceof HTMLInputElement) {
     input.value = composeCatalogQuery(
@@ -124,6 +132,7 @@ export function syncCatalogSearchForm(
           changed === "grade",
       }),
       selection,
+      storeLocale,
     );
   }
   const exclude = form.elements.namedItem("exclude");
@@ -146,12 +155,16 @@ export function syncCatalogSearchForm(
             ),
           ),
         ),
-        ...unofficialExcludeWords(excludeUnofficial),
-        ...brickExcludeWords(selection.brickType, selection.brickStatus),
-        ...wheelsExcludeWords(selection.wheelsPackaging),
-        ...figureExcludeWords(selection.figurePackaging, selection.figurePunch),
-        ...cardExcludeWords(cardSelection),
-      ], cardSkippedDefaultExcludes(cardSelection)),
+        ...unofficialExcludeWords(excludeUnofficial, storeLocale),
+        ...brickExcludeWords(selection.brickType, selection.brickStatus, storeLocale),
+        ...wheelsExcludeWords(selection.wheelsPackaging, storeLocale),
+        ...figureExcludeWords(
+          selection.figurePackaging,
+          selection.figurePunch,
+          storeLocale,
+        ),
+        ...cardExcludeWords(cardSelection, storeLocale),
+      ], cardSkippedDefaultExcludes(cardSelection), storeLocale),
     );
   }
 }

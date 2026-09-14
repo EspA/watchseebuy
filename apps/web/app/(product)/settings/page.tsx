@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import {
   canResetPassword,
   socialAuthLabel,
@@ -6,6 +7,7 @@ import { getDb, getUserAuthSummary, getUserSettings } from "@waitseebuy/db";
 import { redirect } from "next/navigation";
 import { PasswordSettings } from "@/components/password-settings";
 import { SettingsForm } from "@/components/settings-form";
+import { getRequestPreferences } from "@/lib/request-preferences";
 import { getSession } from "@/lib/session";
 
 function passwordNotice(status: string | undefined) {
@@ -36,27 +38,30 @@ export default async function SettingsPage({
     .map(socialAuthLabel)
     .filter((label, index, all) => all.indexOf(label) === index);
   const notice = passwordNotice(password);
+  const prefs = await getRequestPreferences({ settings });
+  const t = await getTranslations("settings");
 
   return (
     <main className="page settings-page">
-      <h1>Settings</h1>
-      {saved ? <p className="banner">Settings saved.</p> : null}
+      <h1>{t("title")}</h1>
+      {saved ? <p className="banner">{t("saved")}</p> : null}
       {notice ? (
         <p className={password === "set" ? "banner" : "muted"}>{notice}</p>
       ) : null}
 
       <div className="settings">
         <section className="panel settings-panel">
-          <h2>Delivery and time</h2>
           <SettingsForm
             shipToPostal={settings?.shipToPostal ?? ""}
             timezone={settings?.timezone ?? ""}
             theme={settings?.theme ?? ""}
+            ebaySite={settings?.ebaySite ?? prefs.defaultSite}
+            locale={settings?.locale ?? prefs.locale}
           />
         </section>
 
         <section className="panel settings-panel">
-          <h2>Password</h2>
+          <h2>{t("password")}</h2>
           {allowPassword ? (
             <PasswordSettings
               email={settings?.email ?? session.user.email}

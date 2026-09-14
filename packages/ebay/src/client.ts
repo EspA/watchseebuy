@@ -34,6 +34,9 @@ export type SearchResult = {
   listings: CandidateListing[];
   configured: boolean;
   note?: string;
+  total?: number;
+  offset?: number;
+  limit?: number;
 };
 
 type CachedToken = { token: string; expiresAtMs: number };
@@ -103,7 +106,12 @@ export class EbayClient {
 
   async search(
     coverage: CoverageQuery,
-    bounds?: { maxLandedCents?: number },
+    bounds?: {
+      maxLandedCents?: number;
+      offset?: number;
+      limit?: number;
+      locale?: string;
+    },
   ): Promise<SearchResult> {
     if (!this.isConfigured()) {
       return {
@@ -122,6 +130,8 @@ export class EbayClient {
         marketplaceId: coverage.ebaySite,
         listingType: coverage.listingType,
         record: this.record,
+        ...(bounds?.offset !== undefined ? { offset: bounds.offset } : {}),
+        ...(bounds?.limit !== undefined ? { limit: bounds.limit } : {}),
         ...(bounds?.maxLandedCents !== undefined
           ? { priceMaxCents: bounds.maxLandedCents }
           : {}),
@@ -139,6 +149,7 @@ export class EbayClient {
           : {}),
         ...(coverage.categoryIds ? { categoryIds: coverage.categoryIds } : {}),
         ...(coverage.aspectFilter ? { aspectFilter: coverage.aspectFilter } : {}),
+        ...(bounds?.locale ? { locale: bounds.locale } : {}),
       });
       return { ...result, configured: true };
     } catch (err) {
@@ -155,6 +166,7 @@ export class EbayClient {
   async hydrateProductSignals(
     listings: CandidateListing[],
     marketplaceId: string,
+    locale?: string,
   ): Promise<CandidateListing[]> {
     if (!this.isConfigured() || listings.length === 0) {
       return listings.map((listing) => applyListingIdentity(listing));
@@ -173,6 +185,7 @@ export class EbayClient {
           token,
           marketplaceId,
           itemIds: ids,
+          ...(locale ? { locale } : {}),
           record: this.record,
         });
       } catch {

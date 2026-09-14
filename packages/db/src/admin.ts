@@ -22,6 +22,8 @@ export type AdminUserListRow = {
 export type AdminUserDetail = AdminUserListRow & {
   shipToPostal: string | null;
   timezone: string | null;
+  ebaySite: string | null;
+  locale: string | null;
   recentEvents: Array<{
     id: string;
     occurredAt: Date;
@@ -133,6 +135,8 @@ export async function getAdminUserDetail(
     .select({
       shipToPostal: user.shipToPostal,
       timezone: user.timezone,
+      ebaySite: user.ebaySite,
+      locale: user.locale,
     })
     .from(user)
     .where(eq(user.id, userId))
@@ -160,6 +164,8 @@ export async function getAdminUserDetail(
     ...row,
     shipToPostal: settings.shipToPostal,
     timezone: settings.timezone,
+    ebaySite: settings.ebaySite,
+    locale: settings.locale,
     recentEvents: events.map((event) => ({
       ...event,
       meta: event.meta ?? null,

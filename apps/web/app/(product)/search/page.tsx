@@ -1,4 +1,5 @@
 import { unstable_noStore as noStore } from "next/cache";
+import { getTranslations } from "next-intl/server";
 import {
   attachPriceScores,
   landedCostCents,
@@ -13,6 +14,10 @@ import {
   withinLandedRange,
   atWatchLimit,
   FREE_WATCH_LIMIT,
+  SEARCH_PAGE_SIZE,
+  parseSearchPage,
+  searchOffset,
+  searchPageCount,
 } from "@waitseebuy/domain";
 import { createEbayClientFromEnv } from "@waitseebuy/ebay";
 import Link from "next/link";
@@ -21,11 +26,20 @@ import { ExcludeWords } from "@/components/exclude-words";
 import { ListingCard } from "@/components/listing-card";
 import { SaveWatchForm } from "@/components/save-watch-form";
 import { SearchSort } from "@/components/search-sort";
+import { SearchPagination } from "@/components/search-pagination";
+import { SearchSubmit } from "@/components/search-submit";
+import { searchHrefWithPage } from "@/lib/search-href";
+import {
+  SearchForm,
+  SearchPendingProvider,
+  SearchResultsPane,
+} from "@/components/search-navigation";
 import { getDb, getUserSettings, countWatchesForUser } from "@waitseebuy/db";
 import { headers } from "next/headers";
 import { clientMeta, persistUserEvent } from "@/lib/client-meta";
 import { intentFromSearchQuery, searchBarQuery } from "@/lib/search-params";
 import { compareSearchListings, searchSortFromQuery } from "@/lib/search-sort";
+import { getRequestPreferences } from "@/lib/request-preferences";
 import { getSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -73,12 +87,14 @@ export default async function SearchPage({
     wheelsScale?: string;
     wheelsPackaging?: string;
     site?: string;
+    page?: string;
     error?: string;
   }>;
 }) {
   noStore();
   const query = await searchParams;
   const q = query.q ?? "";
+  const page = parseSearchPage(query.page);
   const sort = searchSortFromQuery(query.sort);
   const session = await getSession();
   const settings = session
@@ -91,6 +107,10 @@ export default async function SearchPage({
     Boolean(session) && !query.watch && atWatchLimit(watchCount);
   const zip =
     query.zip !== undefined ? query.zip : (settings?.shipToPostal ?? undefined);
+  const prefs = await getRequestPreferences({
+    urlSite: query.site,
+    settings,
+  });
   const intent = intentFromSearchQuery({
     q,
     ...(query.watch !== undefined ? { watch: query.watch } : {}),
@@ -145,7 +165,7 @@ export default async function SearchPage({
     ...(query.wheelsPackaging !== undefined
       ? { wheelsPackaging: query.wheelsPackaging }
       : {}),
-    ...(query.site !== undefined ? { site: query.site } : {}),
+    site: query.site ?? prefs.site,
   });
   const coverage = toCoverageQuery(intent);
   if (q.trim()) {
@@ -162,7 +182,10 @@ export default async function SearchPage({
   }
   const ebay = createEbayClientFromEnv("web_search");
   const result = q.trim()
-    ? await ebay.search(coverage, {
+      ? await ebay.search(coverage, {
+        offset: searchOffset(page),
+        limit: SEARCH_PAGE_SIZE,
+        locale: prefs.locale,
         ...(intent.maxLandedCents !== undefined
           ? { maxLandedCents: intent.maxLandedCents }
           : {}),
@@ -188,7 +211,11 @@ export default async function SearchPage({
     });
   const identified =
     q.trim() && filtered.length > 0
-      ? await ebay.hydrateProductSignals(filtered, coverage.ebaySite)
+      ? await ebay.hydrateProductSignals(
+          filtered,
+          coverage.ebaySite,
+          prefs.locale,
+        )
       : filtered;
   const listings = attachPriceScores(identified)
     .filter((listing) =>
@@ -232,19 +259,35 @@ export default async function SearchPage({
     query.wheelsPackaging,
     query.site,
     query.sort,
+    query.page,
   ].join("|");
   const filteredOut = result.listings.length > 0 && listings.length === 0;
   const suggestedGroup = suggestFilterGroup(result.listings);
+  const pageCount = searchPageCount(result.total, result.listings.length, page);
+  const pageLinks = {
+    page,
+    pageCount,
+    ...(page > 1 ? { prevHref: searchHrefWithPage(query, page - 1) } : {}),
+    ...(page < pageCount
+      ? { nextHref: searchHrefWithPage(query, page + 1) }
+      : {}),
+  };
+  const pagination =
+    pageCount > 1 ? <SearchPagination {...pageLinks} /> : null;
+  const t = await getTranslations("search");
 
   return (
     <main className="page">
+      <SearchPendingProvider>
       {query.error === "limit" ? (
         <p className="banner">
-          You can watch {FREE_WATCH_LIMIT} pieces at a time. Stop one on{" "}
-          <Link href="/watches">Watches</Link> to add another.
+          {t.rich("watchLimit", {
+            limit: FREE_WATCH_LIMIT,
+            watches: (chunks) => <Link href="/watches">{chunks}</Link>,
+          })}
         </p>
       ) : null}
-      <form id="search-form" className="search-block" action="/search" method="get">
+      <SearchForm>
         <div className="search">
           <div className="search-combo">
             <EbaySiteSelect site={intent.ebaySite} />
@@ -253,22 +296,21 @@ export default async function SearchPage({
               name="q"
               type="search"
               defaultValue={searchBarQuery(q, intent)}
-              placeholder="Find eBay pieces"
-              aria-label="Search collectibles"
+              placeholder={t("placeholder")}
+              aria-label={t("label")}
             />
           </div>
           {query.watch ? (
             <input type="hidden" name="watch" value={query.watch} />
           ) : null}
-          <button type="submit">See prices</button>
+          <SearchSubmit />
         </div>
         <ExcludeWords value={excludeWordsField(intent.excludeKeywords)} />
-      </form>
+      </SearchForm>
 
       {q.trim() ? (
         <div className="search-split">
           <SaveWatchForm
-            key={scoreScope}
             q={q}
             intent={intent}
             signedIn={Boolean(session)}
@@ -279,14 +321,25 @@ export default async function SearchPage({
             {...(suggestedGroup ? { suggestedGroup } : {})}
             {...(watchLimitReached ? { atWatchLimit: true } : {})}
           />
+          <SearchResultsPane>
           {listings.length > 0 ? (
             <div className="results">
               <div className="results-toolbar">
                 <p className="results-count">
                   {listings.length}{" "}
-                  {listings.length === 1 ? "result" : "results"}
+                  {listings.length === 1 ? t("result") : t("results")}
+                  {pageCount > 1 && pageCount <= 20
+                    ? ` · ${t("pageOf", { page, pageCount })}`
+                    : pageCount > 20
+                      ? ` · ${t("page", { page })}`
+                      : ""}
                 </p>
-                <SearchSort value={sort} />
+                <div className="results-toolbar-actions">
+                  <SearchSort value={sort} />
+                  {pageCount > 1 ? (
+                    <SearchPagination {...pageLinks} compact />
+                  ) : null}
+                </div>
               </div>
               <ul className="listings" key={scoreScope}>
                 {listings.map((listing) => (
@@ -297,18 +350,22 @@ export default async function SearchPage({
                   />
                 ))}
               </ul>
+              {pagination}
             </div>
           ) : (
             <div className="panel">
               <p>
                 {filteredOut
-                  ? "Nothing matches those filters. Try widening price, condition, or location."
-                  : (result.note ?? "No listings matched that search.")}
+                  ? t("noMatchFilters")
+                  : (result.note ?? t("noListings"))}
               </p>
+              {pagination}
             </div>
           )}
+          </SearchResultsPane>
         </div>
       ) : null}
+      </SearchPendingProvider>
     </main>
   );
 }

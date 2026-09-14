@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import {
   AVAILABLE_TO_FILTERS,
   CONDITION_FILTERS,
@@ -22,11 +23,12 @@ import { ExcludeUnofficialFilter } from "@/components/exclude-unofficial";
 import { FilterAccordion } from "@/components/filter-accordion";
 import { FiguresFilters } from "@/components/figures-filters";
 import { HotWheelsFilters } from "@/components/hot-wheels-filters";
+import { MoreFilters } from "@/components/more-filters";
 import { dollarsField, searchParamsFromIntent } from "@/lib/search-params";
 
 const SEARCH_FORM = "search-form";
 
-export function SaveWatchForm({
+export async function SaveWatchForm({
   q,
   intent,
   signedIn,
@@ -44,6 +46,24 @@ export function SaveWatchForm({
   atWatchLimit?: boolean;
 }) {
   if (!q.trim()) return null;
+
+  const t = await getTranslations("search");
+  const tf = await getTranslations("filters");
+  const tl = await getTranslations("listing");
+  const listingLabel: Record<string, string> = {
+    all: tf("listingAll"),
+    bin: tf("listingBin"),
+    auction: tf("listingAuction"),
+    best_offer: tf("listingBestOffer"),
+  };
+  const conditionGroupLabel: Record<string, string> = {
+    New: tf("conditionNew"),
+    Used: tf("conditionUsed"),
+  };
+  const locationGroupLabel: Record<string, string> = {
+    Region: tf("region"),
+    Country: tf("country"),
+  };
 
   const next = `/search?${searchParamsFromIntent(q, intent, watchId)}`;
   const excluded = excludeWordsField(intent.excludeKeywords);
@@ -98,77 +118,68 @@ export function SaveWatchForm({
         : bricksOpen
           ? "bricks"
           : suggestedGroup;
+  const moreFiltersActive =
+    Boolean(intent.minLandedCents) ||
+    moreFiltersOpen ||
+    cardsOpen ||
+    figuresOpen ||
+    vehiclesOpen ||
+    bricksOpen ||
+    intent.minPriceScore !== undefined ||
+    intent.minConfidence !== undefined ||
+    intent.excludeUnofficial === false;
+
+  const watchThis =
+    signedIn && atWatchLimit ? (
+      <button className="btn watch-this" type="button" disabled>
+        {t("watchThis")}
+      </button>
+    ) : signedIn ? (
+      <button
+        className="btn watch-this"
+        type="submit"
+        form={SEARCH_FORM}
+        formAction="/api/watches"
+        formMethod="post"
+      >
+        {t("watchThis")}
+      </button>
+    ) : (
+      <Link
+        className="btn watch-this"
+        href={`/sign-in?next=${encodeURIComponent(next)}`}
+      >
+        {t("watchThis")}
+      </Link>
+    );
 
   return (
     <div className="watch-save">
       {signedIn && atWatchLimit ? (
-        <>
-          <button className="btn" type="button" disabled>
-            Watch this
-          </button>
-          <p className="watch-note">
-            You can watch {FREE_WATCH_LIMIT} pieces at a time.{" "}
-            <Link href="/watches">Stop one</Link> to add another.
-          </p>
-        </>
-      ) : signedIn ? (
-        <button
-          className="btn"
-          type="submit"
-          form={SEARCH_FORM}
-          formAction="/api/watches"
-          formMethod="post"
-        >
-          Watch this
-        </button>
-      ) : (
-        <Link className="btn" href={`/sign-in?next=${encodeURIComponent(next)}`}>
-          Watch this
-        </Link>
-      )}
-      <div className="filter-heading">
-        <ClearFiltersLink
-          href={`/search?${clearFilters}`}
-          query={intent.query.trim() || q}
-        />
-      </div>
-      <div className="watch-price-row">
-        <label>
-          Min price
-          <AutoText
-            form={SEARCH_FORM}
-            name="min"
-            type="text"
-            inputMode="decimal"
-            placeholder="optional"
-            defaultValue={dollarsField(intent.minLandedCents)}
-          />
-        </label>
-        <label>
-          Max price
-          <AutoText
-            form={SEARCH_FORM}
-            name="max"
-            type="text"
-            inputMode="decimal"
-            placeholder="optional"
-            defaultValue={dollarsField(intent.maxLandedCents)}
-          />
-        </label>
-      </div>
+        <p className="watch-note watch-limit-note">
+          {t.rich("watchLimit", {
+            limit: FREE_WATCH_LIMIT,
+            watches: (chunks) => <Link href="/watches">{chunks}</Link>,
+          })}
+        </p>
+      ) : null}
+      <MoreFilters
+        defaultOpen={moreFiltersActive}
+        extras={
+          <>
       {settingsPostal?.trim() ? (
         <details className="filter-group">
           <summary>
-            Ship-to ZIP
+            {tf("shipTo")}
             {intent.shipToPostal ? ` · ${intent.shipToPostal}` : ""}
           </summary>
           <label>
-            ZIP
+            {tf("zip")}
             <AutoText
               form={SEARCH_FORM}
               name="zip"
               type="text"
-              placeholder="optional"
+              placeholder={tf("optional")}
               autoComplete="postal-code"
               defaultValue={intent.shipToPostal ?? ""}
             />
@@ -177,45 +188,22 @@ export function SaveWatchForm({
       ) : (
         <label>
           <span className="filter-label-line">
-            Ship-to ZIP
-            <span className="watch-note">(fill for better price filtering)</span>
+            {tf("shipTo")}
+            <span className="watch-note">{tf("shipToHint")}</span>
           </span>
           <AutoText
             form={SEARCH_FORM}
             name="zip"
             type="text"
-            placeholder="optional"
+            placeholder={tf("optional")}
             autoComplete="postal-code"
             defaultValue={intent.shipToPostal ?? ""}
           />
         </label>
       )}
-      <label>
-        Condition
-        <AutoSelect
-          form={SEARCH_FORM}
-          name="condition"
-          defaultValue={
-            isEbayConditionId(intent.condition) ? intent.condition : "any"
-          }
-        >
-          <option value="any">Any</option>
-          {CONDITION_GROUPS.map((group) => (
-            <optgroup key={group} label={group}>
-              {CONDITION_FILTERS.filter((option) => option.group === group).map(
-                (option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ),
-              )}
-            </optgroup>
-          ))}
-        </AutoSelect>
-      </label>
       <div className="watch-price-row">
         <label>
-          Price score
+          {tl("priceScore")}
           <AutoSelect
             form={SEARCH_FORM}
             name="score"
@@ -227,13 +215,13 @@ export function SaveWatchForm({
           >
             {PRICE_SCORE_FILTERS.map((option) => (
               <option key={option.label} value={option.value}>
-                {option.label}
+                {option.value === "" ? tf("any") : option.label}
               </option>
             ))}
           </AutoSelect>
         </label>
         <label>
-          Seller score
+          {tl("sellerScore")}
           <AutoSelect
             form={SEARCH_FORM}
             name="confidence"
@@ -245,7 +233,7 @@ export function SaveWatchForm({
           >
             {CONFIDENCE_FILTERS.map((option) => (
               <option key={option.label} value={option.value}>
-                {option.label}
+                {option.value === "" ? tf("any") : option.label}
               </option>
             ))}
           </AutoSelect>
@@ -301,9 +289,9 @@ export function SaveWatchForm({
         className="filter-group"
         {...(moreFiltersOpen ? { open: true } : {})}
       >
-        <summary>More</summary>
+        <summary>{tf("more")}</summary>
         <label>
-          Listing type
+          {tf("listingType")}
           <AutoSelect
             form={SEARCH_FORM}
             name="listing"
@@ -315,22 +303,22 @@ export function SaveWatchForm({
           >
             {LISTING_TYPE_FILTERS.map((option) => (
               <option key={option.value} value={option.value}>
-                {option.label}
+                {listingLabel[option.value] ?? option.label}
               </option>
             ))}
           </AutoSelect>
         </label>
         <div className="watch-fields">
           <label>
-            Located in
+            {tf("locatedIn")}
             <AutoSelect
               form={SEARCH_FORM}
               name="located"
               defaultValue={intent.itemLocation ?? "any"}
             >
-              <option value="any">Any</option>
+              <option value="any">{tf("any")}</option>
               {LOCATION_GROUPS.map((group) => (
-                <optgroup key={group} label={group}>
+                <optgroup key={group} label={locationGroupLabel[group] ?? group}>
                   {ITEM_LOCATION_FILTERS.filter(
                     (option) => option.group === group,
                   ).map((option) => (
@@ -343,7 +331,7 @@ export function SaveWatchForm({
             </AutoSelect>
           </label>
           <label>
-            Available to
+            {tf("availableTo")}
             <AutoSelect
               form={SEARCH_FORM}
               name="to"
@@ -351,13 +339,71 @@ export function SaveWatchForm({
             >
               {AVAILABLE_TO_FILTERS.map((option) => (
                 <option key={option.value} value={option.value}>
-                  {option.label}
+                  {option.value === "any" ? tf("any") : option.label}
                 </option>
               ))}
             </AutoSelect>
           </label>
         </div>
       </details>
+          </>
+        }
+      >
+        <div className="filter-heading">
+          {watchThis}
+          <ClearFiltersLink
+            href={`/search?${clearFilters}`}
+            query={intent.query.trim() || q}
+          />
+        </div>
+        <div className="watch-price-row">
+          <label className="filter-secondary">
+            {tf("minPrice")}
+            <AutoText
+              form={SEARCH_FORM}
+              name="min"
+              type="text"
+              inputMode="decimal"
+              placeholder={tf("optional")}
+              defaultValue={dollarsField(intent.minLandedCents)}
+            />
+          </label>
+          <label className="filter-max">
+            {tf("maxPrice")}
+            <AutoText
+              form={SEARCH_FORM}
+              name="max"
+              type="text"
+              inputMode="decimal"
+              placeholder={tf("optional")}
+              defaultValue={dollarsField(intent.maxLandedCents)}
+            />
+          </label>
+        </div>
+        <label className="filter-condition">
+          {tf("condition")}
+          <AutoSelect
+            form={SEARCH_FORM}
+            name="condition"
+            defaultValue={
+              isEbayConditionId(intent.condition) ? intent.condition : "any"
+            }
+          >
+            <option value="any">{tf("any")}</option>
+            {CONDITION_GROUPS.map((group) => (
+              <optgroup key={group} label={conditionGroupLabel[group] ?? group}>
+                {CONDITION_FILTERS.filter((option) => option.group === group).map(
+                  (option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ),
+                )}
+              </optgroup>
+            ))}
+          </AutoSelect>
+        </label>
+      </MoreFilters>
     </div>
   );
 }

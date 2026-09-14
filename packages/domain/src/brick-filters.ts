@@ -5,6 +5,16 @@
  * and Factory Sealed).
  */
 
+import {
+  DEFAULT_APP_LOCALE,
+  type AppLocale,
+} from "./ebay-sites.ts";
+import {
+  localizeExcludeWords,
+  localizeQueryTerm,
+  reservedWordSet,
+} from "./store-query-terms.ts";
+
 export type BrickFilterOption = { value: string; label: string };
 
 export type BrickCategoryGroup = "LEGO Building Toys" | "Building Toys & Blocks";
@@ -169,18 +179,29 @@ export function brickStatusLabel(value: string | undefined): string | undefined 
   return findOption(BRICK_STATUS_FILTERS, value)?.label;
 }
 
-export function brickTypeQueryTerm(value: string | undefined): string | undefined {
-  return findOption(BRICK_TYPE_FILTERS, value)?.queryTerm;
+export function brickTypeQueryTerm(
+  value: string | undefined,
+  locale: AppLocale = DEFAULT_APP_LOCALE,
+): string | undefined {
+  const term = findOption(BRICK_TYPE_FILTERS, value)?.queryTerm;
+  return term ? localizeQueryTerm(term, locale) : undefined;
 }
 
-export function brickStatusQueryTerm(value: string | undefined): string | undefined {
-  return findOption(BRICK_STATUS_FILTERS, value)?.queryTerm;
+export function brickStatusQueryTerm(
+  value: string | undefined,
+  locale: AppLocale = DEFAULT_APP_LOCALE,
+): string | undefined {
+  const term = findOption(BRICK_STATUS_FILTERS, value)?.queryTerm;
+  return term ? localizeQueryTerm(term, locale) : undefined;
 }
 
-export function brickQueryTerms(selection: BrickQuerySelection): string[] {
+export function brickQueryTerms(
+  selection: BrickQuerySelection,
+  locale: AppLocale = DEFAULT_APP_LOCALE,
+): string[] {
   const terms: string[] = [];
-  const typeTerm = brickTypeQueryTerm(selection.brickType);
-  const statusTerm = brickStatusQueryTerm(selection.brickStatus);
+  const typeTerm = brickTypeQueryTerm(selection.brickType, locale);
+  const statusTerm = brickStatusQueryTerm(selection.brickStatus, locale);
   if (typeTerm) terms.push(typeTerm);
   if (statusTerm) terms.push(statusTerm);
   return terms;
@@ -195,9 +216,10 @@ export function allBrickQueryTerms(): string[] {
   return [...new Set(terms)].sort((a, b) => b.length - a.length);
 }
 
+const SET_RESERVED = reservedWordSet(SET_EXCLUDE_WORDS);
+
 export function isSetExcludeWord(word: string): boolean {
-  const key = word.toLowerCase();
-  return SET_EXCLUDE_WORDS.some((reserved) => reserved.toLowerCase() === key);
+  return SET_RESERVED.has(word.toLowerCase());
 }
 
 export function withoutSetExcludeWords(words: string[]): string[] {
@@ -207,9 +229,10 @@ export function withoutSetExcludeWords(words: string[]): string[] {
 /** Added to Exclude words when Status is Factory Sealed. */
 export const SEALED_EXCLUDE_WORDS = ["incomplete", "missing"];
 
+const SEALED_RESERVED = reservedWordSet(SEALED_EXCLUDE_WORDS);
+
 export function isSealedExcludeWord(word: string): boolean {
-  const key = word.toLowerCase();
-  return SEALED_EXCLUDE_WORDS.some((reserved) => reserved.toLowerCase() === key);
+  return SEALED_RESERVED.has(word.toLowerCase());
 }
 
 export function withoutSealedExcludeWords(words: string[]): string[] {
@@ -219,9 +242,13 @@ export function withoutSealedExcludeWords(words: string[]): string[] {
 export function brickExcludeWords(
   brickType: string | undefined,
   brickStatus?: string,
+  locale: AppLocale = DEFAULT_APP_LOCALE,
 ): string[] {
-  return [
-    ...(brickType === "set" ? SET_EXCLUDE_WORDS : []),
-    ...(brickStatus === "factory-sealed" ? SEALED_EXCLUDE_WORDS : []),
-  ];
+  return localizeExcludeWords(
+    [
+      ...(brickType === "set" ? SET_EXCLUDE_WORDS : []),
+      ...(brickStatus === "factory-sealed" ? SEALED_EXCLUDE_WORDS : []),
+    ],
+    locale,
+  );
 }

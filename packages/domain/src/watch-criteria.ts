@@ -1,8 +1,15 @@
 import {
+  DEFAULT_APP_LOCALE,
   DEFAULT_EBAY_SITE,
   ebaySiteLabel,
   parseEbaySite,
+  storeLocaleOf,
+  type AppLocale,
 } from "./ebay-sites.ts";
+import {
+  localizeExcludeWords,
+  reservedWordSet,
+} from "./store-query-terms.ts";
 import {
   brickExcludeWords,
   brickCategoryLabel,
@@ -386,23 +393,32 @@ export function parseExcludeWords(raw: string | undefined): string[] {
   return words;
 }
 
+const DEFAULT_EXCLUDES = ["reprint", "reprints", "proxy", "for parts"];
+const DEFAULT_EXCLUDE_KEYS = reservedWordSet(DEFAULT_EXCLUDES);
+
+export function defaultExcludeWords(
+  locale: AppLocale = DEFAULT_APP_LOCALE,
+): string[] {
+  return localizeExcludeWords(DEFAULT_EXCLUDES, locale);
+}
+
 export function userExcludeWords(
   excludeKeywords: string[] | undefined,
 ): string[] {
-  const defaults = new Set(DEFAULT_EXCLUDES.map((word) => word.toLowerCase()));
   return (excludeKeywords ?? []).filter(
-    (word) => !defaults.has(word.toLowerCase()),
+    (word) => !DEFAULT_EXCLUDE_KEYS.has(word.toLowerCase()),
   );
 }
 
 export function mergeExcludeKeywords(
   userWords: string[],
   skipDefaults: string[] = [],
+  locale: AppLocale = DEFAULT_APP_LOCALE,
 ): string[] {
-  const skip = new Set(skipDefaults.map((word) => word.toLowerCase()));
+  const skip = reservedWordSet(skipDefaults);
   const seen = new Set<string>();
   const words: string[] = [];
-  for (const word of [...DEFAULT_EXCLUDES, ...userWords]) {
+  for (const word of [...defaultExcludeWords(locale), ...userWords]) {
     const key = word.toLowerCase();
     if (!key || seen.has(key) || skip.has(key)) continue;
     seen.add(key);
@@ -508,8 +524,6 @@ export type CoverageQuery = {
 
 const DEFAULT_SITE = DEFAULT_EBAY_SITE;
 
-const DEFAULT_EXCLUDES = ["reprint", "reprints", "proxy", "for parts"];
-
 /** Added when Exclude unofficial pieces is on (default). */
 export const UNOFFICIAL_EXCLUDE_WORDS = [
   "custom",
@@ -531,17 +545,19 @@ export const UNOFFICIAL_EXCLUDE_WORDS = [
   "re-creation",
 ];
 
+const UNOFFICIAL_RESERVED = reservedWordSet(UNOFFICIAL_EXCLUDE_WORDS);
+
 export function unofficialExcludeWords(
   excludeUnofficial?: boolean,
+  locale: AppLocale = DEFAULT_APP_LOCALE,
 ): string[] {
-  return excludeUnofficial === false ? [] : [...UNOFFICIAL_EXCLUDE_WORDS];
+  return excludeUnofficial === false
+    ? []
+    : localizeExcludeWords(UNOFFICIAL_EXCLUDE_WORDS, locale);
 }
 
 export function isUnofficialExcludeWord(word: string): boolean {
-  const key = word.toLowerCase();
-  return UNOFFICIAL_EXCLUDE_WORDS.some(
-    (reserved) => reserved.toLowerCase() === key,
-  );
+  return UNOFFICIAL_RESERVED.has(word.toLowerCase());
 }
 
 export function withoutUnofficialExcludeWords(words: string[]): string[] {
@@ -852,6 +868,7 @@ export function applyWatchOverrides(
   else if (overrides.wheelsPackaging !== undefined) {
     next.wheelsPackaging = overrides.wheelsPackaging;
   }
+  const storeLocale = storeLocaleOf(next.ebaySite);
   next.excludeKeywords = mergeExcludeKeywords(
     [
       ...withoutCardExcludeWords(
@@ -865,20 +882,24 @@ export function applyWatchOverrides(
           ),
         ),
       ),
-      ...unofficialExcludeWords(next.excludeUnofficial),
-      ...brickExcludeWords(next.brickType, next.brickStatus),
-      ...wheelsExcludeWords(next.wheelsPackaging),
-      ...figureExcludeWords(next.figurePackaging, next.figurePunch),
-      ...cardExcludeWords(next),
+      ...unofficialExcludeWords(next.excludeUnofficial, storeLocale),
+      ...brickExcludeWords(next.brickType, next.brickStatus, storeLocale),
+      ...wheelsExcludeWords(next.wheelsPackaging, storeLocale),
+      ...figureExcludeWords(next.figurePackaging, next.figurePunch, storeLocale),
+      ...cardExcludeWords(next, storeLocale),
     ],
     cardSkippedDefaultExcludes(next),
+    storeLocale,
   );
   return next;
 }
 
 /** Coarser eBay search many watches can share. Never poll once per user. */
 export function toCoverageQuery(criteria: WatchCriteria): CoverageQuery {
-  const keywords = normalizeQuery(composeCatalogQuery(criteria.query, criteria));
+  const storeLocale = storeLocaleOf(criteria.ebaySite);
+  const keywords = normalizeQuery(
+    composeCatalogQuery(criteria.query, criteria, storeLocale),
+  );
   const listingType =
     criteria.listingType === "auction_below" ? "auction" : criteria.listingType;
   const itemLocation =
@@ -919,7 +940,7 @@ export function toCoverageQuery(criteria: WatchCriteria): CoverageQuery {
     excludeKeywords.length
       ? `ex:${[...excludeKeywords].map((w) => w.toLowerCase()).sort().join(",")}`
       : "ex:",
-    coverageKeywords(composeCatalogQuery(criteria.query, criteria)),
+    coverageKeywords(composeCatalogQuery(criteria.query, criteria, storeLocale)),
   ].join("|");
 
   return {

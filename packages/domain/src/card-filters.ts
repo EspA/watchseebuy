@@ -11,15 +11,23 @@ import {
   type BrickQuerySelection,
 } from "./brick-filters.ts";
 import {
-  allWheelsQueryTerms,
-  wheelsQueryTerms,
-  type WheelsQuerySelection,
-} from "./wheel-filters.ts";
+  DEFAULT_APP_LOCALE,
+  type AppLocale,
+} from "./ebay-sites.ts";
 import {
   allFigureQueryTerms,
   figureQueryTerms,
   type FigureQuerySelection,
 } from "./figure-filters.ts";
+import {
+  localizeExcludeWords,
+  reservedWordSet,
+} from "./store-query-terms.ts";
+import {
+  allWheelsQueryTerms,
+  wheelsQueryTerms,
+  type WheelsQuerySelection,
+} from "./wheel-filters.ts";
 
 export type CardFilterOption = {
   value: string;
@@ -803,6 +811,7 @@ export function cardExcludeWords(
     cardGame?: string;
     cardCategory?: string;
   },
+  locale: AppLocale = DEFAULT_APP_LOCALE,
 ): string[] {
   const words: string[] = [];
   if (selection.grader === "raw") words.push(...CARD_RAW_EXCLUDE_WORDS);
@@ -813,7 +822,7 @@ export function cardExcludeWords(
       selection.cardGame ||
       selection.cardCategory,
   );
-  if (!cardActive) return words;
+  if (!cardActive) return localizeExcludeWords(words, locale);
   if (selection.cardNoReprints !== false) {
     words.push(...CARD_REPRINT_EXCLUDE_WORDS);
   }
@@ -821,18 +830,18 @@ export function cardExcludeWords(
     words.push(...CARD_PROXY_EXCLUDE_WORDS);
   }
   words.push(...CARD_CUSTOM_EXCLUDE_WORDS);
-  return words;
+  return localizeExcludeWords(words, locale);
 }
 
-const CARD_RESERVED_EXCLUDES = [
+const CARD_RESERVED_EXCLUDES = reservedWordSet([
   ...CARD_RAW_EXCLUDE_WORDS,
   ...CARD_REPRINT_EXCLUDE_WORDS,
   ...CARD_PROXY_EXCLUDE_WORDS,
   ...CARD_CUSTOM_EXCLUDE_WORDS,
-].map((word) => word.toLowerCase());
+]);
 
 export function isCardExcludeWord(word: string): boolean {
-  return CARD_RESERVED_EXCLUDES.includes(word.toLowerCase());
+  return CARD_RESERVED_EXCLUDES.has(word.toLowerCase());
 }
 
 export function withoutCardExcludeWords(words: string[]): string[] {
@@ -863,7 +872,10 @@ export function cardSkippedDefaultExcludes(
 }
 
 /** Labels / keywords that should be appended to the eBay keyword query. */
-export function catalogQueryTerms(selection: CatalogSelection): string[] {
+export function catalogQueryTerms(
+  selection: CatalogSelection,
+  locale: AppLocale = DEFAULT_APP_LOCALE,
+): string[] {
   const terms: string[] = [];
   const set = cardSetLabel(selection.cardSet);
   const rarity = cardRarityQueryTerm(selection.rarity);
@@ -875,9 +887,9 @@ export function catalogQueryTerms(selection: CatalogSelection): string[] {
   if (printing) terms.push(printing);
   if (language) terms.push(language);
   if (grader) terms.push(grader);
-  terms.push(...brickQueryTerms(selection));
-  terms.push(...wheelsQueryTerms(selection));
-  terms.push(...figureQueryTerms(selection));
+  terms.push(...brickQueryTerms(selection, locale));
+  terms.push(...wheelsQueryTerms(selection, locale));
+  terms.push(...figureQueryTerms(selection, locale));
   return terms;
 }
 
@@ -943,9 +955,10 @@ function allCatalogLabels(includeGraders = true): string[] {
 export function stripCatalogTerms(
   query: string,
   selection: CatalogSelection,
+  locale: AppLocale = DEFAULT_APP_LOCALE,
 ): string {
   let next = query;
-  for (const term of catalogQueryTerms(selection)) {
+  for (const term of catalogQueryTerms(selection, locale)) {
     next = next.replace(phrasePattern(term), " ");
   }
   return next.replace(/\s+/g, " ").trim();
@@ -971,8 +984,9 @@ function quoteTerm(term: string): string {
 export function composeCatalogQuery(
   query: string,
   selection: CatalogSelection,
+  locale: AppLocale = DEFAULT_APP_LOCALE,
 ): string {
-  const extras = catalogQueryTerms(selection)
+  const extras = catalogQueryTerms(selection, locale)
     .filter((term) => !queryIncludesPhrase(query, term))
     .map(quoteTerm);
   return [query.trim(), ...extras].filter(Boolean).join(" ").trim();

@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useNavigateSearch } from "@/components/search-navigation";
 import {
   DEFAULT_EBAY_SITE,
   ebaySiteOf,
   ebaySitesWithLead,
 } from "@waitseebuy/domain";
+import { useTranslations } from "next-intl";
+import { applySiteCookie } from "@/lib/preference-cookies";
 
 function searchUrlForSite(form: HTMLFormElement | null, next: string): string {
   const params = new URLSearchParams(window.location.search);
@@ -20,6 +23,8 @@ function searchUrlForSite(form: HTMLFormElement | null, next: string): string {
 }
 
 export function EbaySiteSelect({ site }: { site: string }) {
+  const t = useTranslations("search");
+  const navigateSearch = useNavigateSearch();
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(site);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -61,8 +66,8 @@ export function EbaySiteSelect({ site }: { site: string }) {
         <span aria-hidden="true">{current.flag}</span>
       </button>
       {open ? (
-        <ul className="search-site-menu" role="listbox" aria-label="eBay site">
-          {ebaySitesWithLead(DEFAULT_EBAY_SITE).map((option) => {
+        <ul className="search-site-menu" role="listbox" aria-label={t("ebaySite")}>
+          {ebaySitesWithLead(current.value).map((option) => {
             const selected = option.value === value;
             return (
               <li key={option.value} role="option" aria-selected={selected}>
@@ -75,8 +80,9 @@ export function EbaySiteSelect({ site }: { site: string }) {
                     event.preventDefault();
                     event.stopPropagation();
                     setValue(option.value);
+                    applySiteCookie(option.value);
                     setOpen(false);
-                    window.location.assign(
+                    navigateSearch(
                       searchUrlForSite(
                         inputRef.current?.form ??
                           rootRef.current?.closest("form") ??

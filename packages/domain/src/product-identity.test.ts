@@ -82,6 +82,24 @@ test("card aspects plus grade descriptors build a collectible key", () => {
   assert.equal(identity.confidence, "high");
 });
 
+test("numeric grader and grade descriptors do not throw", () => {
+  const identity = resolveProductIdentity({
+    title: "Charizard holo",
+    localizedAspects: [
+      { name: "Set", value: "Base Set" },
+      { name: "Character", value: "Charizard" },
+      { name: "Card Number", value: 4 },
+    ],
+    conditionDescriptors: [
+      { name: "27501", values: [275010] },
+      { name: "27502", values: [10] },
+    ],
+  });
+  assert.equal(identity.source, "aspects");
+  assert.match(identity.itemKey, /psa/);
+  assert.match(identity.itemKey, /10/);
+});
+
 test("cert number is never part of the comparable key", () => {
   const identity = resolveProductIdentity({
     title: "PSA 10 cert 99887766 Charizard 4/102 Base Set",

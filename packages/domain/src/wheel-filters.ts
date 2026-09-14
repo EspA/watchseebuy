@@ -6,6 +6,16 @@
  * Carded).
  */
 
+import {
+  DEFAULT_APP_LOCALE,
+  type AppLocale,
+} from "./ebay-sites.ts";
+import {
+  localizeExcludeWords,
+  localizeQueryTerm,
+  reservedWordSet,
+} from "./store-query-terms.ts";
+
 export type WheelFilterOption = { value: string; label: string };
 
 export type WheelCategoryGroup =
@@ -150,8 +160,10 @@ export function wheelsPackagingLabel(
 
 export function wheelsPackagingQueryTerm(
   value: string | undefined,
+  locale: AppLocale = DEFAULT_APP_LOCALE,
 ): string | undefined {
-  return findOption(WHEELS_PACKAGING_FILTERS, value)?.queryTerm;
+  const term = findOption(WHEELS_PACKAGING_FILTERS, value)?.queryTerm;
+  return term ? localizeQueryTerm(term, locale) : undefined;
 }
 
 export function categorySupportsWheelsScale(
@@ -182,8 +194,11 @@ export function wheelsScaleAspectFilter(
   return `categoryId:${category},Scale:{${aspect}}`;
 }
 
-export function wheelsQueryTerms(selection: WheelsQuerySelection): string[] {
-  const term = wheelsPackagingQueryTerm(selection.wheelsPackaging);
+export function wheelsQueryTerms(
+  selection: WheelsQuerySelection,
+  locale: AppLocale = DEFAULT_APP_LOCALE,
+): string[] {
+  const term = wheelsPackagingQueryTerm(selection.wheelsPackaging, locale);
   return term ? [term] : [];
 }
 
@@ -193,9 +208,10 @@ export function allWheelsQueryTerms(): string[] {
   );
 }
 
+const CARDED_RESERVED = reservedWordSet(CARDED_EXCLUDE_WORDS);
+
 export function isCardedExcludeWord(word: string): boolean {
-  const key = word.toLowerCase();
-  return CARDED_EXCLUDE_WORDS.some((reserved) => reserved.toLowerCase() === key);
+  return CARDED_RESERVED.has(word.toLowerCase());
 }
 
 export function withoutCardedExcludeWords(words: string[]): string[] {
@@ -204,6 +220,9 @@ export function withoutCardedExcludeWords(words: string[]): string[] {
 
 export function wheelsExcludeWords(
   packaging: string | undefined,
+  locale: AppLocale = DEFAULT_APP_LOCALE,
 ): string[] {
-  return packaging === "carded" ? [...CARDED_EXCLUDE_WORDS] : [];
+  return packaging === "carded"
+    ? localizeExcludeWords(CARDED_EXCLUDE_WORDS, locale)
+    : [];
 }

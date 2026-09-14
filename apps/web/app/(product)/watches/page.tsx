@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import {
   describeWatch,
   FREE_WATCH_LIMIT,
@@ -30,70 +31,69 @@ export default async function WatchesPage({
 
   const { saved } = await searchParams;
   const items = await listWatchesForUser(getDb(), session.user.id);
+  const t = await getTranslations("watches");
 
   return (
     <main className="page">
-      {saved ? (
-        <p className="banner">
-          Watch saved. Alerts come on the schedule you pick.
-        </p>
-      ) : null}
+      {saved ? <p className="banner">{t("saved")}</p> : null}
 
       {items.length === 0 ? (
         <div className="panel">
-          <p>No watches yet.</p>
+          <p>{t("empty")}</p>
           <p className="muted">
-            <Link href="/search">Search a piece</Link> and click Watch this to
-            add a new watch.
+            {t.rich("emptyHint", {
+              search: (chunks) => <Link href="/search">{chunks}</Link>,
+            })}
           </p>
         </div>
       ) : (
         <>
           <p className="muted watch-count">
-            {items.length >= FREE_WATCH_LIMIT
-              ? `${items.length} of ${FREE_WATCH_LIMIT} watches. Stop one to add another.`
-              : `${items.length} of ${FREE_WATCH_LIMIT} watches.`}
+            {t(items.length >= FREE_WATCH_LIMIT ? "countFull" : "count", {
+              count: items.length,
+              limit: FREE_WATCH_LIMIT,
+            })}
           </p>
           <ul className="watch-list">
-          {items.map((watch) => {
-            const criteria = asCriteria(watch.criteria);
-            const href = searchHrefForWatch({
-              label: watch.label,
-              criteria,
-              watchId: watch.id,
-            });
-            return (
-              <li className="panel watch-card" key={watch.id}>
-                <div className="watch-card-top">
-                  <h2>
-                    <Link href={href}>{watch.label}</Link>
-                  </h2>
-                  <div className="watch-actions">
-                    <Link className="btn" href={href}>
-                      Open search
-                    </Link>
-                    <DeleteWatchForm watchId={watch.id} />
+            {items.map((watch) => {
+              const criteria = asCriteria(watch.criteria);
+              const href = searchHrefForWatch({
+                label: watch.label,
+                criteria,
+                watchId: watch.id,
+              });
+              return (
+                <li className="panel watch-card" key={watch.id}>
+                  <div className="watch-card-top">
+                    <h2>
+                      <Link href={href}>{watch.label}</Link>
+                    </h2>
+                    <div className="watch-actions">
+                      <Link className="btn" href={href}>
+                        {t("openSearch")}
+                      </Link>
+                      <DeleteWatchForm watchId={watch.id} />
+                    </div>
                   </div>
-                </div>
-                <WatchSettingsForm
-                  watchId={watch.id}
-                  frequency={parseWatchFrequency(watch.alertFrequency)}
-                  {...(criteria?.maxLandedCents !== undefined
-                    ? { maxLandedCents: criteria.maxLandedCents }
-                    : {})}
-                />
-                <details className="watch-criteria">
-                  <summary>Criteria</summary>
-                  <p className="muted">
-                    {criteria
-                      ? describeWatch(criteria)
-                      : watch.coverageKeywords}
-                  </p>
-                </details>
-              </li>
-            );
-          })}
-        </ul>
+                  <WatchSettingsForm
+                    watchId={watch.id}
+                    frequency={parseWatchFrequency(watch.alertFrequency)}
+                    {...(criteria?.maxLandedCents !== undefined
+                      ? { maxLandedCents: criteria.maxLandedCents }
+                      : {})}
+                  />
+                  <details className="watch-criteria">
+                    <summary>{t("criteria")}</summary>
+                    <p className="muted">
+                      {criteria
+                        ? describeWatch(criteria)
+                        : watch.coverageKeywords}
+                    </p>
+                  </details>
+                </li>
+              );
+            })}
+          </ul>
         </>
       )}
     </main>

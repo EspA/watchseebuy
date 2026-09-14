@@ -1,13 +1,14 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-const POLICY_LINKS = [
-  { href: "/privacy", label: "Privacy policy" },
-  { href: "/terms", label: "Terms of service" },
-  { href: "/contact", label: "Contact Us" },
+const POLICY_HREFS = [
+  { href: "/privacy", key: "privacy" },
+  { href: "/terms", key: "tos" },
+  { href: "/contact", key: "contact" },
 ] as const;
 
 function InstagramMark() {
@@ -37,6 +38,7 @@ export function SiteFooter({
 }: {
   disclosure?: string;
 }) {
+  const t = useTranslations("footer");
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -73,11 +75,11 @@ export function SiteFooter({
           aria-expanded={open}
           onClick={() => setOpen((value) => !value)}
         >
-          Terms and Policies
+          {t("terms")}
         </button>
         {open ? (
           <ul className="site-footer-legal-menu" role="menu">
-            {POLICY_LINKS.map((item) => (
+            {POLICY_HREFS.map((item) => (
               <li key={item.href} role="none">
                 <Link
                   className="site-footer-legal-item"
@@ -85,7 +87,7 @@ export function SiteFooter({
                   href={item.href}
                   onClick={() => setOpen(false)}
                 >
-                  {item.label}
+                  {t(item.key)}
                 </Link>
               </li>
             ))}

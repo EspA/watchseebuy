@@ -1,7 +1,8 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useNavigateSearch } from "@/components/search-navigation";
 
 const SEARCH_FORM = "search-form";
 
@@ -62,7 +63,8 @@ export function ClearFiltersLink({
   href: string;
   query: string;
 }) {
-  const router = useRouter();
+  const navigateSearch = useNavigateSearch();
+  const t = useTranslations("search");
   return (
     <Link
       className="clear-filters"
@@ -70,10 +72,10 @@ export function ClearFiltersLink({
       onClick={(event) => {
         event.preventDefault();
         resetSearchFilters(query);
-        router.push(href);
+        navigateSearch(href);
       }}
     >
-      Clear filters
+      {t("clearFilters")}
     </Link>
   );
 }

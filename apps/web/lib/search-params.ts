@@ -30,6 +30,7 @@ import {
   parseItemLocation,
   parseMinConfidence,
   parseEbaySite,
+  storeLocaleOf,
   parseMinPriceScore,
   parseListingTypeFilter,
   parseSearchIntent,
@@ -231,7 +232,11 @@ export function intentFromSearchQuery(query: SearchQuery): WatchCriteria {
   }
 
   const intent = applyWatchOverrides(parseSearchIntent(query.q), overrides);
-  intent.query = stripCatalogTerms(intent.query, intent);
+  intent.query = stripCatalogTerms(
+    intent.query,
+    intent,
+    storeLocaleOf(intent.ebaySite),
+  );
 
   if (query.zip !== undefined && !zip) {
     delete intent.shipToPostal;
@@ -265,5 +270,9 @@ export function intentFromSearchQuery(query: SearchQuery): WatchCriteria {
 export { dollarsField, searchParamsFromIntent } from "@waitseebuy/domain";
 
 export function searchBarQuery(q: string, intent: WatchCriteria): string {
-  return composeCatalogQuery(q.trim() ? intent.query || q : q, intent);
+  return composeCatalogQuery(
+    q.trim() ? intent.query || q : q,
+    intent,
+    storeLocaleOf(intent.ebaySite),
+  );
 }

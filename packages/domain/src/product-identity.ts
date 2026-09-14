@@ -9,12 +9,12 @@ export type IdentityConfidence = "high" | "medium" | "low";
 
 export type TypedNameValue = {
   name?: string;
-  value?: string;
+  value?: string | number;
 };
 
 export type ConditionDescriptor = {
   name?: string;
-  values?: string[];
+  values?: Array<string | number>;
   additionalInfo?: string;
 };
 
@@ -403,7 +403,7 @@ function partsFromAspects(
   const parts: CardKeyParts = {};
   for (const aspect of aspects ?? []) {
     const field = ASPECT_FIELD[normalizeAspectName(aspect.name)];
-    const value = aspect.value?.trim();
+    const value = asText(aspect.value);
     if (!field || !value) continue;
     parts[field] = value;
   }
@@ -416,7 +416,7 @@ function partsFromDescriptors(
   const parts: CardKeyParts = {};
   for (const descriptor of descriptors ?? []) {
     const name = (descriptor.name ?? "").trim().toLowerCase();
-    const raw = descriptor.values?.[0];
+    const raw = asText(descriptor.values?.[0]);
     if (name.includes("certif") || name === "27503") continue;
     if (name.includes("grader") || name === "27501") {
       const company = normalizeGrader(raw);
@@ -431,17 +431,26 @@ function partsFromDescriptors(
   return parts;
 }
 
-function normalizeGrader(raw: string | undefined): string | undefined {
-  if (!raw) return undefined;
-  if (GRADER_IDS[raw]) return GRADER_IDS[raw];
-  const named = raw.match(GRADER_ONLY_RE);
-  return named?.[1]?.toLowerCase();
+function asText(raw: unknown): string | undefined {
+  if (typeof raw === "string") {
+    const value = raw.trim();
+    return value || undefined;
+  }
+  if (typeof raw === "number" && Number.isFinite(raw)) return String(raw);
+  return undefined;
 }
 
-function normalizeGrade(raw: string | undefined): string | undefined {
-  if (!raw) return undefined;
-  const match = raw.match(/(\d+(?:\.\d+)?)/);
-  return match?.[1];
+function normalizeGrader(raw: unknown): string | undefined {
+  const value = asText(raw);
+  if (!value) return undefined;
+  if (GRADER_IDS[value]) return GRADER_IDS[value];
+  return value.match(GRADER_ONLY_RE)?.[1]?.toLowerCase();
+}
+
+function normalizeGrade(raw: unknown): string | undefined {
+  const value = asText(raw);
+  if (!value) return undefined;
+  return value.match(/(\d+(?:\.\d+)?)/)?.[1];
 }
 
 function normalizeAspectName(name: string | undefined): string {

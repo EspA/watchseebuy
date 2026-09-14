@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslations } from "next-intl";
 import {
   describeListingLocation,
   describePriceScore,
@@ -10,11 +13,15 @@ import {
 } from "@waitseebuy/domain";
 import type { CandidateListing, PriceScore } from "@waitseebuy/domain";
 import { ListingDescription } from "@/components/listing-description";
+import { ListingImage } from "@/components/listing-image";
 
-function listingMeta(listing: CandidateListing): string {
+function listingMeta(
+  listing: CandidateListing,
+  t: ReturnType<typeof useTranslations<"listing">>,
+): string {
   const bits: string[] = [];
-  if (listing.listingType === "auction") bits.push("Auction");
-  if (listing.buyingOptions?.includes("BEST_OFFER")) bits.push("Best Offer");
+  if (listing.listingType === "auction") bits.push(t("auction"));
+  if (listing.buyingOptions?.includes("BEST_OFFER")) bits.push(t("bestOffer"));
   return bits.join(" · ");
 }
 
@@ -25,6 +32,7 @@ export function ListingCard({
   listing: CandidateListing;
   site?: string;
 }) {
+  const t = useTranslations("listing");
   const currency = ebaySiteCurrency(site);
   const landed = landedCostCents({
     itemCents: listing.itemCents,
@@ -37,55 +45,54 @@ export function ListingCard({
   const location = describeListingLocation(listing.itemLocationCountry);
   const breakdown =
     listing.shippingCents === 0
-      ? `${money(listing.itemCents)} + shipping not shown or free`
-      : `${money(listing.itemCents)} + ${money(listing.shippingCents)} shipping`;
+      ? t("shippingUnknown", { item: money(listing.itemCents) })
+      : t("shipping", {
+          item: money(listing.itemCents),
+          shipping: money(listing.shippingCents),
+        });
 
   return (
     <li className="listing">
       {listing.imageUrl ? (
-        // eBay listing thumbs; remote host varies by CDN.
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={listing.imageUrl} alt="" />
+        <ListingImage src={listing.imageUrl} alt={listing.title} />
       ) : (
         <div className="listing-ph" />
       )}
-      <div className="listing-main">
-        <div className="listing-top">
-          <div className="listing-copy">
-            <h2>{listing.title}</h2>
-            {listing.description ? (
-              <ListingDescription text={listing.description} />
-            ) : null}
-            {listing.condition || listingMeta(listing) ? (
-              <p className="listing-meta">
-                {[listing.condition, listingMeta(listing)]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </p>
-            ) : null}
-            {location ? <p className="listing-location">{location}</p> : null}
-          </div>
-          <div className="listing-price">
-            <p className="listing-landed">{money(landed)}</p>
-            <p className="listing-breakdown">{breakdown}</p>
-            <div className="listing-scores">
-              <PriceScoreCard
-                score={listing.priceScore}
-                identity={listing.identity}
-              />
-              <ConfidenceCard listing={listing} />
-            </div>
-            <div className="listing-actions">
-              <a
-                className="btn"
-                href={buyHref}
-                rel="nofollow sponsored"
-                target="_blank"
-              >
-                Buy on eBay
-              </a>
-            </div>
-          </div>
+      <div className="listing-copy">
+        <h2>{listing.title}</h2>
+        {listing.condition || listingMeta(listing, t) ? (
+          <p className="listing-meta">
+            {[listing.condition, listingMeta(listing, t)]
+              .filter(Boolean)
+              .join(" · ")}
+          </p>
+        ) : null}
+        {location ? <p className="listing-location">{location}</p> : null}
+      </div>
+      {listing.description ? (
+        <ListingDescription text={listing.description} />
+      ) : null}
+      <div className="listing-price">
+        <div className="listing-price-text">
+          <p className="listing-landed">{money(landed)}</p>
+          <p className="listing-breakdown">{breakdown}</p>
+        </div>
+        <div className="listing-scores">
+          <PriceScoreCard
+            score={listing.priceScore}
+            identity={listing.identity}
+          />
+          <ConfidenceCard listing={listing} />
+        </div>
+        <div className="listing-actions">
+          <a
+            className="btn"
+            href={buyHref}
+            rel="nofollow sponsored"
+            target="_blank"
+          >
+            {t("buyOnEbay")}
+          </a>
         </div>
       </div>
     </li>
@@ -99,6 +106,7 @@ function PriceScoreCard({
   score?: PriceScore;
   identity?: CandidateListing["identity"];
 }) {
+  const t = useTranslations("listing");
   const resolved: PriceScore = score ?? {
     score: null,
     tone: "low",
@@ -112,12 +120,13 @@ function PriceScoreCard({
       title={describePriceScore(resolved, identity)}
     >
       <span className="confidence-score">{resolved.score ?? "—"}</span>
-      <span className="confidence-label">Price score</span>
+      <span className="confidence-label">{t("priceScore")}</span>
     </p>
   );
 }
 
 function ConfidenceCard({ listing }: { listing: CandidateListing }) {
+  const t = useTranslations("listing");
   const score = sellerConfidence(listing);
   const tone = sellerConfidenceTone(score);
   return (
@@ -126,7 +135,7 @@ function ConfidenceCard({ listing }: { listing: CandidateListing }) {
       title={describeSellerFeedback(listing)}
     >
       <span className="confidence-score">{score}</span>
-      <span className="confidence-label">Seller score</span>
+      <span className="confidence-label">{t("sellerScore")}</span>
     </p>
   );
 }

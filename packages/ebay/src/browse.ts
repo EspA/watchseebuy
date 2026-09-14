@@ -1,5 +1,8 @@
 import {
   browseFilterParts,
+  ebayAcceptLanguage,
+  parseAppLocale,
+  SEARCH_PAGE_SIZE,
   type BrowseFilterInput,
   type CandidateListing,
   type ConditionClass,
@@ -77,6 +80,9 @@ type ItemsResponse = {
 
 type SearchResponse = {
   itemSummaries?: ItemSummary[];
+  total?: number;
+  offset?: number;
+  limit?: number;
   errors?: Array<{ message?: string; longMessage?: string }>;
 };
 
@@ -292,6 +298,7 @@ export async function searchItemSummaries(input: {
   q: string;
   marketplaceId: string;
   limit?: number;
+  offset?: number;
   priceMaxCents?: number;
   condition?: ConditionClass;
   listingType?: ListingType;
@@ -300,11 +307,20 @@ export async function searchItemSummaries(input: {
   deliveryPostal?: string;
   categoryIds?: string;
   aspectFilter?: string;
+  locale?: string;
   record?: EbayApiRecorder;
-}): Promise<{ listings: CandidateListing[]; note?: string }> {
+}): Promise<{
+  listings: CandidateListing[];
+  note?: string;
+  total?: number;
+  offset?: number;
+  limit?: number;
+}> {
   const url = new URL(`${input.hosts.buy}/buy/browse/v1/item_summary/search`);
+  const limit = input.limit ?? SEARCH_PAGE_SIZE;
   url.searchParams.set("q", input.q);
-  url.searchParams.set("limit", String(input.limit ?? 24));
+  url.searchParams.set("limit", String(limit));
+  if (input.offset) url.searchParams.set("offset", String(input.offset));
   url.searchParams.set("fieldgroups", "EXTENDED");
   if (input.categoryIds) url.searchParams.set("category_ids", input.categoryIds);
   if (input.aspectFilter) {
@@ -321,6 +337,10 @@ export async function searchItemSummaries(input: {
       headers: {
         Authorization: `Bearer ${input.token}`,
         "X-EBAY-C-MARKETPLACE-ID": input.marketplaceId,
+        "Accept-Language": ebayAcceptLanguage(
+          input.marketplaceId,
+          parseAppLocale(input.locale),
+        ),
       },
     });
     httpStatus = res.status;
@@ -343,7 +363,12 @@ export async function searchItemSummaries(input: {
       .map(mapItemSummary)
       .filter((item): item is CandidateListing => item !== null);
 
-    return { listings };
+    return {
+      listings,
+      ...(typeof body.total === "number" ? { total: body.total } : {}),
+      offset: body.offset ?? input.offset ?? 0,
+      limit,
+    };
   } catch (error) {
     await noteCall(input.record, {
       api: "browse_search",
@@ -372,6 +397,7 @@ export async function getItemsByRestId(input: {
   token: string;
   marketplaceId: string;
   itemIds: string[];
+  locale?: string;
   record?: EbayApiRecorder;
 }): Promise<CandidateListing[]> {
   const unique = [...new Set(input.itemIds.filter(Boolean))];
@@ -385,6 +411,7 @@ export async function getItemsByRestId(input: {
           token: input.token,
           marketplaceId: input.marketplaceId,
           itemId,
+          ...(input.locale ? { locale: input.locale } : {}),
           ...(input.record ? { record: input.record } : {}),
         }),
       ),
@@ -401,6 +428,7 @@ export async function getItemByRestId(input: {
   token: string;
   marketplaceId: string;
   itemId: string;
+  locale?: string;
   record?: EbayApiRecorder;
 }): Promise<CandidateListing | null> {
   const url = new URL(
@@ -415,6 +443,10 @@ export async function getItemByRestId(input: {
       headers: {
         Authorization: `Bearer ${input.token}`,
         "X-EBAY-C-MARKETPLACE-ID": input.marketplaceId,
+        "Accept-Language": ebayAcceptLanguage(
+          input.marketplaceId,
+          parseAppLocale(input.locale),
+        ),
       },
     });
     httpStatus = res.status;

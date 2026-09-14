@@ -2,6 +2,7 @@
 
 import { useState, type ChangeEvent } from "react";
 import { submitSearchForm } from "@/components/auto-search";
+import { useTranslations } from "next-intl";
 import { useFilterGroup } from "@/components/filter-accordion";
 import { syncCatalogSearchForm } from "@/components/catalog-search-sync";
 import {
@@ -64,12 +65,25 @@ export function FiguresFilters({
   );
 
   const { open, onToggle } = useFilterGroup("figures", hasSelection);
+  const t = useTranslations("filters");
+  const packagingLabel = {
+    carded: t("carded"),
+    loose: t("loose"),
+  };
+  const completenessLabel = {
+    complete: t("complete"),
+    incomplete: t("incomplete"),
+  };
+  const punchLabel = {
+    unpunched: t("unpunched"),
+    punched: t("punched"),
+  };
 
   return (
     <details className="filter-group" open={open} onToggle={onToggle}>
-      <summary>Figures</summary>
+      <summary>{t("figures")}</summary>
       <label>
-        Category
+        {t("category")}
         <select
           form={SEARCH_FORM}
           name="figureCategory"
@@ -83,7 +97,7 @@ export function FiguresFilters({
             onFilterChange(event);
           }}
         >
-          <option value="any">Any</option>
+          <option value="any">{t("any")}</option>
           {FIGURE_CATEGORY_FILTERS.filter((option) => !option.group).map(
             (option) => (
               <option key={option.value} value={option.value}>
@@ -105,14 +119,14 @@ export function FiguresFilters({
         </select>
       </label>
       <label hidden={!showScale}>
-        Scale
+        {t("scale")}
         <select
           form={SEARCH_FORM}
           name="figureScale"
           defaultValue={showScale ? (figureScale ?? "any") : "any"}
           onChange={onFilterChange}
         >
-          <option value="any">Any</option>
+          <option value="any">{t("any")}</option>
           {FIGURE_SCALE_FILTERS.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
@@ -121,7 +135,7 @@ export function FiguresFilters({
         </select>
       </label>
       <label>
-        Packaging
+        {t("packaging")}
         <select
           form={SEARCH_FORM}
           name="figurePackaging"
@@ -139,16 +153,16 @@ export function FiguresFilters({
             onFilterChange(event);
           }}
         >
-          <option value="any">Any</option>
+          <option value="any">{t("any")}</option>
           {FIGURE_PACKAGING_FILTERS.map((option) => (
             <option key={option.value} value={option.value}>
-              {option.label}
+              {packagingLabel[option.value]}
             </option>
           ))}
         </select>
       </label>
       <label hidden={!showCompleteness}>
-        Completeness
+        {t("completeness")}
         <select
           form={SEARCH_FORM}
           name="figureCompleteness"
@@ -157,26 +171,26 @@ export function FiguresFilters({
           }
           onChange={onFilterChange}
         >
-          <option value="any">Any</option>
+          <option value="any">{t("any")}</option>
           {FIGURE_COMPLETENESS_FILTERS.map((option) => (
             <option key={option.value} value={option.value}>
-              {option.label}
+              {completenessLabel[option.value]}
             </option>
           ))}
         </select>
       </label>
       <label hidden={!showPunch}>
-        Card punch
+        {t("cardPunch")}
         <select
           form={SEARCH_FORM}
           name="figurePunch"
           defaultValue={showPunch ? (figurePunch ?? "any") : "any"}
           onChange={onFilterChange}
         >
-          <option value="any">Any</option>
+          <option value="any">{t("any")}</option>
           {FIGURE_PUNCH_FILTERS.map((option) => (
             <option key={option.value} value={option.value}>
-              {option.label}
+              {punchLabel[option.value]}
             </option>
           ))}
         </select>

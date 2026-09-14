@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslations } from "next-intl";
 import { AutoText } from "@/components/auto-search";
 
 export function ExcludeWords({
@@ -7,16 +10,17 @@ export function ExcludeWords({
   value: string;
   form?: string;
 }) {
+  const t = useTranslations("search");
   return (
     <details className="search-exclude">
-      <summary>Exclude words</summary>
+      <summary>{t("excludeWords")}</summary>
       <AutoText
         {...(form ? { form } : {})}
         name="exclude"
         type="text"
         defaultValue={value}
-        placeholder="lot, broken, reproduction"
-        aria-label="Words to exclude from search"
+        placeholder={t("excludePlaceholder")}
+        aria-label={t("excludeAria")}
         autoComplete="off"
       />
     </details>
