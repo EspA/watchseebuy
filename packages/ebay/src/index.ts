@@ -23,6 +23,12 @@ export {
   type SearchResult,
 } from "./client";
 export {
+  ebayErrorFromBody,
+  ebayErrorFromText,
+  ebayErrorFromThrown,
+  truncateEbayError,
+} from "./browse-error";
+export {
   authorizePartnerBrowse,
   browseApiNameFromPath,
   ebayBrowseError,

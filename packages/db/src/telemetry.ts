@@ -27,6 +27,7 @@ export async function recordEbayApiCall(
     ok: boolean;
     httpStatus?: number | null;
     durationMs: number;
+    error?: string | null;
   },
 ) {
   await db.insert(ebayApiCalls).values({
@@ -36,6 +37,7 @@ export async function recordEbayApiCall(
     ok: input.ok,
     httpStatus: input.httpStatus ?? null,
     durationMs: input.durationMs,
+    error: input.ok ? null : input.error ?? null,
   });
 }
 

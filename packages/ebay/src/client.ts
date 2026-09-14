@@ -60,6 +60,7 @@ function persistEbayCall(
         ok: event.ok,
         httpStatus: event.httpStatus,
         durationMs: event.durationMs,
+        ...(event.error ? { error: event.error } : {}),
       });
     } catch (error) {
       console.error(

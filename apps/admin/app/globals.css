@@ -193,6 +193,111 @@ th {
   color: var(--muted);
 }
 
+.windows {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 20px;
+}
+
+.windows a {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 12px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.windows a[aria-current="page"],
+.windows a:hover {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+
+.windows a[aria-current="page"] {
+  background: var(--ink);
+  color: #fffdf8;
+}
+
+.count-link {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.count-link:hover {
+  text-decoration: underline;
+}
+
+.stat strong .count-link {
+  color: inherit;
+}
+
+.stat strong .count-link:hover {
+  color: var(--accent);
+}
+
+.day-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 96px;
+  margin: 4px 0 8px;
+}
+
+.day-chart-col {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  min-width: 0;
+  height: 100%;
+  text-decoration: none;
+}
+
+.day-chart-stack {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 2px;
+  border-radius: 3px 3px 0 0;
+  overflow: hidden;
+  background: var(--line);
+}
+
+.day-chart-ok {
+  background: #44403c;
+}
+
+.day-chart-fail {
+  background: var(--accent);
+}
+
+.day-chart-axis {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 0.82rem;
+  margin: 0 0 12px;
+}
+
+.error-cell {
+  max-width: 420px;
+  word-break: break-word;
+  font-size: 0.88rem;
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 16px 0 0;
+}
+
+.pager a {
+  color: var(--accent);
+}
+
 .dl {
   display: grid;
   grid-template-columns: 180px 1fr;

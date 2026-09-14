@@ -5,6 +5,17 @@ const DATE = new Intl.DateTimeFormat("en-US", {
   timeStyle: "short",
 });
 
+export function formatUtcDay(day: string) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(day);
+  if (!match) return day;
+  const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}
+
 export function formatDate(value: Date | string | null | undefined) {
   if (!value) return "—";
   const date = value instanceof Date ? value : new Date(value);

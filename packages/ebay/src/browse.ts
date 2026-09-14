@@ -8,6 +8,12 @@ import {
   type ConditionClass,
   type ListingType,
 } from "@waitseebuy/domain";
+import {
+  ebayErrorFromBody,
+  ebayErrorFromText,
+  ebayErrorFromThrown,
+  truncateEbayError,
+} from "./browse-error";
 
 type TokenResponse = {
   access_token?: string;
@@ -234,6 +240,7 @@ export type EbayApiCallEvent = {
   ok: boolean;
   httpStatus: number;
   durationMs: number;
+  error?: string;
 };
 
 export type EbayApiRecorder = (event: EbayApiCallEvent) => void | Promise<void>;
@@ -270,9 +277,7 @@ export async function fetchApplicationToken(
     httpStatus = res.status;
     const body = (await res.json()) as TokenResponse;
     if (!res.ok || !body.access_token) {
-      throw new Error(
-        body.error_description ?? body.error ?? `eBay token HTTP ${res.status}`,
-      );
+      throw new Error(ebayErrorFromBody(body, res.status));
     }
     await noteCall(record, {
       api: "oauth",
@@ -287,6 +292,7 @@ export async function fetchApplicationToken(
       ok: false,
       httpStatus,
       durationMs: Date.now() - started,
+      error: ebayErrorFromThrown(error, httpStatus),
     });
     throw error;
   }
@@ -345,19 +351,23 @@ export async function searchItemSummaries(input: {
     });
     httpStatus = res.status;
     const body = (await res.json()) as SearchResponse;
+    if (!res.ok) {
+      const message = ebayErrorFromBody(body, res.status);
+      await noteCall(input.record, {
+        api: "browse_search",
+        ok: false,
+        httpStatus,
+        durationMs: Date.now() - started,
+        error: message,
+      });
+      return { listings: [], note: message };
+    }
     await noteCall(input.record, {
       api: "browse_search",
-      ok: res.ok,
+      ok: true,
       httpStatus,
       durationMs: Date.now() - started,
     });
-    if (!res.ok) {
-      const message =
-        body.errors?.[0]?.longMessage ??
-        body.errors?.[0]?.message ??
-        `eBay search HTTP ${res.status}`;
-      return { listings: [], note: message };
-    }
 
     const listings = (body.itemSummaries ?? [])
       .map(mapItemSummary)
@@ -375,6 +385,7 @@ export async function searchItemSummaries(input: {
       ok: false,
       httpStatus,
       durationMs: Date.now() - started,
+      error: ebayErrorFromThrown(error, httpStatus),
     });
     throw error;
   }
@@ -451,20 +462,30 @@ export async function getItemByRestId(input: {
     });
     httpStatus = res.status;
     const body = (await res.json()) as BrowseItem & ItemsResponse;
+    if (!res.ok) {
+      await noteCall(input.record, {
+        api: "get_item",
+        ok: false,
+        httpStatus,
+        durationMs: Date.now() - started,
+        error: ebayErrorFromBody(body, res.status),
+      });
+      return null;
+    }
     await noteCall(input.record, {
       api: "get_item",
-      ok: res.ok,
+      ok: true,
       httpStatus,
       durationMs: Date.now() - started,
     });
-    if (!res.ok) return null;
     return mapBrowseItem(body);
-  } catch {
+  } catch (error) {
     await noteCall(input.record, {
       api: "get_item",
       ok: false,
       httpStatus,
       durationMs: Date.now() - started,
+      error: ebayErrorFromThrown(error, httpStatus),
     });
     return null;
   }
@@ -526,6 +547,13 @@ export async function forwardBrowseRequest(input: {
       ok: res.ok,
       httpStatus,
       durationMs: Date.now() - started,
+      ...(res.ok
+        ? {}
+        : {
+            error: truncateEbayError(
+              `${input.method} ${input.pathname}: ${ebayErrorFromText(body, res.status)}`,
+            ),
+          }),
     });
     return { status: res.status, body, headers: res.headers };
   } catch (error) {
@@ -534,6 +562,9 @@ export async function forwardBrowseRequest(input: {
       ok: false,
       httpStatus,
       durationMs: Date.now() - started,
+      error: truncateEbayError(
+        `${input.method} ${input.pathname}: ${ebayErrorFromThrown(error, httpStatus)}`,
+      ),
     });
     throw error;
   }
@@ -559,7 +590,7 @@ export async function getNotificationPublicKey(input: {
     httpStatus = res.status;
     const body = (await res.json()) as PublicKeyResponse;
     if (!res.ok || !body.key) {
-      throw new Error(`eBay public key HTTP ${res.status}`);
+      throw new Error(ebayErrorFromBody(body, res.status));
     }
     await noteCall(input.record, {
       api: "notification_public_key",
@@ -579,6 +610,7 @@ export async function getNotificationPublicKey(input: {
       ok: false,
       httpStatus,
       durationMs: Date.now() - started,
+      error: ebayErrorFromThrown(error, httpStatus),
     });
     throw error;
   }

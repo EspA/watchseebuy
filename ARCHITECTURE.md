@@ -174,7 +174,7 @@ listings             ebay item id, payload snapshot, first_seen
 matches              watch_id + listing_id, landed_price, comp_delta, unique(watch, listing)
 alerts               match_id, channel, sent_at, click_token
 sold_comp_cache      item_key, window, median, sample_size, fetched_at
-ebay_api_calls       api, source, ok, http_status, duration_ms
+ebay_api_calls       api, source, ok, http_status, duration_ms, error
 email_sends          kind, status (delivered | failed | logged_only), error
 user_events          kind (search | buy_click), user_id, ip, meta
 ```

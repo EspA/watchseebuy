@@ -227,10 +227,12 @@ export const ebayApiCalls = pgTable(
     ok: boolean("ok").notNull(),
     httpStatus: integer("http_status"),
     durationMs: integer("duration_ms").notNull(),
+    error: text("error"),
   },
   (t) => [
     index("ebay_api_calls_called_at_idx").on(t.calledAt),
     index("ebay_api_calls_api_called_at_idx").on(t.api, t.calledAt),
+    index("ebay_api_calls_ok_called_at_idx").on(t.ok, t.calledAt),
   ],
 );
 
