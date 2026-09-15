@@ -59,7 +59,7 @@ export default async function EbayFailuresPage({
   return (
     <main className="page">
       <p>
-        <Link className="back" href={ebayPageHref(query.days)}>
+        <Link className="back" href={ebayPageHref(query.days, query.day)}>
           eBay API
         </Link>
       </p>

@@ -44,8 +44,12 @@ export function parseEbayFailureQuery(input: {
   };
 }
 
-export function ebayPageHref(days: number) {
-  return days === 30 ? "/ebay" : `/ebay?days=${days}`;
+export function ebayPageHref(days: number, day?: string) {
+  const params = new URLSearchParams();
+  if (days !== 30) params.set("days", String(days));
+  if (day) params.set("day", day);
+  const search = params.toString();
+  return search ? `/ebay?${search}` : "/ebay";
 }
 
 export function ebayFailuresHref(query: {

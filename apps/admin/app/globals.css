@@ -200,6 +200,28 @@ th {
   margin: 0 0 20px;
 }
 
+.day-filters {
+  margin: 0 0 12px;
+}
+
+.day-filters a {
+  padding: 4px 10px;
+  font-size: 0.82rem;
+}
+
+#by-api {
+  scroll-margin-top: 24px;
+}
+
+tr.selected td {
+  background: rgb(154 52 18 / 7%);
+}
+
+.day-chart-col.selected .day-chart-stack {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
 .windows a {
   border: 1px solid var(--line);
   border-radius: 999px;

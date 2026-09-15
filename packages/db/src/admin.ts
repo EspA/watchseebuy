@@ -266,6 +266,25 @@ function windowStart(days: number) {
   return new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 }
 
+export function parseEbayStatDay(
+  raw: string | undefined | null,
+  days: number,
+): string | undefined {
+  if (!raw || !utcDayBounds(raw)) return undefined;
+  return eachUtcDay(days).includes(raw) ? raw : undefined;
+}
+
+function ebayApiViewWhere(days: number, day?: string) {
+  const bounds = day ? utcDayBounds(day) : null;
+  if (bounds) {
+    return and(
+      gte(ebayApiCalls.calledAt, bounds.start),
+      lt(ebayApiCalls.calledAt, bounds.end),
+    );
+  }
+  return gte(ebayApiCalls.calledAt, calendarWindowStart(days));
+}
+
 export async function ebayApiWindowStats(
   db: Database,
   days: number,
@@ -291,6 +310,7 @@ export async function ebayApiWindowStats(
 export async function ebayApiBreakdown(
   db: Database,
   days: number,
+  day?: string,
 ): Promise<EbayApiBreakdownRow[]> {
   const rows = await db
     .select({
@@ -302,7 +322,7 @@ export async function ebayApiBreakdown(
       rateLimited: sql<number>`count(*) filter (where ${ebayApiCalls.httpStatus} = 429)::int`,
     })
     .from(ebayApiCalls)
-    .where(gte(ebayApiCalls.calledAt, calendarWindowStart(days)))
+    .where(ebayApiViewWhere(days, day))
     .groupBy(ebayApiCalls.api, ebayApiCalls.source)
     .orderBy(ebayApiCalls.api, ebayApiCalls.source);
 
@@ -319,6 +339,7 @@ export async function ebayApiBreakdown(
 export async function ebayApiStatusBreakdown(
   db: Database,
   days: number,
+  day?: string,
 ): Promise<EbayApiStatusRow[]> {
   const rows = await db
     .select({
@@ -329,7 +350,7 @@ export async function ebayApiStatusBreakdown(
     .from(ebayApiCalls)
     .where(
       and(
-        gte(ebayApiCalls.calledAt, calendarWindowStart(days)),
+        ebayApiViewWhere(days, day),
         sql`not ${ebayApiCalls.ok}`,
       ),
     )

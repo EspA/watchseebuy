@@ -69,6 +69,7 @@ export {
   getAdminUserDetail,
   listAdminUsers,
   listEbayApiFailures,
+  parseEbayStatDay,
   parseEbayStatWindow,
   utcDayBounds,
   EBAY_FAILURE_PAGE_SIZE,

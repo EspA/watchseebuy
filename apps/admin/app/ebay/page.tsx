@@ -6,6 +6,7 @@ import {
   ebayApiWindowStats,
   getDb,
   listRecentEbayAccountDeletions,
+  parseEbayStatDay,
   parseEbayStatWindow,
 } from "@waitseebuy/db";
 import {
@@ -23,17 +24,18 @@ export const dynamic = "force-dynamic";
 export default async function EbayStatsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ days?: string }>;
+  searchParams: Promise<{ days?: string; day?: string }>;
 }) {
   await requireAdmin();
-  const { days: rawDays } = await searchParams;
-  const days = parseEbayStatWindow(rawDays);
+  const query = await searchParams;
+  const days = parseEbayStatWindow(query.days);
+  const day = parseEbayStatDay(query.day, days);
   const db = getDb();
   const [totals, daily, breakdown, failures, deletions] = await Promise.all([
     ebayApiWindowStats(db, days),
     ebayApiDailyStats(db, days),
-    ebayApiBreakdown(db, days),
-    ebayApiStatusBreakdown(db, days),
+    ebayApiBreakdown(db, days, day),
+    ebayApiStatusBreakdown(db, days, day),
     listRecentEbayAccountDeletions(db),
   ]);
   const deletionEndpoint = notificationEndpointStatusFromEnv();
@@ -47,15 +49,15 @@ export default async function EbayStatsPage({
       <h1>eBay API</h1>
       <p className="lede">
         Calls through the shared client, including the partner Browse proxy.
-        Days are UTC. Click a failure count to see the HTTP status and error
-        body. Source <code>partner_browse</code> is The Timeless Vault; it
-        shares this app&apos;s eBay quota.
+        Days are UTC. Pick a day to filter the API table, or click a failure
+        count to see the error body. Source <code>partner_browse</code> is
+        The Timeless Vault; it shares this app&apos;s eBay quota.
       </p>
       <nav className="windows" aria-label="Time window">
         {EBAY_STAT_WINDOWS.map((windowDays) => (
           <Link
             key={windowDays}
-            href={ebayPageHref(windowDays)}
+            href={ebayPageHref(windowDays, parseEbayStatDay(day, windowDays))}
             aria-current={windowDays === days ? "page" : undefined}
           >
             Last {windowDays} days
@@ -115,19 +117,16 @@ export default async function EbayStatsPage({
                     />
                   </span>
                 );
-                return row.failure > 0 ? (
+                return (
                   <Link
                     key={row.day}
-                    className="day-chart-col"
-                    href={ebayFailuresHref({ days, day: row.day })}
+                    className={`day-chart-col${day === row.day ? " selected" : ""}`}
+                    href={`${ebayPageHref(days, row.day)}#by-api`}
                     title={title}
+                    aria-current={day === row.day ? "true" : undefined}
                   >
                     {stack}
                   </Link>
-                ) : (
-                  <span key={row.day} className="day-chart-col" title={title}>
-                    {stack}
-                  </span>
                 );
               })}
             </div>
@@ -149,8 +148,16 @@ export default async function EbayStatsPage({
               </thead>
               <tbody>
                 {[...daily].reverse().map((row) => (
-                  <tr key={row.day} id={`day-${row.day}`}>
-                    <td>{formatUtcDay(row.day)}</td>
+                  <tr
+                    key={row.day}
+                    id={`day-${row.day}`}
+                    className={day === row.day ? "selected" : undefined}
+                  >
+                    <td>
+                      <Link href={`${ebayPageHref(days, row.day)}#by-api`}>
+                        {formatUtcDay(row.day)}
+                      </Link>
+                    </td>
                     <td>{row.total}</td>
                     <td>{row.success}</td>
                     <td>
@@ -192,10 +199,35 @@ export default async function EbayStatsPage({
           <dd>{partnerBrowse.tokenSet ? "Set" : "Missing (proxy off)"}</dd>
         </dl>
       </div>
-      <div className="panel" style={{ marginTop: 16 }}>
+      <div className="panel" style={{ marginTop: 16 }} id="by-api">
         <h2>By API and source</h2>
+        <nav className="windows day-filters" aria-label="Day">
+          <Link
+            href={`${ebayPageHref(days)}#by-api`}
+            aria-current={!day ? "page" : undefined}
+          >
+            All days
+          </Link>
+          {[...daily]
+            .reverse()
+            .filter((row) => row.total > 0)
+            .map((row) => (
+              <Link
+                key={row.day}
+                href={`${ebayPageHref(days, row.day)}#by-api`}
+                aria-current={day === row.day ? "page" : undefined}
+              >
+                {formatUtcDay(row.day)}
+              </Link>
+            ))}
+        </nav>
+        {day ? (
+          <p className="muted">{formatUtcDay(day)} (UTC)</p>
+        ) : (
+          <p className="muted">Last {days} days</p>
+        )}
         {breakdown.length === 0 ? (
-          <p className="muted">No eBay calls recorded yet.</p>
+          <p className="muted">No eBay calls recorded in this view.</p>
         ) : (
           <table>
             <thead>
@@ -222,6 +254,7 @@ export default async function EbayStatsPage({
                         days,
                         api: row.api,
                         source: row.source,
+                        ...(day ? { day } : {}),
                       })}
                     />
                   </td>
@@ -233,6 +266,7 @@ export default async function EbayStatsPage({
                         api: row.api,
                         source: row.source,
                         httpStatus: 429,
+                        ...(day ? { day } : {}),
                       })}
                     />
                   </td>
@@ -245,7 +279,7 @@ export default async function EbayStatsPage({
       <div className="panel" style={{ marginTop: 16 }}>
         <h2>Failed calls by HTTP status</h2>
         {failures.length === 0 ? (
-          <p className="muted">No failed calls in this window.</p>
+          <p className="muted">No failed calls in this view.</p>
         ) : (
           <table>
             <thead>
@@ -267,6 +301,7 @@ export default async function EbayStatsPage({
                         days,
                         api: row.api,
                         httpStatus: row.httpStatus,
+                        ...(day ? { day } : {}),
                       })}
                     />
                   </td>
