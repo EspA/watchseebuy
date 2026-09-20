@@ -22,6 +22,7 @@ export {
   type EbayClientConfig,
   type SearchResult,
 } from "./client";
+export { mergeHydratedListing } from "./browse";
 export {
   ebayErrorFromBody,
   ebayErrorFromText,

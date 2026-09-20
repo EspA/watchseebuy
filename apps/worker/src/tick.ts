@@ -1,8 +1,12 @@
 import {
+  applyListingIdentity,
   asWatchCriteria,
   attachPriceScores,
+  DEFAULT_WORKER_GET_ITEM_LIMIT,
   describeWatch,
   isWatchDigestDue,
+  listingFromStoredPayload,
+  listingsNeedingProductHydration,
   matchListing,
   parseListingTypeFilter,
   parseWatchFrequency,
@@ -16,6 +20,7 @@ import {
   insertMatchIfNew,
   listAlertableWatches,
   listCoverageDueForPoll,
+  listListingsByEbayItemIds,
   listUnsentMatchesForWatch,
   listWatchesForCoverage,
   markCoveragePolled,
@@ -26,7 +31,11 @@ import {
   type UnsentMatch,
   type WatchForAlert,
 } from "@waitseebuy/db";
-import { createEbayClientFromEnv, type EbayClient } from "@waitseebuy/ebay";
+import {
+  createEbayClientFromEnv,
+  mergeHydratedListing,
+  type EbayClient,
+} from "@waitseebuy/ebay";
 import {
   listingFromPayload,
   renderAlertEmail,
@@ -46,12 +55,15 @@ export async function tick(now = new Date()) {
   );
 
   const due = await listCoverageDueForPoll(db, staleBefore);
+  const hydrateLimit = hydrateLimitFromEnv();
   let polled = 0;
   let newMatches = 0;
+  let hydrated = 0;
   for (const coverage of due) {
-    const result = await pollCoverage(db, ebay, coverage);
+    const result = await pollCoverage(db, ebay, coverage, hydrateLimit);
     polled += 1;
     newMatches += result.newMatches;
+    hydrated += result.hydrated;
   }
 
   const sent = await sendDueAlerts(db, now);
@@ -67,22 +79,59 @@ export async function tick(now = new Date()) {
       error: error instanceof Error ? error.message : String(error),
     };
   }
-  return { polled, newMatches, ...sent, purge };
+  return { polled, newMatches, hydrated, ...sent, purge };
+}
+
+function hydrateLimitFromEnv(): number {
+  const raw = process.env.WORKER_GET_ITEM_LIMIT;
+  if (raw === undefined || raw === "") return DEFAULT_WORKER_GET_ITEM_LIMIT;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n < 0) return DEFAULT_WORKER_GET_ITEM_LIMIT;
+  return Math.floor(n);
 }
 
 async function pollCoverage(
   db: ReturnType<typeof getDb>,
   ebay: EbayClient,
   coverage: CoverageToPoll,
+  hydrateLimit: number,
 ) {
+  // Mark first so a slow or timed-out hydrate cannot be retried every tick.
+  await markCoveragePolled(db, coverage.id);
+
   const watches = await listWatchesForCoverage(db, coverage.id);
   const query = coverageQueryForPoll(coverage, watches[0]?.criteria);
   const search = await ebay.search(query);
   const found = search.listings ?? [];
-  const identified =
-    found.length > 0
-      ? await ebay.hydrateProductSignals(found, query.ebaySite)
+  const cached = await listListingsByEbayItemIds(
+    db,
+    found.map((listing) => listing.ebayItemId),
+  );
+  const merged = found.map((listing) => {
+    const stored = cached.get(listing.ebayItemId);
+    const fromCache = stored
+      ? listingFromStoredPayload(stored.payload)
+      : null;
+    return fromCache ? mergeHydratedListing(listing, fromCache) : listing;
+  });
+  const watchCriteria = watches
+    .map((watch) => asWatchCriteria(watch.criteria))
+    .filter((value): value is NonNullable<typeof value> => Boolean(value));
+  const toHydrate = listingsNeedingProductHydration(
+    merged,
+    watchCriteria,
+    hydrateLimit,
+  );
+  const hydrated =
+    toHydrate.length > 0
+      ? await ebay.hydrateProductSignals(toHydrate, query.ebaySite)
       : [];
+  const hydratedById = new Map(
+    hydrated.map((listing) => [listing.ebayItemId, listing]),
+  );
+  const identified = merged.map((listing) =>
+    applyListingIdentity(hydratedById.get(listing.ebayItemId) ?? listing),
+  );
   const scored = attachPriceScores(identified);
 
   await upsertListings(
@@ -111,8 +160,7 @@ async function pollCoverage(
     }
   }
 
-  await markCoveragePolled(db, coverage.id);
-  return { newMatches };
+  return { newMatches, hydrated: toHydrate.length };
 }
 
 function coverageQueryForPoll(

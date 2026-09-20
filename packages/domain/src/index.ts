@@ -28,6 +28,13 @@ export {
 } from "./price-score";
 export { matchListing, type CandidateListing, type MatchDecision } from "./matcher";
 export {
+  DEFAULT_WORKER_GET_ITEM_LIMIT,
+  listingFromStoredPayload,
+  listingsNeedingProductHydration,
+  needsProductHydration,
+  watchForHydratePrefetch,
+} from "./poll-hydrate";
+export {
   filterGroupForCategoryId,
   filterGroupForListing,
   suggestFilterGroup,

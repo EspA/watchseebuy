@@ -144,6 +144,32 @@ export async function markCoveragePolled(
     .where(eq(coverageQueries.id, coverageQueryId));
 }
 
+export async function listListingsByEbayItemIds(
+  db: Database,
+  ebayItemIds: string[],
+): Promise<Map<string, StoredListing>> {
+  if (ebayItemIds.length === 0) return new Map();
+  const unique = [...new Set(ebayItemIds)];
+  const rows = await db
+    .select({
+      ebayItemId: listings.ebayItemId,
+      title: listings.title,
+      payload: listings.payload,
+    })
+    .from(listings)
+    .where(inArray(listings.ebayItemId, unique));
+  return new Map(
+    rows.map((row) => [
+      row.ebayItemId,
+      {
+        ebayItemId: row.ebayItemId,
+        title: row.title,
+        payload: row.payload,
+      },
+    ]),
+  );
+}
+
 export async function upsertListings(
   db: Database,
   rows: Array<{ ebayItemId: string; title: string; payload: unknown }>,

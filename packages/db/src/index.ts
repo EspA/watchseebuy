@@ -22,6 +22,7 @@ export {
   insertMatchIfNew,
   listAlertableWatches,
   listCoverageDueForPoll,
+  listListingsByEbayItemIds,
   listUnsentMatchesForWatch,
   listWatchesForCoverage,
   listWatchIdsWithUnsentMatches,

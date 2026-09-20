@@ -1,20 +1,20 @@
-import { landedCostCents } from "./pricing";
+import { landedCostCents } from "./pricing.ts";
 import {
   listingMatchesPriceScore,
   type PriceScore,
-} from "./price-score";
+} from "./price-score.ts";
 import type {
   ConditionDescriptor,
   ProductIdentity,
   TypedNameValue,
-} from "./product-identity";
-import { listingMatchesConfidence } from "./seller-confidence";
+} from "./product-identity.ts";
+import { listingMatchesConfidence } from "./seller-confidence.ts";
 import {
   listingMatchesCondition,
   listingMatchesItemLocation,
   listingMatchesListingType,
   type WatchCriteria,
-} from "./watch-criteria";
+} from "./watch-criteria.ts";
 
 export type CandidateListing = {
   ebayItemId: string;
