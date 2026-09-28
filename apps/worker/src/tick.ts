@@ -14,7 +14,7 @@ import {
   searchPathForWatch,
   toCoverageQuery,
   type CoverageQuery,
-} from "@waitseebuy/domain";
+} from "@watchseebuy/domain";
 import {
   getDb,
   insertMatchIfNew,
@@ -30,17 +30,17 @@ import {
   type CoverageToPoll,
   type UnsentMatch,
   type WatchForAlert,
-} from "@waitseebuy/db";
+} from "@watchseebuy/db";
 import {
   createEbayClientFromEnv,
   mergeHydratedListing,
   type EbayClient,
-} from "@waitseebuy/ebay";
+} from "@watchseebuy/ebay";
 import {
   listingFromPayload,
   renderAlertEmail,
   sendTransactionalEmail,
-} from "@waitseebuy/notify";
+} from "@watchseebuy/notify";
 import { randomBytes } from "node:crypto";
 
 const DEFAULT_POLL_MS = 60 * 60 * 1000;

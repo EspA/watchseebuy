@@ -1,4 +1,4 @@
-import type { CandidateListing, PriceScore } from "@waitseebuy/domain";
+import type { CandidateListing, PriceScore } from "@watchseebuy/domain";
 import type { AlertEmailListing } from "./alert-email.ts";
 
 export function listingFromPayload(

@@ -1,5 +1,5 @@
-import type { WatchCriteria } from "@waitseebuy/domain";
-import { describeWatch } from "@waitseebuy/domain";
+import type { WatchCriteria } from "@watchseebuy/domain";
+import { describeWatch } from "@watchseebuy/domain";
 import type { AlertEmailInput, AlertEmailListing } from "./alert-email.ts";
 
 const SAMPLE_WATCH: WatchCriteria = {
@@ -104,7 +104,7 @@ function sampleListings(origin: string): AlertEmailListing[] {
 
 export function sampleAlertEmailInput(
   frequency: AlertEmailInput["frequency"],
-  origin = "https://waitseebuy.com",
+  origin = "https://watchseebuy.com",
 ): AlertEmailInput {
   const all = sampleListings(origin);
   const listings = frequency === "on_change" ? all.slice(0, 1) : all;

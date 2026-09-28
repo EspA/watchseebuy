@@ -38,7 +38,7 @@ import {
   withoutCardedExcludeWords,
   withoutFigureExcludeWords,
   type CatalogSelection,
-} from "@waitseebuy/domain";
+} from "@watchseebuy/domain";
 
 export function selectValue(
   form: HTMLFormElement,

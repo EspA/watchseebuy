@@ -1,4 +1,4 @@
-import { getAdminUserDetail, getDb } from "@waitseebuy/db";
+import { getAdminUserDetail, getDb } from "@watchseebuy/db";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { describeIpLocation } from "@/lib/geo";

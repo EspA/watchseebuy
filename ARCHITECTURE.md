@@ -1,4 +1,4 @@
-# WaitSeeBuy — architecture
+# WatchSeeBuy — architecture
 
 Decisions for a product that may become highly used, without paying microservice tax on day one.
 
@@ -61,7 +61,7 @@ Collector
    ▼
  Cloud Load Balancing  →  Cloud Run: web (Next.js)
                                │
- Operator  →  admin.waitseebuy.com  →  Cloud Run: admin
+ Operator  →  admin.watchseebuy.com  →  Cloud Run: admin
                                │
                                ├── Postgres (users, watches, comps cache, alerts,
                                │            ebay_api_calls, email_sends, user_events)
@@ -86,7 +86,7 @@ Cloud Scheduler ──► Cloud Run: worker
 
 Search in the browser hits eBay through **our** API so we attach EPN IDs, compute landed cost, and attach comps. The user never talks to eBay’s API directly. Search is **public** (rate-limited and cached). Auth is required only to persist a watch.
 
-**Partner Browse proxy.** `GET/POST /buy/browse/v1/*` on `web` is a token-gated pass-through of the official eBay Browse contract (same path, query, headers, and JSON). The only caller today is The Timeless Vault admin (`admin.thetimelessvault.com`). `Authorization: Bearer` must match `PARTNER_BROWSE_TOKEN` (Secret Manager, 32+ characters). WaitSeeBuy swaps in its own application token and records the call as source `partner_browse`. Browse `itemHref` / `href` / `next` URLs are rewritten onto `APP_URL` so follow-up getItem calls stay on this host; public `itemWebUrl` is not rewritten. These calls share the same eBay quota as search and the worker.
+**Partner Browse proxy.** `GET/POST /buy/browse/v1/*` on `web` is a token-gated pass-through of the official eBay Browse contract (same path, query, headers, and JSON). The only caller today is The Timeless Vault admin (`admin.thetimelessvault.com`). `Authorization: Bearer` must match `PARTNER_BROWSE_TOKEN` (Secret Manager, 32+ characters). WatchSeeBuy swaps in its own application token and records the call as source `partner_browse`. Browse `itemHref` / `href` / `next` URLs are rewritten onto `APP_URL` so follow-up getItem calls stay on this host; public `itemWebUrl` is not rewritten. These calls share the same eBay quota as search and the worker.
 
 ---
 
@@ -111,7 +111,7 @@ Even with 50 users, store watches as if we will have 50,000.
 | Module | Responsibility |
 |---|---|
 | `web` | Pages, auth, search UX, watch CRUD |
-| `admin` | Operator console on admin.waitseebuy.com; Google SSO allowlist |
+| `admin` | Operator console on admin.watchseebuy.com; Google SSO allowlist |
 | `ebay` | Official API client, quota, EPN URL builder |
 | `watches` | Intent → structured criteria → coverage query |
 | `comps` | Sold stats, condition matching, “% vs median” |
@@ -147,7 +147,7 @@ packages/notify   email templates + send
 - Cloud Scheduler (worker tick)
 - Artifact Registry + Cloud Build or GitHub Actions
 - Cloud Logging / Error Reporting
-- Cloud DNS for `waitseebuy.com` (domain is at GoDaddy; point NS or A/AAAA here)
+- Cloud DNS for `watchseebuy.com` (domain is at GoDaddy; point NS or A/AAAA here). Keep `waitseebuy.com` mapped and 301 to the new host.
 
 **Add under real load, in this order:**
 
@@ -200,7 +200,7 @@ We do not need Kubernetes to walk that path.
 
 ## eBay quota (request an increase as soon as we are live)
 
-Default production keys are small (often on the order of thousands of calls per day until eBay reviews the app). We will file an **Application Growth Check / limit increase** the moment `waitseebuy.com` is in production — not after we start dropping alerts.
+Default production keys are small (often on the order of thousands of calls per day until eBay reviews the app). We will file an **Application Growth Check / limit increase** the moment `watchseebuy.com` is in production — not after we start dropping alerts.
 
 eBay does not raise limits because we waited. They raise them when they see a real app, a real App ID, and a number that is justified.
 
@@ -226,7 +226,7 @@ EPN software-application approval is a separate gate from developer API quota. F
 - Secrets only in Secret Manager; never in the Next.js client
 - EPN campaign / custom IDs minted server-side on alert click (short cookie)
 - Disclose affiliate relationship in the UI
-- Outbound buy always goes through a first-party WaitSeeBuy click URL (`/go/buy` from search, `/out/{token}` from alerts), then 302 to the eBay item URL with EPN query params (`campid`, `mkrid`, …). Client probes `rover.ebay.com` as a blocker heuristic; if filters are on, the UI offers a plain item URL. Do not cloak affiliate params to evade filters.
+- Outbound buy always goes through a first-party WatchSeeBuy click URL (`/go/buy` from search, `/out/{token}` from alerts), then 302 to the eBay item URL with EPN query params (`campid`, `mkrid`, …). Client probes `rover.ebay.com` as a blocker heuristic; if filters are on, the UI offers a plain item URL. Do not cloak affiliate params to evade filters.
 - No “eBay” or “Bay” in hostnames or brand
 - Least-privilege service accounts per Cloud Run service
 - **Marketplace user account deletion.** Production eBay keys require a public HTTPS endpoint eBay can challenge and then notify. `GET/POST /api/ebay/account-deletion` on `web`. GET answers the SHA-256 challenge (`challengeCode + verificationToken + exact endpoint URL`). POST verifies `X-EBAY-SIGNATURE` via Notification API `getPublicKey`, then strips that seller’s username from cached listing snapshots. Token in Secret Manager (`EBAY_NOTIFICATION_VERIFICATION_TOKEN`); public URL in `EBAY_NOTIFICATION_ENDPOINT` or derived from `APP_URL`.
@@ -238,7 +238,7 @@ EPN software-application approval is a separate gate from developer API quota. F
 
 Sign-in is **Google, Facebook, and Apple**, plus an email magic link so we are not hostage to one provider review.
 
-Use **Better Auth** against Postgres (same `users` table). Secrets in Secret Manager. Callbacks on `waitseebuy.com`.
+Use **Better Auth** against Postgres (same `users` table). Secrets in Secret Manager. Callbacks on `watchseebuy.com`.
 
 Launch prerequisites the providers will demand:
 
@@ -249,7 +249,7 @@ Launch prerequisites the providers will demand:
 
 Link accounts by verified email when a collector uses two providers. Do not silently merge on name.
 
-**Admin** is a separate Next.js app (`apps/admin`) on `https://admin.waitseebuy.com` (local port 3001). Its own Better Auth instance uses a distinct cookie prefix (`admin`) and Google only. `ADMIN_ALLOWED_EMAIL` (default `contact@waitseebuy.com`) is checked before user-create and session-create. Consumer logins increment `login_count`; admin sessions do not. A different port is a local convenience so cookies do not collide — production isolation is the hostname plus the allowlist. Cloud IAP can sit in front later.
+**Admin** is a separate Next.js app (`apps/admin`) on `https://admin.watchseebuy.com` (local port 3001). Its own Better Auth instance uses a distinct cookie prefix (`admin`) and Google only. `ADMIN_ALLOWED_EMAIL` (default `contact@watchseebuy.com`) is checked before user-create and session-create. Consumer logins increment `login_count`; admin sessions do not. A different port is a local convenience so cookies do not collide — production isolation is the hostname plus the allowlist. Cloud IAP can sit in front later.
 
 ---
 

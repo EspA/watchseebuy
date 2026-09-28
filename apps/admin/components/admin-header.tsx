@@ -23,7 +23,7 @@ export function AdminHeader({ email }: { email: string }) {
           width={512}
           height={512}
         />
-        WaitSeeBuy admin
+        WatchSeeBuy admin
       </Link>
       <nav className="nav">
         {LINKS.map((link) => (

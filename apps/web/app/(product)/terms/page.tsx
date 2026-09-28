@@ -3,7 +3,7 @@ import { TermsOfServiceContent } from "@/components/terms-of-service";
 export const metadata = {
   title: "Terms of service",
   description:
-    "Terms for using WaitSeeBuy search, watches, alerts, and affiliate buy links.",
+    "Terms for using WatchSeeBuy search, watches, alerts, and affiliate buy links.",
 };
 
 export default function TermsPage() {

@@ -4,11 +4,11 @@ import {
   ALERT_EMAIL_TITLES,
   renderAlertEmail,
   sampleAlertEmailInput,
-} from "@waitseebuy/notify";
+} from "@watchseebuy/notify";
 import {
   parseWatchFrequency,
   type WatchFrequency,
-} from "@waitseebuy/domain";
+} from "@watchseebuy/domain";
 
 function requestOrigin(headerList: Headers): string {
   const host = headerList.get("x-forwarded-host") ?? headerList.get("host");
@@ -47,7 +47,7 @@ export default async function AlertEmailPreviewPage({
       </header>
       <section className="email-preview-meta">
         <p>
-          <span>From</span> WaitSeeBuy &lt;alerts@waitseebuy.com&gt;
+          <span>From</span> WatchSeeBuy &lt;alerts@watchseebuy.com&gt;
         </p>
         <p>
           <span>Subject</span> {email.subject}

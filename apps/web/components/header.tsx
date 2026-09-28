@@ -25,7 +25,7 @@ export function BrandLink() {
   return (
     <Link className="brand" href="/">
       <BrandMark className="brand-mark" />
-      WaitSeeBuy
+      WatchSeeBuy
     </Link>
   );
 }

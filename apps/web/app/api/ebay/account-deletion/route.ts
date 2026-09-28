@@ -1,10 +1,10 @@
-import { getDb, processEbayAccountDeletion } from "@waitseebuy/db";
+import { getDb, processEbayAccountDeletion } from "@watchseebuy/db";
 import {
   challengeResponse,
   createEbayClientFromEnv,
   notificationEndpointFromEnv,
   parseAccountDeletionPayload,
-} from "@waitseebuy/ebay";
+} from "@watchseebuy/ebay";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";

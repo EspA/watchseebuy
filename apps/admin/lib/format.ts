@@ -1,4 +1,4 @@
-import { socialAuthLabel } from "@waitseebuy/domain";
+import { socialAuthLabel } from "@watchseebuy/domain";
 
 const DATE = new Intl.DateTimeFormat("en-US", {
   dateStyle: "medium",

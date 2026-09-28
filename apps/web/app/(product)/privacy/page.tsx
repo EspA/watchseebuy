@@ -3,7 +3,7 @@ import { PrivacyPolicyContent } from "@/components/privacy-policy";
 export const metadata = {
   title: "Privacy policy",
   description:
-    "How WaitSeeBuy collects, uses, and shares information when you search, watch, and buy.",
+    "How WatchSeeBuy collects, uses, and shares information when you search, watch, and buy.",
 };
 
 export default function PrivacyPage() {

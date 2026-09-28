@@ -2,7 +2,7 @@ import {
   landedCostCents,
   sellerConfidence,
   type PriceScore,
-} from "@waitseebuy/domain";
+} from "@watchseebuy/domain";
 
 export type SearchSort =
   | "price"

@@ -9,7 +9,7 @@ import {
   parseUserTimeZone,
   timeZoneGroups,
   timeZoneLabel,
-} from "@waitseebuy/domain";
+} from "@watchseebuy/domain";
 import { useEffect, useMemo, useState } from "react";
 import { applyPreferenceCookies } from "@/lib/preference-cookies";
 import { applyTheme, parseTheme, themeFromDocument, type Theme } from "@/lib/theme";

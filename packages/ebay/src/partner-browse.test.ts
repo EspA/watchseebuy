@@ -12,14 +12,14 @@ import {
   rewriteBrowseHrefs,
 } from "./partner-browse.ts";
 
-const TOKEN = "waitseebuy-partner-browse-token-32chars";
+const TOKEN = "watchseebuy-partner-browse-token-32chars";
 
 test("ignores short partner tokens", () => {
   assert.deepEqual(partnerBrowseTokensFromEnv({ PARTNER_BROWSE_TOKEN: "short" }), []);
 });
 
 test("accepts comma-separated tokens for rotation", () => {
-  const next = "waitseebuy-partner-browse-token-rotated";
+  const next = "watchseebuy-partner-browse-token-rotated";
   assert.deepEqual(
     partnerBrowseTokensFromEnv({ PARTNER_BROWSE_TOKEN: `${TOKEN}, ${next}` }),
     [TOKEN, next],
@@ -93,7 +93,7 @@ test("rewrites Browse hrefs onto the public origin", () => {
     ],
   });
   const rewritten = JSON.parse(
-    rewriteBrowseHrefs(body, "https://waitseebuy.com/"),
+    rewriteBrowseHrefs(body, "https://watchseebuy.com/"),
   ) as {
     href: string;
     next: string;
@@ -101,15 +101,15 @@ test("rewrites Browse hrefs onto the public origin", () => {
   };
   assert.equal(
     rewritten.href,
-    "https://waitseebuy.com/buy/browse/v1/item_summary/search?q=lego",
+    "https://watchseebuy.com/buy/browse/v1/item_summary/search?q=lego",
   );
   assert.equal(
     rewritten.next,
-    "https://waitseebuy.com/buy/browse/v1/item_summary/search?offset=200",
+    "https://watchseebuy.com/buy/browse/v1/item_summary/search?offset=200",
   );
   assert.equal(
     rewritten.itemSummaries[0]?.itemHref,
-    "https://waitseebuy.com/buy/browse/v1/item/v1|1|0",
+    "https://watchseebuy.com/buy/browse/v1/item/v1|1|0",
   );
   assert.equal(rewritten.itemSummaries[0]?.itemWebUrl, "https://www.ebay.com/itm/1");
 });
@@ -117,10 +117,10 @@ test("rewrites Browse hrefs onto the public origin", () => {
 test("public origin prefers APP_URL", () => {
   assert.equal(
     partnerBrowseOriginFromEnv({
-      APP_URL: "https://waitseebuy.com/",
+      APP_URL: "https://watchseebuy.com/",
       BETTER_AUTH_URL: "http://localhost:3000",
     }),
-    "https://waitseebuy.com",
+    "https://watchseebuy.com",
   );
 });
 

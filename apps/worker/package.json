@@ -1,5 +1,5 @@
 {
-  "name": "@waitseebuy/worker",
+  "name": "@watchseebuy/worker",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -9,10 +9,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@waitseebuy/db": "*",
-    "@waitseebuy/domain": "*",
-    "@waitseebuy/ebay": "*",
-    "@waitseebuy/notify": "*",
+    "@watchseebuy/db": "*",
+    "@watchseebuy/domain": "*",
+    "@watchseebuy/ebay": "*",
+    "@watchseebuy/notify": "*",
     "tsx": "^4.20.5"
   },
   "devDependencies": {

@@ -3,7 +3,7 @@ import {
   recordEmailSend,
   type EmailKind,
   type EmailSendStatus,
-} from "@waitseebuy/db";
+} from "@watchseebuy/db";
 import nodemailer from "nodemailer";
 import { escapeHtml } from "./html.ts";
 import { smtpConfigFromEnv } from "./smtp.ts";
@@ -35,7 +35,7 @@ export async function sendTransactionalEmail(input: {
         from:
           input.from ??
           process.env.EMAIL_FROM ??
-          "WaitSeeBuy <alerts@waitseebuy.com>",
+          "WatchSeeBuy <alerts@watchseebuy.com>",
         to: input.to,
         replyTo: input.replyTo,
         subject: input.subject,

@@ -4,7 +4,7 @@ import {
   DEFAULT_EBAY_SITE,
   ebaySiteInPhrase,
   ebaySitesWithLead,
-} from "@waitseebuy/domain";
+} from "@watchseebuy/domain";
 import { useTranslations } from "next-intl";
 import { applySiteCookie } from "@/lib/preference-cookies";
 

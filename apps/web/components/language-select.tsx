@@ -1,6 +1,6 @@
 "use client";
 
-import { APP_LOCALE_FILTERS, type AppLocale } from "@waitseebuy/domain";
+import { APP_LOCALE_FILTERS, type AppLocale } from "@watchseebuy/domain";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";

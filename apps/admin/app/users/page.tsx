@@ -1,4 +1,4 @@
-import { countUsers, getDb, listAdminUsers } from "@waitseebuy/db";
+import { countUsers, getDb, listAdminUsers } from "@watchseebuy/db";
 import Link from "next/link";
 import { formatDate, formatProviders } from "@/lib/format";
 import { requireAdmin } from "@/lib/require-admin";

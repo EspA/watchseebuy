@@ -7,7 +7,7 @@ import {
   type CandidateListing,
   type ConditionClass,
   type ListingType,
-} from "@waitseebuy/domain";
+} from "@watchseebuy/domain";
 import {
   ebayErrorFromBody,
   ebayErrorFromText,

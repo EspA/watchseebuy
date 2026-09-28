@@ -1,6 +1,6 @@
 "use client";
 
-import { parseUserTimeZone } from "@waitseebuy/domain";
+import { parseUserTimeZone } from "@watchseebuy/domain";
 import { useEffect, useRef } from "react";
 
 export function TimezoneSync() {

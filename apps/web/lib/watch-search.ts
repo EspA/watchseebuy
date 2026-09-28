@@ -1,5 +1,5 @@
-import type { WatchCriteria } from "@waitseebuy/domain";
-import { searchPathForWatch } from "@waitseebuy/domain";
+import type { WatchCriteria } from "@watchseebuy/domain";
+import { searchPathForWatch } from "@watchseebuy/domain";
 
 export function searchHrefForWatch(input: {
   label: string;

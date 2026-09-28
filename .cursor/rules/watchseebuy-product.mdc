@@ -1,17 +1,17 @@
 ---
-description: WaitSeeBuy product north star — brand, wedge, and what not to build
+description: WatchSeeBuy product north star — brand, wedge, and what not to build
 alwaysApply: true
 ---
 
-# WaitSeeBuy
+# WatchSeeBuy
 
-This repo is **WaitSeeBuy** (`waitseebuy.com`). Wait. See. Buy.
+This repo is **WatchSeeBuy** (`watchseebuy.com`). Watch. See. Buy.
 
 Become the CamelCamelCamel of eBay for everyday buyers — not a faster eBay, not a flipper-alert tool.
 
 ## Locked decisions
 
-- **Name:** WaitSeeBuy. Never use eBay, Bay, or eBuy in the brand or domain.
+- **Name:** WatchSeeBuy. Never use eBay, Bay, or eBuy in the brand or domain.
 - **First vertical:** collectibles (cards, Lego, vintage toys, comics, coins, stamps, memorabilia).
 - **Core loop:** search acquires; **watches** are the product and the EPN engine.
 - **Auth gate:** search and sold comps are public. Account required only to save a watch or receive alerts. SSO: Google, Facebook, Apple. Email magic link as fallback. Optional ship-to on the search page; do not block search behind signup.

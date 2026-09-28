@@ -1,4 +1,4 @@
-import { emailBreakdown, emailWindowStats, getDb } from "@waitseebuy/db";
+import { emailBreakdown, emailWindowStats, getDb } from "@watchseebuy/db";
 import { requireAdmin } from "@/lib/require-admin";
 
 export const dynamic = "force-dynamic";

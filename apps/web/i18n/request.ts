@@ -1,6 +1,6 @@
 import { getRequestConfig } from "next-intl/server";
-import { APP_LOCALES, DEFAULT_APP_LOCALE } from "@waitseebuy/domain";
-import { getDb, getUserSettings } from "@waitseebuy/db";
+import { APP_LOCALES, DEFAULT_APP_LOCALE } from "@watchseebuy/domain";
+import { getDb, getUserSettings } from "@watchseebuy/db";
 import { getRequestPreferences } from "@/lib/request-preferences";
 import { getSession } from "@/lib/session";
 

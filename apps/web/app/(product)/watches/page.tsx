@@ -4,8 +4,8 @@ import {
   FREE_WATCH_LIMIT,
   parseWatchFrequency,
   type WatchCriteria,
-} from "@waitseebuy/domain";
-import { getDb, listWatchesForUser } from "@waitseebuy/db";
+} from "@watchseebuy/domain";
+import { getDb, listWatchesForUser } from "@watchseebuy/db";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { DeleteWatchForm } from "@/components/delete-watch-form";

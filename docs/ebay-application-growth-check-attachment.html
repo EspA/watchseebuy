@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>WaitSeeBuy — eBay Application Growth Check</title>
+    <title>WatchSeeBuy — eBay Application Growth Check</title>
     <style>
       @page {
         size: letter;
@@ -76,30 +76,30 @@
   </head>
   <body>
     <p class="kicker">eBay Developers Program · Application Growth Check</p>
-    <h1>WaitSeeBuy application brief</h1>
+    <h1>WatchSeeBuy application brief</h1>
     <p class="lede">
       Live consumer web application at
-      <strong>https://waitseebuy.com</strong>. This attachment describes the
+      <strong>https://watchseebuy.com</strong>. This attachment describes the
       product, official eBay APIs we call, why we need a higher Browse call
       limit, and security and compliance details that do not fit on the
       growth-check form.
     </p>
 
     <table class="meta">
-      <tr><th>Application title</th><td>WaitSeeBuy</td></tr>
-      <tr><th>Application URL</th><td>https://waitseebuy.com</td></tr>
+      <tr><th>Application title</th><td>WatchSeeBuy</td></tr>
+      <tr><th>Application URL</th><td>https://watchseebuy.com</td></tr>
       <tr><th>Production App ID</th><td>your-production-app-id</td></tr>
       <tr><th>Purpose of request</th><td>Increase Buy Browse API call limit to 50,000 calls/day</td></tr>
       <tr><th>eBay Partner Network</th><td>Yes · publisher ID 1000001</td></tr>
-      <tr><th>Reviewer test path</th><td>https://waitseebuy.com/search (public search; no eBay user token)</td></tr>
-      <tr><th>Privacy / terms</th><td>https://waitseebuy.com/privacy · https://waitseebuy.com/terms</td></tr>
-      <tr><th>Account deletion</th><td>https://waitseebuy.com/api/ebay/account-deletion</td></tr>
-      <tr><th>Contact</th><td>contact@waitseebuy.com</td></tr>
+      <tr><th>Reviewer test path</th><td>https://watchseebuy.com/search (public search; no eBay user token)</td></tr>
+      <tr><th>Privacy / terms</th><td>https://watchseebuy.com/privacy · https://watchseebuy.com/terms</td></tr>
+      <tr><th>Account deletion</th><td>https://watchseebuy.com/api/ebay/account-deletion</td></tr>
+      <tr><th>Contact</th><td>contact@watchseebuy.com</td></tr>
     </table>
 
-    <h2>1. What WaitSeeBuy is</h2>
+    <h2>1. What WatchSeeBuy is</h2>
     <p>
-      WaitSeeBuy helps collectible buyers — cards, LEGO, vintage toys, and
+      WatchSeeBuy helps collectible buyers — cards, LEGO, vintage toys, and
       similar lines — decide whether an eBay listing is worth buying at the
       <strong>price to their door</strong> (item + shipping + a simple
       import/tax estimate). Collectors search listings, save intent watches,
@@ -137,7 +137,7 @@
     <div class="avoid">
       <h3>Intent watches</h3>
       <p>
-        Saving a watch and receiving alerts requires a WaitSeeBuy account
+        Saving a watch and receiving alerts requires a WatchSeeBuy account
         (Google, Apple, Facebook, or email magic link). A watch stores the
         collector’s meaning — piece, condition, max price to their door,
         location — not a raw clone of eBay saved-search parameters. Free
@@ -157,7 +157,7 @@
       <h3>Buy on eBay (EPN)</h3>
       <p>
         Buy always lands on the eBay item page. Clicks go through a
-        first-party WaitSeeBuy URL, then to eBay with Partner Network
+        first-party WatchSeeBuy URL, then to eBay with Partner Network
         parameters for publisher <strong>1000001</strong>. We use a text
         “Buy on eBay” link, not the eBay logo. If an ad blocker strips
         affiliate parameters, we still open the plain item URL so the
@@ -256,16 +256,16 @@
     <h2>5. Security (not on the short form)</h2>
     <table class="data">
       <thead>
-        <tr><th>Topic</th><th>How WaitSeeBuy handles it</th></tr>
+        <tr><th>Topic</th><th>How WatchSeeBuy handles it</th></tr>
       </thead>
       <tbody>
         <tr>
           <td>Password collection</td>
-          <td>No eBay passwords. Collectors sign in to WaitSeeBuy only (SSO or magic link). Optional WaitSeeBuy password is hashed. eBay credentials live in GCP Secret Manager, never in the browser or a public repo.</td>
+          <td>No eBay passwords. Collectors sign in to WatchSeeBuy only (SSO or magic link). Optional WatchSeeBuy password is hashed. eBay credentials live in GCP Secret Manager, never in the browser or a public repo.</td>
         </tr>
         <tr>
           <td>Auth / OAuth</td>
-          <td>Application client-credentials token only. There is no end-user Auth’n’Auth or user-token flow for reviewers to click through. Test public search at https://waitseebuy.com/search.</td>
+          <td>Application client-credentials token only. There is no end-user Auth’n’Auth or user-token flow for reviewers to click through. Test public search at https://watchseebuy.com/search.</td>
         </tr>
         <tr>
           <td>Denial of service</td>
@@ -301,7 +301,7 @@
     <h2>6. Marketplace user account deletion</h2>
     <p>
       Production keys register
-      <strong>https://waitseebuy.com/api/ebay/account-deletion</strong>.
+      <strong>https://watchseebuy.com/api/ebay/account-deletion</strong>.
     </p>
     <ul>
       <li>
@@ -334,7 +334,7 @@
     </ul>
 
     <p class="foot">
-      WaitSeeBuy · https://waitseebuy.com · contact@waitseebuy.com ·
+      WatchSeeBuy · https://watchseebuy.com · contact@watchseebuy.com ·
       Production App ID your-production-app-id ·
       EPN 1000001 · Attachment for Application Growth Check
     </p>

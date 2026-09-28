@@ -3,12 +3,12 @@ import {
   ebaySearchQuery,
   type CandidateListing,
   type CoverageQuery,
-} from "@waitseebuy/domain";
+} from "@watchseebuy/domain";
 import {
   getDb,
   recordEbayApiCall,
   type EbayApiSource,
-} from "@waitseebuy/db";
+} from "@watchseebuy/db";
 import {
   fetchApplicationToken,
   forwardBrowseRequest,
@@ -218,7 +218,7 @@ export class EbayClient {
   /**
    * Official Browse request/response, using this app's OAuth token.
    * Used by the partner proxy so The Timeless Vault can keep eBay's
-   * Browse contract while sharing WaitSeeBuy's quota.
+   * Browse contract while sharing WatchSeeBuy's quota.
    */
   async proxyBrowse(input: {
     method: string;

@@ -1,4 +1,4 @@
-import { sendTransactionalEmail } from "@waitseebuy/notify";
+import { sendTransactionalEmail } from "@watchseebuy/notify";
 import { NextResponse } from "next/server";
 
 function escapeHtml(value: string) {
@@ -9,7 +9,7 @@ function escapeHtml(value: string) {
     .replaceAll('"', "&quot;");
 }
 
-const CONTACT_INBOX = "contact@waitseebuy.com";
+const CONTACT_INBOX = "contact@watchseebuy.com";
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function field(form: FormData, name: string, max: number) {
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
   const phoneLine = phone || "(not provided)";
   const text = [
-    "New message from the WaitSeeBuy contact form.",
+    "New message from the WatchSeeBuy contact form.",
     "",
     `Name: ${name}`,
     `Email: ${email}`,
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
     comment,
   ].join("\n");
   const html = `
-    <p>New message from the WaitSeeBuy contact form.</p>
+    <p>New message from the WatchSeeBuy contact form.</p>
     <p>
       <strong>Name:</strong> ${escapeHtml(name)}<br />
       <strong>Email:</strong> ${escapeHtml(email)}<br />
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
   try {
     const sent = await sendTransactionalEmail({
       to: CONTACT_INBOX,
-      from: `WaitSeeBuy <${CONTACT_INBOX}>`,
+      from: `WatchSeeBuy <${CONTACT_INBOX}>`,
       replyTo: `${name} <${email}>`,
       subject: `Contact form: ${name}`,
       text,

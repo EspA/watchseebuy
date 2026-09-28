@@ -8,7 +8,7 @@ import {
   sellerConfidenceTone,
   type CandidateListing,
   type WatchFrequency,
-} from "@waitseebuy/domain";
+} from "@watchseebuy/domain";
 import {
   alertEmailIntro,
   alertEmailSubject,
@@ -98,7 +98,7 @@ function renderHtml(input: AlertEmailInput, subject: string): string {
             <td style="padding:0 4px 20px;">
               <a href="${attr(input.appUrl)}" style="text-decoration:none;color:${INK};">
                 <img src="${attr(input.brandMarkUrl)}" width="34" height="34" alt="" style="display:inline-block;vertical-align:middle;border:0;">
-                <span style="font-size:20px;letter-spacing:-0.02em;vertical-align:middle;padding-left:8px;">WaitSeeBuy</span>
+                <span style="font-size:20px;letter-spacing:-0.02em;vertical-align:middle;padding-left:8px;">WatchSeeBuy</span>
               </a>
             </td>
           </tr>
@@ -136,13 +136,13 @@ function renderHtml(input: AlertEmailInput, subject: string): string {
           ${listings}
           <tr>
             <td style="padding:28px 4px 0;border-top:1px solid ${LINE};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12px;line-height:1.55;color:${MUTED};">
-              WaitSeeBuy is an independent product. If you buy through our links, we may earn a commission from the eBay Partner Network. That does not change the price you pay.
+              WatchSeeBuy is an independent product. If you buy through our links, we may earn a commission from the eBay Partner Network. That does not change the price you pay.
               <br><br>
               <a href="${attr(input.openSearchUrl)}" style="color:${MUTED};">Open this watch</a>
               &nbsp;·&nbsp;
               <a href="${attr(input.stopWatchUrl)}" style="color:${MUTED};">Stop this watch</a>
               &nbsp;·&nbsp;
-              <a href="${attr(input.appUrl)}" style="color:${MUTED};">waitseebuy.com</a>
+              <a href="${attr(input.appUrl)}" style="color:${MUTED};">watchseebuy.com</a>
             </td>
           </tr>
         </table>
@@ -292,6 +292,6 @@ function renderText(input: AlertEmailInput, subject: string): string {
     "",
     listings,
     "",
-    "WaitSeeBuy is an independent product. If you buy through our links, we may earn a commission from the eBay Partner Network.",
+    "WatchSeeBuy is an independent product. If you buy through our links, we may earn a commission from the eBay Partner Network.",
   ].join("\n");
 }

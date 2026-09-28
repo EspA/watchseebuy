@@ -4,7 +4,7 @@ import {
   ebayApiFailureCount,
   getDb,
   listEbayApiFailures,
-} from "@waitseebuy/db";
+} from "@watchseebuy/db";
 import Link from "next/link";
 import { CountLink } from "@/components/count-link";
 import { ebayFailuresHref, ebayPageHref, parseEbayFailureQuery } from "@/lib/ebay-stats";

@@ -1,5 +1,5 @@
 {
-  "name": "@waitseebuy/admin",
+  "name": "@watchseebuy/admin",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -9,9 +9,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@waitseebuy/db": "*",
-    "@waitseebuy/domain": "*",
-    "@waitseebuy/ebay": "*",
+    "@watchseebuy/db": "*",
+    "@watchseebuy/domain": "*",
+    "@watchseebuy/ebay": "*",
     "better-auth": "^1.3.7",
     "drizzle-orm": "^0.45.2",
     "next": "^15.5.2",

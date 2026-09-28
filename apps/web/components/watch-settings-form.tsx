@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { WATCH_FREQUENCY_FILTERS, type WatchFrequency } from "@waitseebuy/domain";
+import { WATCH_FREQUENCY_FILTERS, type WatchFrequency } from "@watchseebuy/domain";
 import { dollarsField } from "@/lib/search-params";
 
 export function WatchSettingsForm({

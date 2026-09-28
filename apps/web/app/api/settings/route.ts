@@ -3,8 +3,8 @@ import {
   parseEbaySite,
   parseShipToPostal,
   parseUserTimeZone,
-} from "@waitseebuy/domain";
-import { getDb, updateUserSettings } from "@waitseebuy/db";
+} from "@watchseebuy/domain";
+import { getDb, updateUserSettings } from "@watchseebuy/db";
 import { NextResponse } from "next/server";
 import { absoluteUrl } from "@/lib/absolute-url";
 import {

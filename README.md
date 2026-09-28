@@ -1,9 +1,9 @@
-# WaitSeeBuy
+# WatchSeeBuy
 
-Wait. See. Buy.
+Watch. See. Buy.
 
 The CamelCamelCamel of eBay — starting with **collectibles**.  
-Site: [waitseebuy.com](https://waitseebuy.com)
+Site: [watchseebuy.com](https://watchseebuy.com)
 
 - Product: [PRODUCT.md](PRODUCT.md)
 - Architecture: [ARCHITECTURE.md](ARCHITECTURE.md)
@@ -44,12 +44,12 @@ Google / Facebook / Apple buttons appear once those client IDs are in `.env.loca
 
 eBay search stays empty until `EBAY_CLIENT_ID` / `EBAY_CLIENT_SECRET` are set. Coverage-query keys are already computed on every search.
 
-Production keys also need the Marketplace User Account Deletion endpoint. Set `EBAY_NOTIFICATION_VERIFICATION_TOKEN` (32–80 characters) and register `https://waitseebuy.com/api/ebay/account-deletion` in the eBay Developer Portal (Application Keys). Local: `GET http://localhost:3000/api/ebay/account-deletion?challenge_code=test`.
+Production keys also need the Marketplace User Account Deletion endpoint. Set `EBAY_NOTIFICATION_VERIFICATION_TOKEN` (32–80 characters) and register `https://watchseebuy.com/api/ebay/account-deletion` in the eBay Developer Portal (Application Keys). Local: `GET http://localhost:3000/api/ebay/account-deletion?challenge_code=test`.
 
-The Timeless Vault can call official eBay Browse through WaitSeeBuy at `/buy/browse/v1/*` with `Authorization: Bearer $PARTNER_BROWSE_TOKEN`. Unset the token to disable the proxy. Those calls count against this app’s eBay quota and show up in admin as source `partner_browse`.
+The Timeless Vault can call official eBay Browse through WatchSeeBuy at `/buy/browse/v1/*` with `Authorization: Bearer $PARTNER_BROWSE_TOKEN`. Unset the token to disable the proxy. Those calls count against this app’s eBay quota and show up in admin as source `partner_browse`.
 
 ## Auth callbacks
 
-Point each provider at `http://localhost:3000/api/auth/callback/{google|facebook|apple}`. Production: `https://waitseebuy.com/api/auth/callback/...`.
+Point each provider at `http://localhost:3000/api/auth/callback/{google|facebook|apple}`. Production: `https://watchseebuy.com/api/auth/callback/...`.
 
-Admin Google also needs `http://localhost:3001/api/auth/callback/google` and `https://admin.waitseebuy.com/api/auth/callback/google`.
+Admin Google also needs `http://localhost:3001/api/auth/callback/google` and `https://admin.watchseebuy.com/api/auth/callback/google`.

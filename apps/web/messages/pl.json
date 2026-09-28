@@ -24,8 +24,8 @@
     "notShopping": "Nie kupujesz w {place}? Wybierz swoją stronę eBay:",
     "ebaySite": "Strona eBay",
     "liveSoon": "Wkrótce na żywo",
-    "waitTitle": "Czekaj",
-    "waitBody": "Podajesz rzecz i dokładne kryteria. Pilnujemy za ciebie i powiadamiamy według twojego rytmu: nowe ogłoszenie, dzienna notatka albo tygodniowe podsumowanie.",
+    "watchTitle": "Obserwuj",
+    "watchBody": "Podajesz rzecz i dokładne kryteria. Pilnujemy za ciebie i powiadamiamy według twojego rytmu: nowe ogłoszenie, dzienna notatka albo tygodniowe podsumowanie.",
     "seeTitle": "Zobacz",
     "seeBody": "Wyszukiwanie jest szybkie i oczywiste. Każde ogłoszenie pokazuje ocenę pewności, ocenę ceny i cenę do twoich drzwi. Nic nie jest ukryte.",
     "buyTitle": "Kup",
@@ -175,6 +175,6 @@
     "privacy": "Polityka prywatności",
     "tos": "Regulamin",
     "contact": "Kontakt",
-    "disclosure": "WaitSeeBuy jest niezależnym produktem. Jeśli kupujesz przez nasze linki, możemy dostać prowizję z eBay Partner Network. To nie zmienia ceny, którą płacisz."
+    "disclosure": "WatchSeeBuy jest niezależnym produktem. Jeśli kupujesz przez nasze linki, możemy dostać prowizję z eBay Partner Network. To nie zmienia ceny, którą płacisz."
   }
 }

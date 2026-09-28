@@ -15,8 +15,8 @@ const sans = Source_Sans_3({
 });
 
 export const metadata: Metadata = {
-  title: "WaitSeeBuy admin",
-  description: "Operator console for WaitSeeBuy.",
+  title: "WatchSeeBuy admin",
+  description: "Operator console for WatchSeeBuy.",
   robots: { index: false, follow: false },
 };
 

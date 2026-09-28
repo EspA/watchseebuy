@@ -2,7 +2,7 @@ import {
   parseEbayStatWindow,
   utcDayBounds,
   type EbayStatWindow,
-} from "@waitseebuy/db";
+} from "@watchseebuy/db";
 
 export type EbayFailureQuery = {
   days: EbayStatWindow;

@@ -1,4 +1,4 @@
-import { isAllowedAdminEmail } from "@waitseebuy/domain";
+import { isAllowedAdminEmail } from "@watchseebuy/domain";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "./auth";

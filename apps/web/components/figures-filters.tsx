@@ -13,7 +13,7 @@ import {
   FIGURE_PUNCH_FILTERS,
   FIGURE_SCALE_FILTERS,
   categorySupportsFigureScale,
-} from "@waitseebuy/domain";
+} from "@watchseebuy/domain";
 
 const SEARCH_FORM = "search-form";
 

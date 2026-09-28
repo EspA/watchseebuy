@@ -14,7 +14,7 @@ import {
   type FilterGroupId,
   type WatchCriteria,
   FREE_WATCH_LIMIT,
-} from "@waitseebuy/domain";
+} from "@watchseebuy/domain";
 import { AutoSelect, AutoText } from "@/components/auto-search";
 import { BuildingBricksFilters } from "@/components/building-bricks-filters";
 import { CardFilters } from "@/components/card-filters";

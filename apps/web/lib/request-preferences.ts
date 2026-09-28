@@ -1,5 +1,5 @@
 import { cookies, headers } from "next/headers";
-import type { UserSettings } from "@waitseebuy/db";
+import type { UserSettings } from "@watchseebuy/db";
 import {
   preferencesFromRequest,
   type ResolvedPreferences,

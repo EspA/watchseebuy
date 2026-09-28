@@ -1,4 +1,4 @@
-import { deleteWatchForUser, getDb } from "@waitseebuy/db";
+import { deleteWatchForUser, getDb } from "@watchseebuy/db";
 import { NextResponse } from "next/server";
 import { absoluteUrl } from "@/lib/absolute-url";
 import { getSession } from "@/lib/session";

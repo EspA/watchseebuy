@@ -8,11 +8,11 @@ import {
   listRecentEbayAccountDeletions,
   parseEbayStatDay,
   parseEbayStatWindow,
-} from "@waitseebuy/db";
+} from "@watchseebuy/db";
 import {
   notificationEndpointStatusFromEnv,
   partnerBrowseStatusFromEnv,
-} from "@waitseebuy/ebay";
+} from "@watchseebuy/ebay";
 import Link from "next/link";
 import { CountLink } from "@/components/count-link";
 import { ebayFailuresHref, ebayPageHref } from "@/lib/ebay-stats";

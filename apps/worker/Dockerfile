@@ -13,4 +13,4 @@ COPY . .
 ENV NODE_ENV=production
 ENV PORT=8080
 EXPOSE 8080
-CMD ["npm", "run", "start", "-w", "@waitseebuy/worker"]
+CMD ["npm", "run", "start", "-w", "@watchseebuy/worker"]

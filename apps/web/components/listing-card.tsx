@@ -10,8 +10,8 @@ import {
   landedCostCents,
   sellerConfidence,
   sellerConfidenceTone,
-} from "@waitseebuy/domain";
-import type { CandidateListing, PriceScore } from "@waitseebuy/domain";
+} from "@watchseebuy/domain";
+import type { CandidateListing, PriceScore } from "@watchseebuy/domain";
 import { ListingDescription } from "@/components/listing-description";
 import { ListingImage } from "@/components/listing-image";
 

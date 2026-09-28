@@ -11,7 +11,7 @@ import {
   WHEELS_PACKAGING_FILTERS,
   WHEELS_SCALE_FILTERS,
   categorySupportsWheelsScale,
-} from "@waitseebuy/domain";
+} from "@watchseebuy/domain";
 
 const SEARCH_FORM = "search-form";
 

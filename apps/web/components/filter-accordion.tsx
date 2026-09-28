@@ -7,7 +7,7 @@ import {
   type ReactNode,
   type SyntheticEvent,
 } from "react";
-import type { FilterGroupId } from "@waitseebuy/domain";
+import type { FilterGroupId } from "@watchseebuy/domain";
 
 export type FilterAccordionId = FilterGroupId;
 

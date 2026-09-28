@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import type { AppLocale } from "@waitseebuy/domain";
+import type { AppLocale } from "@watchseebuy/domain";
 import {
   applyPreferenceCookies,
   EBAY_SITE_COOKIE,

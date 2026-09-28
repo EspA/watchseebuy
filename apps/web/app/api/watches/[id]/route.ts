@@ -1,5 +1,5 @@
-import { dollarsToCents, parseWatchFrequency } from "@waitseebuy/domain";
-import { getDb, updateWatchSettings } from "@waitseebuy/db";
+import { dollarsToCents, parseWatchFrequency } from "@watchseebuy/domain";
+import { getDb, updateWatchSettings } from "@watchseebuy/db";
 import { NextResponse } from "next/server";
 import { absoluteUrl } from "@/lib/absolute-url";
 import { getSession } from "@/lib/session";

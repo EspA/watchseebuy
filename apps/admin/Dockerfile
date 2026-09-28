@@ -12,9 +12,9 @@ RUN npm ci
 COPY . .
 ENV DATABASE_URL=postgres://build:build@127.0.0.1:5432/build
 ENV BETTER_AUTH_SECRET=build-placeholder
-RUN npm run build -w @waitseebuy/admin
+RUN npm run build -w @watchseebuy/admin
 ENV NODE_ENV=production
 ENV HOSTNAME=0.0.0.0
 ENV PORT=8080
 EXPOSE 8080
-CMD ["npm", "run", "start", "-w", "@waitseebuy/admin"]
+CMD ["npm", "run", "start", "-w", "@watchseebuy/admin"]

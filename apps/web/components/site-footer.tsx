@@ -31,7 +31,7 @@ function InstagramMark() {
   );
 }
 
-const COPYRIGHT = "© 2026 WaitSeeBuy.com";
+const COPYRIGHT = "© 2026 WatchSeeBuy.com";
 
 export function SiteFooter({
   disclosure,

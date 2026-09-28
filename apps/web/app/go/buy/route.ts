@@ -1,5 +1,5 @@
-import { ebaySiteHost, parseEbaySite } from "@waitseebuy/domain";
-import { epnConfigFromEnv, epnItemUrl, plainItemUrl } from "@waitseebuy/ebay";
+import { ebaySiteHost, parseEbaySite } from "@watchseebuy/domain";
+import { epnConfigFromEnv, epnItemUrl, plainItemUrl } from "@watchseebuy/ebay";
 import { NextResponse } from "next/server";
 import { absoluteUrl } from "@/lib/absolute-url";
 import { clientMeta, persistUserEvent } from "@/lib/client-meta";

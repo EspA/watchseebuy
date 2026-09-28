@@ -24,7 +24,7 @@ export function persistUserEvent(input: {
   ip?: string | null;
   meta?: Record<string, unknown> | null;
 }) {
-  return import("@waitseebuy/db").then(async ({ getDb, recordUserEvent }) => {
+  return import("@watchseebuy/db").then(async ({ getDb, recordUserEvent }) => {
     await recordUserEvent(getDb(), input);
   }).catch((error: unknown) => {
     console.error(

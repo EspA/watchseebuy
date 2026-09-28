@@ -24,8 +24,8 @@
     "notShopping": "Not shopping in {place}? Choose your eBay site:",
     "ebaySite": "eBay site",
     "liveSoon": "Live soon",
-    "waitTitle": "Wait",
-    "waitBody": "You share the piece and the precise criteria. We watch for you, and alert you on your schedule: a new listing, a daily note, or a weekly recap.",
+    "watchTitle": "Watch",
+    "watchBody": "You share the piece and the precise criteria. We watch for you, and alert you on your schedule: a new listing, a daily note, or a weekly recap.",
     "seeTitle": "See",
     "seeBody": "Search is quick and obvious. Every listing shows a confidence score, a price score, and the price to your door. Nothing hidden.",
     "buyTitle": "Buy",
@@ -175,6 +175,6 @@
     "privacy": "Privacy policy",
     "tos": "Terms of service",
     "contact": "Contact Us",
-    "disclosure": "WaitSeeBuy is an independent product. If you buy through our links, we may earn a commission from the eBay Partner Network. That does not change the price you pay."
+    "disclosure": "WatchSeeBuy is an independent product. If you buy through our links, we may earn a commission from the eBay Partner Network. That does not change the price you pay."
   }
 }

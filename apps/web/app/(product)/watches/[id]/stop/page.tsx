@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
-import { describeWatch, type WatchCriteria } from "@waitseebuy/domain";
-import { getDb, getWatchForUser } from "@waitseebuy/db";
+import { describeWatch, type WatchCriteria } from "@watchseebuy/domain";
+import { getDb, getWatchForUser } from "@watchseebuy/db";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getSession } from "@/lib/session";

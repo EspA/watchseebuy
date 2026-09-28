@@ -10,7 +10,7 @@ import {
   BRICK_CATEGORY_GROUPS,
   BRICK_STATUS_FILTERS,
   BRICK_TYPE_FILTERS,
-} from "@waitseebuy/domain";
+} from "@watchseebuy/domain";
 
 const SEARCH_FORM = "search-form";
 

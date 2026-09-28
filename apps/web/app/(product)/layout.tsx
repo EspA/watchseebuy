@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { getDb, getUserSettings } from "@waitseebuy/db";
+import { getDb, getUserSettings } from "@watchseebuy/db";
 import { AccountTheme } from "@/components/account-theme";
 import { AdblockBanner } from "@/components/adblock-banner";
 import { Header } from "@/components/header";

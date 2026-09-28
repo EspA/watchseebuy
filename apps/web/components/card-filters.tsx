@@ -24,7 +24,7 @@ import {
   categorySupportsCardGame,
   isPokemonCardGame,
   isSlabGrader,
-} from "@waitseebuy/domain";
+} from "@watchseebuy/domain";
 
 const SEARCH_FORM = "search-form";
 

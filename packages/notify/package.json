@@ -1,5 +1,5 @@
 {
-  "name": "@waitseebuy/notify",
+  "name": "@watchseebuy/notify",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -11,8 +11,8 @@
     "test": "node --experimental-strip-types --test src/*.test.ts"
   },
   "dependencies": {
-    "@waitseebuy/db": "*",
-    "@waitseebuy/domain": "*",
+    "@watchseebuy/db": "*",
+    "@watchseebuy/domain": "*",
     "nodemailer": "^7.0.11"
   },
   "devDependencies": {

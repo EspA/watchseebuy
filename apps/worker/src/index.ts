@@ -60,7 +60,7 @@ function listen(port: number) {
     res.writeHead(404).end("not found");
   });
   server.listen(port, () => {
-    console.log(`WaitSeeBuy worker listening on ${port}`);
+    console.log(`WatchSeeBuy worker listening on ${port}`);
   });
 }
 
@@ -71,7 +71,7 @@ async function main() {
     return;
   }
 
-  console.log("WaitSeeBuy worker started");
+  console.log("WatchSeeBuy worker started");
   await runTick().catch(() => undefined);
   setInterval(() => {
     void runTick().catch(() => undefined);

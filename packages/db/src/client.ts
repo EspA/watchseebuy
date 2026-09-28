@@ -6,8 +6,8 @@ type Sql = ReturnType<typeof postgres>;
 type Db = ReturnType<typeof drizzle<typeof schema, Sql>>;
 
 const globalForDb = globalThis as typeof globalThis & {
-  waitseebuySql?: Sql;
-  waitseebuyDb?: Db;
+  watchseebuySql?: Sql;
+  watchseebuyDb?: Db;
 };
 
 function poolMax() {
@@ -29,24 +29,24 @@ function cloudSqlSocket(url: string): string | undefined {
 }
 
 function getClient(url: string): Sql {
-  if (!globalForDb.waitseebuySql) {
+  if (!globalForDb.watchseebuySql) {
     const options = {
       max: poolMax(),
       idle_timeout: 20,
       max_lifetime: 60 * 30,
     };
     const socket = cloudSqlSocket(url);
-    globalForDb.waitseebuySql = socket
+    globalForDb.watchseebuySql = socket
       ? postgres({
           ...options,
           host: socket,
-          database: new URL(url).pathname.replace(/^\//, "") || "waitseebuy",
+          database: new URL(url).pathname.replace(/^\//, "") || "watchseebuy",
           username: decodeURIComponent(new URL(url).username),
           password: decodeURIComponent(new URL(url).password),
         })
       : postgres(url, options);
   }
-  return globalForDb.waitseebuySql;
+  return globalForDb.watchseebuySql;
 }
 
 export function createDb(url = process.env.DATABASE_URL) {
@@ -59,6 +59,6 @@ export function createDb(url = process.env.DATABASE_URL) {
 export type Database = ReturnType<typeof createDb>;
 
 export function getDb(url = process.env.DATABASE_URL) {
-  globalForDb.waitseebuyDb ??= createDb(url);
-  return globalForDb.waitseebuyDb;
+  globalForDb.watchseebuyDb ??= createDb(url);
+  return globalForDb.watchseebuyDb;
 }

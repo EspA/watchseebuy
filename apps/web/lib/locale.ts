@@ -3,7 +3,7 @@ import {
   DEFAULT_EBAY_SITE,
   resolvePreferences,
   type AppLocale,
-} from "@waitseebuy/domain";
+} from "@watchseebuy/domain";
 import { clientMeta } from "@/lib/client-meta";
 import {
   EBAY_SITE_COOKIE,

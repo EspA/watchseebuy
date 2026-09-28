@@ -18,8 +18,8 @@ import {
   parseSearchPage,
   searchOffset,
   searchPageCount,
-} from "@waitseebuy/domain";
-import { createEbayClientFromEnv } from "@waitseebuy/ebay";
+} from "@watchseebuy/domain";
+import { createEbayClientFromEnv } from "@watchseebuy/ebay";
 import Link from "next/link";
 import { EbaySiteSelect } from "@/components/ebay-site-select";
 import { ExcludeWords } from "@/components/exclude-words";
@@ -34,7 +34,7 @@ import {
   SearchPendingProvider,
   SearchResultsPane,
 } from "@/components/search-navigation";
-import { getDb, getUserSettings, countWatchesForUser } from "@waitseebuy/db";
+import { getDb, getUserSettings, countWatchesForUser } from "@watchseebuy/db";
 import { headers } from "next/headers";
 import { clientMeta, persistUserEvent } from "@/lib/client-meta";
 import { intentFromSearchQuery, searchBarQuery } from "@/lib/search-params";

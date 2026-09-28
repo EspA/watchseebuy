@@ -1,6 +1,6 @@
-import { getDb } from "@waitseebuy/db";
-import { account, session, user, verification } from "@waitseebuy/db/schema";
-import { isAllowedAdminEmail, splitDisplayName } from "@waitseebuy/domain";
+import { getDb } from "@watchseebuy/db";
+import { account, session, user, verification } from "@watchseebuy/db/schema";
+import { isAllowedAdminEmail, splitDisplayName } from "@watchseebuy/domain";
 import { eq } from "drizzle-orm";
 import { APIError } from "better-auth/api";
 import { betterAuth } from "better-auth";

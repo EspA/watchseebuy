@@ -40,8 +40,8 @@ export function partnerBrowseStatusFromEnv(
 }
 
 export function partnerBrowseOriginFromEnv(env: EnvMap = process.env): string {
-  const raw = (env.APP_URL ?? env.BETTER_AUTH_URL ?? "https://waitseebuy.com").trim();
-  return raw.replace(/\/+$/, "") || "https://waitseebuy.com";
+  const raw = (env.APP_URL ?? env.BETTER_AUTH_URL ?? "https://watchseebuy.com").trim();
+  return raw.replace(/\/+$/, "") || "https://watchseebuy.com";
 }
 
 export function authorizePartnerBrowse(
@@ -57,7 +57,7 @@ export function authorizePartnerBrowse(
         2003,
         "APPLICATION",
         "Partner Browse proxy is not configured.",
-        "Set PARTNER_BROWSE_TOKEN (32+ characters) on WaitSeeBuy.",
+        "Set PARTNER_BROWSE_TOKEN (32+ characters) on WatchSeeBuy.",
       ),
     };
   }
@@ -103,7 +103,7 @@ export function browseApiNameFromPath(
 
 /**
  * Keep follow-up Browse URLs (itemHref, href, next) on this host so a
- * partner that switched Authorization to the WaitSeeBuy token does not
+ * partner that switched Authorization to the WatchSeeBuy token does not
  * send that token to api.ebay.com. Public listing URLs are unchanged.
  */
 export function rewriteBrowseHrefs(body: string, publicOrigin: string): string {

@@ -13,8 +13,8 @@ import {
   verifyNotificationSignature,
 } from "./account-deletion.ts";
 
-const TOKEN = "waitseebuy-ebay-deletion-token-32chars";
-const ENDPOINT = "https://waitseebuy.com/api/ebay/account-deletion";
+const TOKEN = "watchseebuy-ebay-deletion-token-32chars";
+const ENDPOINT = "https://watchseebuy.com/api/ebay/account-deletion";
 
 test("challenge hash concatenates code, token, and exact endpoint", () => {
   const hex = challengeResponse("abc123", TOKEN, ENDPOINT);
@@ -27,8 +27,8 @@ test("challenge hash concatenates code, token, and exact endpoint", () => {
 
 test("default endpoint is APP_URL plus the public path", () => {
   assert.equal(
-    defaultNotificationEndpoint("https://waitseebuy.com/"),
-    `https://waitseebuy.com${ACCOUNT_DELETION_PATH}`,
+    defaultNotificationEndpoint("https://watchseebuy.com/"),
+    `https://watchseebuy.com${ACCOUNT_DELETION_PATH}`,
   );
 });
 
@@ -37,13 +37,13 @@ test("verification token must be 32-80 url-safe characters", () => {
     () =>
       notificationEndpointFromEnv({
         EBAY_NOTIFICATION_VERIFICATION_TOKEN: "too-short",
-        APP_URL: "https://waitseebuy.com",
+        APP_URL: "https://watchseebuy.com",
       }),
     /32-80/,
   );
   const config = notificationEndpointFromEnv({
     EBAY_NOTIFICATION_VERIFICATION_TOKEN: TOKEN,
-    APP_URL: "https://waitseebuy.com/",
+    APP_URL: "https://watchseebuy.com/",
   });
   assert.equal(config.endpoint, ENDPOINT);
   assert.equal(config.verificationToken, TOKEN);

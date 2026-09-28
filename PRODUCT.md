@@ -1,9 +1,9 @@
-# WaitSeeBuy — product thesis
+# WatchSeeBuy — product thesis
 
-**Domain:** [waitseebuy.com](https://waitseebuy.com)  
+**Domain:** [watchseebuy.com](https://watchseebuy.com)  
 **Job:** Become the CamelCamelCamel of eBay — for the exacting collector who already knows the piece, sees whether the price to their door is worth it, then buys.
 
-Wait. See. Buy.
+Watch. See. Buy.
 
 This is not a faster eBay. It is not a flipper radar. Search acquires. **Watches earn.** We curate for collectors.
 
@@ -57,7 +57,7 @@ Homepage, examples, and alert copy should sound like a collector: name the condi
 
 Web first. Mobile is a notification surface after people already trust the watches.
 
-Until launch, waitseebuy.com is a static tease. Product routes stay off the public chrome.
+Until launch, watchseebuy.com is a static tease. Product routes stay off the public chrome.
 
 ---
 
@@ -65,7 +65,7 @@ Until launch, waitseebuy.com is a static tease. Product routes stay off the publ
 
 **Anyone can search and see comps, scores, and the price to their door.** That is how CamelCamelCamel works, and it is how we acquire. A collector should paste a piece, see the all-in price vs sold median, and decide — no email wall.
 
-**Saving a watch and getting alerts requires an account.** Sign in with **Google, Facebook, or Apple**. Keep an email magic link as a fallback so someone is never stuck if a provider is down or they do not want social login. That account is the “wait” half of the product, and it is the only thing that creates standing eBay poll load.
+**Saving a watch and getting alerts requires an account.** Sign in with **Google, Facebook, or Apple**. Keep an email magic link as a fallback so someone is never stuck if a provider is down or they do not want social login. That account is the “watch” half of the product, and it is the only thing that creates standing eBay poll load.
 
 Price to your door without a profile: optional ship-to (ZIP / country) on the search itself, remembered in the browser. Do not force a signup to type a postcode.
 
@@ -97,7 +97,7 @@ Assume a short attribution window. If the user opens a listing two days later fr
 - Detect with a quiet client-side probe of the EPN host we actually use (image / fetch fail).
 - If blocked, show a dismissible banner — not a modal wall, not a guilt trip. Copy: the listing may not open; allow this site or use the direct eBay button. Mention that those links fund the free product only if it stays one sentence.
 - Buy must still work: fall back to a plain `ebay.com/itm/…` URL so the collector is never stuck.
-- Email alerts use a first-party WaitSeeBuy click URL. That hop can show the same banner and the same fallback if the EPN redirect would be blocked.
+- Email alerts use a first-party WatchSeeBuy click URL. That hop can show the same banner and the same fallback if the EPN redirect would be blocked.
 - Never invent workarounds to hide affiliate URLs from filters. That risks EPN and trust.
 
 ---

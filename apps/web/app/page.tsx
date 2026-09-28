@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { DEFAULT_EBAY_SITE } from "@waitseebuy/domain";
-import { getDb, getUserSettings } from "@waitseebuy/db";
+import { DEFAULT_EBAY_SITE } from "@watchseebuy/domain";
+import { getDb, getUserSettings } from "@watchseebuy/db";
 import { BrandLink, HeaderTools } from "@/components/header";
 import { BrandMark } from "@/components/brand-mark";
 import { EbaySiteSwitch } from "@/components/ebay-site-switch";
@@ -12,20 +12,20 @@ import { getRequestPreferences } from "@/lib/request-preferences";
 import { getSession } from "@/lib/session";
 
 export const metadata: Metadata = {
-  title: "WaitSeeBuy",
+  title: "WatchSeeBuy",
   description:
     "The PSA 10. The factory-sealed set. The carded figure. We watch with you and tell you when the price to your door is worth buying.",
   openGraph: {
-    title: "WaitSeeBuy",
+    title: "WatchSeeBuy",
     description:
       "The PSA 10. The factory-sealed set. The carded figure. We watch with you and tell you when the price to your door is worth buying.",
-    url: "https://waitseebuy.com",
-    siteName: "WaitSeeBuy",
+    url: "https://watchseebuy.com",
+    siteName: "WatchSeeBuy",
     type: "website",
   },
   twitter: {
     card: "summary",
-    title: "WaitSeeBuy",
+    title: "WatchSeeBuy",
     description:
       "The PSA 10. The factory-sealed set. The carded figure. We watch with you and tell you when the price to your door is worth buying.",
   },
@@ -64,14 +64,14 @@ export default async function ComingSoonPage({
           <div className="tease-headline">
             <div className="tease-headline-copy">
               <p className="tease-kicker">{t("kicker")}</p>
-              <h1 className="tease-title" aria-label="Wait. See. Buy.">
-                <span>Wait.</span>
+              <h1 className="tease-title" aria-label="Watch. See. Buy.">
+                <span>Watch.</span>
                 <span>See.</span>
                 <span>Buy.</span>
               </h1>
             </div>
             <div className="tease-mark-slot">
-              <BrandMark className="tease-mark" alt="WaitSeeBuy" />
+              <BrandMark className="tease-mark" alt="WatchSeeBuy" />
             </div>
           </div>
           <p className="tease-lede">{t("lede")}</p>
@@ -101,8 +101,8 @@ export default async function ComingSoonPage({
 
           <ul className="tease-beats">
             <li>
-              <h2>{t("waitTitle")}</h2>
-              <p>{t("waitBody")}</p>
+              <h2>{t("watchTitle")}</h2>
+              <p>{t("watchBody")}</p>
             </li>
             <li>
               <h2>{t("seeTitle")}</h2>

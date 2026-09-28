@@ -6,7 +6,7 @@ import {
   partnerBrowsePath,
   pickUpstreamBrowseHeaders,
   rewriteBrowseHrefs,
-} from "@waitseebuy/ebay";
+} from "@watchseebuy/ebay";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -57,7 +57,7 @@ async function handle(
         2003,
         "APPLICATION",
         "eBay API credentials are not set.",
-        "Set EBAY_CLIENT_ID and EBAY_CLIENT_SECRET on WaitSeeBuy.",
+        "Set EBAY_CLIENT_ID and EBAY_CLIENT_SECRET on WatchSeeBuy.",
       ),
       { status: 503 },
     );

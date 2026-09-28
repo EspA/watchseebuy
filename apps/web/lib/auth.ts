@@ -1,7 +1,7 @@
-import { getDb, recordConsumerLogin } from "@waitseebuy/db";
-import { account, session, user, verification } from "@waitseebuy/db/schema";
-import { splitDisplayName } from "@waitseebuy/domain";
-import { sendTransactionalEmail, type EmailKind } from "@waitseebuy/notify";
+import { getDb, recordConsumerLogin } from "@watchseebuy/db";
+import { account, session, user, verification } from "@watchseebuy/db/schema";
+import { splitDisplayName } from "@watchseebuy/domain";
+import { sendTransactionalEmail, type EmailKind } from "@watchseebuy/notify";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
@@ -24,7 +24,7 @@ async function sendAuthEmail(input: {
     kind: input.kind,
   });
   if (!sent.delivered) {
-    console.log(`[waitseebuy] ${input.subject} for ${input.to}: ${input.url}`);
+    console.log(`[watchseebuy] ${input.subject} for ${input.to}: ${input.url}`);
   }
 }
 
@@ -101,8 +101,8 @@ export const auth = betterAuth({
     sendResetPassword: async ({ user: target, url }) => {
       await sendAuthEmail({
         to: target.email,
-        subject: "Reset your WaitSeeBuy password",
-        text: `Wait. See. Buy.\n\nReset your password: ${url}\n`,
+        subject: "Reset your WatchSeeBuy password",
+        text: `Watch. See. Buy.\n\nReset your password: ${url}\n`,
         url,
         kind: "password_reset",
       });
@@ -159,8 +159,8 @@ export const auth = betterAuth({
       sendMagicLink: async ({ email, url }) => {
         await sendAuthEmail({
           to: email,
-          subject: "Your WaitSeeBuy sign-in link",
-          text: `Wait. See. Buy.\n\nSign in: ${url}\n`,
+          subject: "Your WatchSeeBuy sign-in link",
+          text: `Watch. See. Buy.\n\nSign in: ${url}\n`,
           url,
           kind: "magic_link",
         });

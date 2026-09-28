@@ -1,4 +1,4 @@
-import type { WatchFrequency } from "@waitseebuy/domain";
+import type { WatchFrequency } from "@watchseebuy/domain";
 
 export const ALERT_EMAIL_TITLES = {
   on_change: "Potential new deal",

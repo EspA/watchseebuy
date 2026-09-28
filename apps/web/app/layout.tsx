@@ -16,9 +16,9 @@ const sans = Source_Sans_3({
 });
 
 export const metadata: Metadata = {
-  title: "WaitSeeBuy",
-  description: "Wait for the right collectible. See the sold price. Then buy.",
-  metadataBase: new URL("https://waitseebuy.com"),
+  title: "WatchSeeBuy",
+  description: "Watch for the right collectible. See the sold price. Then buy.",
+  metadataBase: new URL("https://watchseebuy.com"),
 };
 
 export default async function RootLayout({

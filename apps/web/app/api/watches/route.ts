@@ -1,5 +1,5 @@
-import { searchParamsFromIntent, toCoverageQuery, watchLimitForPlan } from "@waitseebuy/domain";
-import { getDb, saveWatch } from "@waitseebuy/db";
+import { searchParamsFromIntent, toCoverageQuery, watchLimitForPlan } from "@watchseebuy/domain";
+import { getDb, saveWatch } from "@watchseebuy/db";
 import { NextResponse } from "next/server";
 import { absoluteUrl } from "@/lib/absolute-url";
 import { intentFromSearchQuery } from "@/lib/search-params";

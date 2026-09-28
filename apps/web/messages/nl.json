@@ -24,8 +24,8 @@
     "notShopping": "Niet aan het winkelen in {place}? Kies je eBay-site:",
     "ebaySite": "eBay-site",
     "liveSoon": "Binnenkort live",
-    "waitTitle": "Wachten",
-    "waitBody": "Jij deelt het stuk en de precieze criteria. Wij kijken voor je en attenderen je op jouw ritme: een nieuwe listing, een dagelijkse notitie of een wekelijkse samenvatting.",
+    "watchTitle": "Volgen",
+    "watchBody": "Jij deelt het stuk en de precieze criteria. Wij kijken voor je en attenderen je op jouw ritme: een nieuwe listing, een dagelijkse notitie of een wekelijkse samenvatting.",
     "seeTitle": "Zien",
     "seeBody": "Zoeken is snel en duidelijk. Elke listing toont een vertrouwensscore, een prijsscore en de prijs tot je deur. Niets verborgen.",
     "buyTitle": "Kopen",
@@ -175,6 +175,6 @@
     "privacy": "Privacybeleid",
     "tos": "Servicevoorwaarden",
     "contact": "Contact",
-    "disclosure": "WaitSeeBuy is een onafhankelijk product. Als je via onze links koopt, kunnen we een commissie van het eBay Partner Network verdienen. Dat verandert de prijs die je betaalt niet."
+    "disclosure": "WatchSeeBuy is een onafhankelijk product. Als je via onze links koopt, kunnen we een commissie van het eBay Partner Network verdienen. Dat verandert de prijs die je betaalt niet."
   }
 }

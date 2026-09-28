@@ -7,8 +7,8 @@ export function TermsOfServiceContent() {
     <article className="legal-copy">
       <p className="legal-updated">Last updated {UPDATED}</p>
       <p>
-        Wait See Buy (“WaitSeeBuy,” “we,” “us”) operates{" "}
-        <a href="https://waitseebuy.com">waitseebuy.com</a> and the related
+        Watch See Buy (“WatchSeeBuy,” “we,” “us”) operates{" "}
+        <a href="https://watchseebuy.com">watchseebuy.com</a> and the related
         search, watch, alert, and account features (the “Services”). These
         Terms of Service (the “Terms”), together with our{" "}
         <Link href="/privacy">Privacy policy</Link>, describe your rights and
@@ -23,19 +23,19 @@ export function TermsOfServiceContent() {
       </p>
       <p>
         Questions:{" "}
-        <a href="mailto:contact@waitseebuy.com">contact@waitseebuy.com</a> or{" "}
+        <a href="mailto:contact@watchseebuy.com">contact@watchseebuy.com</a> or{" "}
         <Link href="/contact">Contact Us</Link>.
       </p>
 
       <h2>The Services</h2>
       <p>
-        WaitSeeBuy helps collectors search listings, see sold-comp context and
+        WatchSeeBuy helps collectors search listings, see sold-comp context and
         scores, save watches with the criteria that matter, and get alerts when
         a listing may be worth buying. Search is public. Saving a watch and
         receiving alerts requires an account.
       </p>
       <p>
-        WaitSeeBuy is not a marketplace and not eBay. We do not list items,
+        WatchSeeBuy is not a marketplace and not eBay. We do not list items,
         take payment for items, ship items, or complete your purchase. When you
         choose to buy, you leave the Services and deal with the seller on that
         third-party site, on that site’s terms.
@@ -113,13 +113,13 @@ export function TermsOfServiceContent() {
       <h2>Buying and affiliate links</h2>
       <p>
         Buy links send you toward the listing. From an alert, that path goes
-        through a first-party WaitSeeBuy URL, then to the eBay Partner Network
+        through a first-party WatchSeeBuy URL, then to the eBay Partner Network
         (EPN) or a plain item URL if the affiliate path is blocked. If you buy
         through those links, we may earn a commission. That does not change the
         price you pay.
       </p>
       <p>
-        WaitSeeBuy is an independent product. We are not eBay, and eBay does
+        WatchSeeBuy is an independent product. We are not eBay, and eBay does
         not sponsor or operate the Services. Purchases are between you and the
         seller. Complaints about an item, payment, shipping, return, or seller
         should go to that marketplace, not to us.
@@ -141,15 +141,15 @@ export function TermsOfServiceContent() {
       </p>
       <p>
         The Services may contain links to sites we do not operate. If you leave
-        WaitSeeBuy, you do so at your own risk. Review that party’s terms and
+        WatchSeeBuy, you do so at your own risk. Review that party’s terms and
         privacy practices before you buy or share information. Including a link
         is not, by itself, an endorsement.
       </p>
 
       <h2>Intellectual property</h2>
       <p>
-        The Services — including the WaitSeeBuy name, logos, text, layout,
-        graphics, and software — are owned by Wait See Buy or its licensors and
+        The Services — including the WatchSeeBuy name, logos, text, layout,
+        graphics, and software — are owned by Watch See Buy or its licensors and
         are protected by intellectual property laws. These Terms let you use
         the Services for your personal, non-commercial collecting use only. You
         may not copy, distribute, modify, scrape, or create derivative works
@@ -160,7 +160,7 @@ export function TermsOfServiceContent() {
         eBay and other marketplace names, and brand names that appear in
         search, watches, or examples (including collectible lines we watch),
         are trademarks of their respective owners. Those owners do not sponsor,
-        authorize, or endorse WaitSeeBuy unless we say so. All rights not
+        authorize, or endorse WatchSeeBuy unless we say so. All rights not
         expressly granted are reserved.
       </p>
 
@@ -212,7 +212,7 @@ export function TermsOfServiceContent() {
           similar marketplace abuse
         </li>
         <li>
-          Use the Services in any way that, as we determine, harms WaitSeeBuy,
+          Use the Services in any way that, as we determine, harms WatchSeeBuy,
           our providers, or other users, or exposes them to liability
         </li>
       </ul>
@@ -263,7 +263,7 @@ export function TermsOfServiceContent() {
 
       <h2>Limitation of liability</h2>
       <p>
-        TO THE FULLEST EXTENT ALLOWED BY LAW, WAITSEEBUY AND ITS AFFILIATES,
+        TO THE FULLEST EXTENT ALLOWED BY LAW, WATCHSEEBUY AND ITS AFFILIATES,
         OFFICERS, EMPLOYEES, AGENTS, CONTRACTORS, AND LICENSORS WILL NOT BE
         LIABLE FOR ANY INDIRECT, INCIDENTAL, PUNITIVE, SPECIAL, OR
         CONSEQUENTIAL DAMAGES, OR FOR LOST PROFITS, REVENUE, SAVINGS, DATA, OR
@@ -284,7 +284,7 @@ export function TermsOfServiceContent() {
 
       <h2>Indemnification</h2>
       <p>
-        You agree to indemnify, defend, and hold harmless WaitSeeBuy and our
+        You agree to indemnify, defend, and hold harmless WatchSeeBuy and our
         affiliates, officers, employees, agents, contractors, licensors, and
         service providers from losses, damages, liabilities, and claims —
         including reasonable attorneys’ fees — arising from (1) your breach of
@@ -322,7 +322,7 @@ export function TermsOfServiceContent() {
         will be enforced to the fullest extent permitted, and the rest of the
         Terms remain in effect. Our failure to enforce a provision is not a
         waiver. These Terms and the policies we post for the Services are the
-        entire agreement between you and Wait See Buy about the Services, and
+        entire agreement between you and Watch See Buy about the Services, and
         they replace prior agreements on that subject. Ambiguities are not
         construed against the drafting party. Headings are for convenience
         only.
@@ -336,7 +336,7 @@ export function TermsOfServiceContent() {
       <h2>Governing law</h2>
       <p>
         These Terms are governed by the laws of the State of Georgia, U.S.A.,
-        without regard to conflict-of-law rules. You and Wait See Buy consent
+        without regard to conflict-of-law rules. You and Watch See Buy consent
         to the exclusive jurisdiction of the state and federal courts located
         in Cobb County, Georgia, except that we may seek injunctive or similar
         relief in any forum to protect the Services or our intellectual
@@ -350,15 +350,15 @@ export function TermsOfServiceContent() {
       <h2>Contact</h2>
       <p>Questions about these Terms:</p>
       <p>
-        Wait See Buy
+        Watch See Buy
         <br />
         1205 Johnson Ferry Rd, Suite 136 - Box 112
         <br />
         Marietta, GA 30068
         <br />
-        waitseebuy.com
+        watchseebuy.com
         <br />
-        <a href="mailto:contact@waitseebuy.com">contact@waitseebuy.com</a>
+        <a href="mailto:contact@watchseebuy.com">contact@watchseebuy.com</a>
         <br />
         Or <Link href="/contact">Contact Us</Link>.
       </p>

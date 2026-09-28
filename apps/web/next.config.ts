@@ -5,10 +5,10 @@ const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
 const nextConfig: NextConfig = {
   transpilePackages: [
-    "@waitseebuy/domain",
-    "@waitseebuy/ebay",
-    "@waitseebuy/db",
-    "@waitseebuy/notify",
+    "@watchseebuy/domain",
+    "@watchseebuy/ebay",
+    "@watchseebuy/db",
+    "@watchseebuy/notify",
   ],
   serverExternalPackages: ["drizzle-orm", "postgres"],
   webpack: (config) => {

@@ -36,7 +36,7 @@ import {
   parseSearchIntent,
   stripCatalogTerms,
   type WatchCriteria,
-} from "@waitseebuy/domain";
+} from "@watchseebuy/domain";
 
 export type SearchQuery = {
   q: string;
@@ -267,7 +267,7 @@ export function intentFromSearchQuery(query: SearchQuery): WatchCriteria {
   return intent;
 }
 
-export { dollarsField, searchParamsFromIntent } from "@waitseebuy/domain";
+export { dollarsField, searchParamsFromIntent } from "@watchseebuy/domain";
 
 export function searchBarQuery(q: string, intent: WatchCriteria): string {
   return composeCatalogQuery(

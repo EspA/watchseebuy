@@ -7,8 +7,8 @@ export function PrivacyPolicyContent() {
     <article className="legal-copy">
       <p className="legal-updated">Last updated {UPDATED}</p>
       <p>
-        Wait See Buy (“WaitSeeBuy,” “we,” “us”) operates{" "}
-        <a href="https://waitseebuy.com">waitseebuy.com</a> and the related
+        Watch See Buy (“WatchSeeBuy,” “we,” “us”) operates{" "}
+        <a href="https://watchseebuy.com">watchseebuy.com</a> and the related
         search, watch, alert, and account features (the “Services”). This
         Privacy Policy describes how we collect, use, and disclose personal
         information when you visit or use the Services or otherwise communicate
@@ -23,7 +23,7 @@ export function PrivacyPolicyContent() {
       </p>
       <p>
         Questions:{" "}
-        <a href="mailto:contact@waitseebuy.com">contact@waitseebuy.com</a> or{" "}
+        <a href="mailto:contact@watchseebuy.com">contact@watchseebuy.com</a> or{" "}
         <Link href="/contact">Contact Us</Link>.
       </p>
 
@@ -37,7 +37,7 @@ export function PrivacyPolicyContent() {
 
       <h2>Who this covers</h2>
       <p>
-        Anyone who visits WaitSeeBuy, searches, signs in, saves a watch, clicks
+        Anyone who visits WatchSeeBuy, searches, signs in, saves a watch, clicks
         a Buy link we sent, or writes to us.
       </p>
 
@@ -97,13 +97,13 @@ export function PrivacyPolicyContent() {
         </li>
         <li>
           <strong>Alert clicks.</strong> Buy links in email go through a
-          first-party WaitSeeBuy URL with a unique token so we can send you to
+          first-party WatchSeeBuy URL with a unique token so we can send you to
           the listing and attach our affiliate campaign.
         </li>
       </ul>
       <p>
         We do not use third-party analytics or advertising cookies on
-        WaitSeeBuy today. To tell whether a blocker would break Buy, the
+        WatchSeeBuy today. To tell whether a blocker would break Buy, the
         browser may probe the affiliate host we actually use. That is not an ad
         tracker. Dismissing the banner is remembered for this visit only.
       </p>
@@ -130,7 +130,7 @@ export function PrivacyPolicyContent() {
         </li>
         <li>
           From eBay, as listing and sold-comp data returned to our search and
-          watches — not your WaitSeeBuy account identity
+          watches — not your WatchSeeBuy account identity
         </li>
         <li>
           From vendors who process information on our behalf, such as hosting
@@ -191,19 +191,19 @@ export function PrivacyPolicyContent() {
           <strong>Vendors</strong> who perform services on our behalf — hosting
           (Google Cloud in the United States) and our mail provider, to deliver
           sign-in mail, alerts, and contact-form messages to{" "}
-          <a href="mailto:contact@waitseebuy.com">contact@waitseebuy.com</a>
+          <a href="mailto:contact@watchseebuy.com">contact@watchseebuy.com</a>
         </li>
         <li>
           <strong>eBay.</strong> Search and watch coverage go through our
           servers to official eBay APIs. We send the terms, filters, and
           shipping destination needed to fetch listings and estimate price to
-          your door. We do not send your WaitSeeBuy email or name as part of
+          your door. We do not send your WatchSeeBuy email or name as part of
           that search. Listing data we receive may be cached so we are not
           polling once per collector.
         </li>
         <li>
           <strong>eBay Partner Network.</strong> Buy links from alerts redirect
-          from waitseebuy.com to EPN (or a plain item URL). EPN and eBay may
+          from watchseebuy.com to EPN (or a plain item URL). EPN and eBay may
           set their own cookies on their sites when you arrive. If you buy, we
           may earn a commission. That does not change the price you pay.
         </li>
@@ -341,7 +341,7 @@ export function PrivacyPolicyContent() {
       </ul>
       <p>
         To exercise a right, email{" "}
-        <a href="mailto:contact@waitseebuy.com">contact@waitseebuy.com</a> or
+        <a href="mailto:contact@watchseebuy.com">contact@watchseebuy.com</a> or
         use <Link href="/contact">Contact Us</Link>. We will not discriminate
         against you for exercising these rights. We may need to verify your
         identity before we process a request. You may designate an authorized
@@ -365,7 +365,7 @@ export function PrivacyPolicyContent() {
 
       <h2>Children</h2>
       <p>
-        WaitSeeBuy is not intended for children. We do not knowingly collect
+        WatchSeeBuy is not intended for children. We do not knowingly collect
         personal information from children under 13. If you are the parent or
         guardian of a child who has provided us with personal information, you
         may contact us to request that it be deleted. We do not have actual
@@ -395,15 +395,15 @@ export function PrivacyPolicyContent() {
         you:
       </p>
       <p>
-        Wait See Buy
+        Watch See Buy
         <br />
         1205 Johnson Ferry Rd, Suite 136 - Box 112
         <br />
         Marietta, GA 30068
         <br />
-        waitseebuy.com
+        watchseebuy.com
         <br />
-        <a href="mailto:contact@waitseebuy.com">contact@waitseebuy.com</a>
+        <a href="mailto:contact@watchseebuy.com">contact@watchseebuy.com</a>
         <br />
         Or <Link href="/contact">Contact Us</Link>.
       </p>

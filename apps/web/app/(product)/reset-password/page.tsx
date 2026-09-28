@@ -12,7 +12,7 @@ export default async function ResetPasswordPage({
   return (
     <main className="page">
       <h1>Reset password</h1>
-      <p className="lede">Choose a new password for this WaitSeeBuy account.</p>
+      <p className="lede">Choose a new password for this WatchSeeBuy account.</p>
       <div className="panel settings-panel" style={{ marginTop: 28, maxWidth: 420 }}>
         {invalid ? (
           <p className="muted">

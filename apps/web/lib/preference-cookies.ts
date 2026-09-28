@@ -1,4 +1,4 @@
-import type { AppLocale } from "@waitseebuy/domain";
+import type { AppLocale } from "@watchseebuy/domain";
 
 export const LOCALE_COOKIE = "wsb_locale";
 export const EBAY_SITE_COOKIE = "wsb_ebay_site";

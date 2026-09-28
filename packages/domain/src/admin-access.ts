@@ -1,4 +1,4 @@
-export const DEFAULT_ADMIN_EMAIL = "contact@waitseebuy.com";
+export const DEFAULT_ADMIN_EMAIL = "contact@watchseebuy.com";
 
 export function isAllowedAdminEmail(
   email: string,

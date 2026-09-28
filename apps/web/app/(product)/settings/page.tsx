@@ -2,8 +2,8 @@ import { getTranslations } from "next-intl/server";
 import {
   canResetPassword,
   socialAuthLabel,
-} from "@waitseebuy/domain";
-import { getDb, getUserAuthSummary, getUserSettings } from "@waitseebuy/db";
+} from "@watchseebuy/domain";
+import { getDb, getUserAuthSummary, getUserSettings } from "@watchseebuy/db";
 import { redirect } from "next/navigation";
 import { PasswordSettings } from "@/components/password-settings";
 import { SettingsForm } from "@/components/settings-form";
