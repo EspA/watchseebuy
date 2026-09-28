@@ -4,5 +4,11 @@ export function isAllowedAdminEmail(
   email: string,
   allowed: string = process.env.ADMIN_ALLOWED_EMAIL ?? DEFAULT_ADMIN_EMAIL,
 ) {
-  return email.trim().toLowerCase() === allowed.trim().toLowerCase();
+  const candidate = email.trim().toLowerCase();
+  if (!candidate) return false;
+  return allowed
+    .split(",")
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean)
+    .includes(candidate);
 }

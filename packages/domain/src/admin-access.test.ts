@@ -10,5 +10,12 @@ test("allowlists the operator email case-insensitively", () => {
     isAllowedAdminEmail("ops@example.com", "ops@example.com"),
     true,
   );
+  assert.equal(
+    isAllowedAdminEmail(
+      "contact@waitseebuy.com",
+      "contact@waitseebuy.com,contact@watchseebuy.com",
+    ),
+    true,
+  );
   assert.equal(DEFAULT_ADMIN_EMAIL, "contact@watchseebuy.com");
 });
