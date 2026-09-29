@@ -21,6 +21,7 @@ import {
 } from "@watchseebuy/domain";
 import { createEbayClientFromEnv } from "@watchseebuy/ebay";
 import Link from "next/link";
+import { AgentChat } from "@/components/agent-chat";
 import { EbaySiteSelect } from "@/components/ebay-site-select";
 import { ExcludeWords } from "@/components/exclude-words";
 import { ListingCard } from "@/components/listing-card";
@@ -28,7 +29,8 @@ import { SaveWatchForm } from "@/components/save-watch-form";
 import { SearchSort } from "@/components/search-sort";
 import { SearchPagination } from "@/components/search-pagination";
 import { SearchSubmit } from "@/components/search-submit";
-import { searchHrefWithPage } from "@/lib/search-href";
+import { SearchModeSwitch } from "@/components/search-mode-switch";
+import { searchHrefWithMode, searchHrefWithPage, agentSearchState } from "@/lib/search-href";
 import {
   SearchForm,
   SearchPendingProvider,
@@ -88,6 +90,7 @@ export default async function SearchPage({
     wheelsPackaging?: string;
     site?: string;
     page?: string;
+    mode?: string;
     error?: string;
   }>;
 }) {
@@ -170,7 +173,7 @@ export default async function SearchPage({
   const coverage = toCoverageQuery(intent);
   if (q.trim()) {
     const meta = clientMeta(await headers());
-    await persistUserEvent({
+    void persistUserEvent({
       kind: "search",
       userId: session?.user.id ?? null,
       ip: meta.ip,
@@ -180,7 +183,8 @@ export default async function SearchPage({
       },
     });
   }
-  const ebay = createEbayClientFromEnv("web_search");
+  const agentMode = query.mode !== "classic";
+  const ebay = createEbayClientFromEnv(agentMode ? "web_agent" : "web_search");
   const result = q.trim()
       ? await ebay.search(coverage, {
         offset: searchOffset(page),
@@ -279,6 +283,11 @@ export default async function SearchPage({
   return (
     <main className="page">
       <SearchPendingProvider>
+      <SearchModeSwitch
+        mode={agentMode ? "agent" : "classic"}
+        classicHref={searchHrefWithMode(query, "classic")}
+        agentHref={searchHrefWithMode(query, "agent")}
+      />
       {query.error === "limit" ? (
         <p className="banner">
           {t.rich("watchLimit", {
@@ -288,32 +297,51 @@ export default async function SearchPage({
         </p>
       ) : null}
       <SearchForm>
-        <div className="search">
-          <div className="search-combo">
-            <EbaySiteSelect site={intent.ebaySite} />
-            <input
-              key={searchBarQuery(q, intent)}
-              name="q"
-              type="search"
-              defaultValue={searchBarQuery(q, intent)}
-              placeholder={t("placeholder")}
-              aria-label={t("label")}
-            />
+        {agentMode ? (
+          <>
+            <AgentChat site={intent.ebaySite} search={agentSearchState(query)}>
+              <EbaySiteSelect site={intent.ebaySite} />
+            </AgentChat>
+            <input type="hidden" name="q" value={q} />
+            <input type="hidden" name="mode" value="agent" />
+          </>
+        ) : (
+          <div className="search">
+            <div className="search-combo">
+              <EbaySiteSelect site={intent.ebaySite} />
+              <input
+                key={searchBarQuery(q, intent)}
+                name="q"
+                type="search"
+                defaultValue={searchBarQuery(q, intent)}
+                placeholder={t("placeholder")}
+                aria-label={t("label")}
+              />
+            </div>
+            <input type="hidden" name="mode" value="classic" />
+            {query.watch ? (
+              <input type="hidden" name="watch" value={query.watch} />
+            ) : null}
+            <SearchSubmit />
           </div>
-          {query.watch ? (
-            <input type="hidden" name="watch" value={query.watch} />
-          ) : null}
-          <SearchSubmit />
-        </div>
-        <ExcludeWords value={excludeWordsField(intent.excludeKeywords)} />
+        )}
+        {query.watch && agentMode ? (
+          <input type="hidden" name="watch" value={query.watch} />
+        ) : null}
+        <ExcludeWords
+          key={scoreScope}
+          value={excludeWordsField(intent.excludeKeywords)}
+        />
       </SearchForm>
 
       {q.trim() ? (
         <div className="search-split">
           <SaveWatchForm
+            key={scoreScope}
             q={q}
             intent={intent}
             signedIn={Boolean(session)}
+            {...(agentMode ? { agentMode: true } : {})}
             {...(query.watch ? { watchId: query.watch } : {})}
             {...(settings?.shipToPostal
               ? { settingsPostal: settings.shipToPostal }

@@ -34,6 +34,7 @@ function getClient(url: string): Sql {
       max: poolMax(),
       idle_timeout: 20,
       max_lifetime: 60 * 30,
+      connect_timeout: 5,
     };
     const socket = cloudSqlSocket(url);
     globalForDb.watchseebuySql = socket

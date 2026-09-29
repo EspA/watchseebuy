@@ -290,6 +290,12 @@ export {
 } from "./watch-frequency";
 export { parseShipToPostal } from "./ship-to-postal";
 export {
+  agentSearchGuide,
+  interpretAgentTurn,
+  type AgentTurnInput,
+  type InterpretedAgentTurn,
+} from "./agent-search";
+export {
   dollarsField,
   searchParamsFromIntent,
   searchPathForWatch,

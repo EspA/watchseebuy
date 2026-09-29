@@ -4,8 +4,8 @@ import {
   createContext,
   useContext,
   useState,
+  type MouseEvent,
   type ReactNode,
-  type SyntheticEvent,
 } from "react";
 import type { FilterGroupId } from "@watchseebuy/domain";
 
@@ -36,20 +36,19 @@ export function useFilterGroup(
   hasSelection: boolean,
 ): {
   open: boolean;
-  onToggle: (event: SyntheticEvent<HTMLDetailsElement>) => void;
+  onSummaryClick?: (event: MouseEvent<HTMLElement>) => void;
 } {
   const accordion = useContext(FilterAccordionContext);
-  if (!accordion) {
-    return {
-      open: hasSelection,
-      onToggle: () => undefined,
-    };
-  }
+  if (!accordion) return { open: hasSelection };
+  const open = accordion.openId === id;
   return {
-    open: accordion.openId === id,
-    onToggle: (event) => {
-      if (event.currentTarget.open) accordion.setOpenId(id);
-      else if (accordion.openId === id) accordion.setOpenId(undefined);
+    open,
+    // Control the section from the summary click. A toggle listener that
+    // writes `open` back fights the browser and loops when a search lands
+    // with the section already open.
+    onSummaryClick: (event) => {
+      event.preventDefault();
+      accordion.setOpenId(open ? undefined : id);
     },
   };
 }

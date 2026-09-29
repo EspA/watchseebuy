@@ -36,6 +36,7 @@ export async function SaveWatchForm({
   settingsPostal,
   suggestedGroup,
   atWatchLimit,
+  agentMode,
 }: {
   q: string;
   intent: WatchCriteria;
@@ -44,6 +45,7 @@ export async function SaveWatchForm({
   settingsPostal?: string;
   suggestedGroup?: FilterGroupId;
   atWatchLimit?: boolean;
+  agentMode?: boolean;
 }) {
   if (!q.trim()) return null;
 
@@ -65,7 +67,8 @@ export async function SaveWatchForm({
     Country: tf("country"),
   };
 
-  const next = `/search?${searchParamsFromIntent(q, intent, watchId)}`;
+  const searchPath = `/search?${searchParamsFromIntent(q, intent, watchId)}`;
+  const next = `${searchPath}&mode=${agentMode ? "agent" : "classic"}`;
   const excluded = excludeWordsField(intent.excludeKeywords);
   const clearFilters = new URLSearchParams({
     q: intent.query.trim() || q,
@@ -75,6 +78,7 @@ export async function SaveWatchForm({
     ...(intent.ebaySite && intent.ebaySite !== "EBAY_US"
       ? { site: intent.ebaySite }
       : {}),
+    mode: agentMode ? "agent" : "classic",
   });
   const listingValue =
     intent.listingType === "auction_below" ? "auction" : intent.listingType;

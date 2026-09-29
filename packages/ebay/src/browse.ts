@@ -245,12 +245,24 @@ export type EbayApiCallEvent = {
 
 export type EbayApiRecorder = (event: EbayApiCallEvent) => void | Promise<void>;
 
-async function noteCall(
+function noteCall(
   record: EbayApiRecorder | undefined,
   event: EbayApiCallEvent,
 ) {
   if (!record) return;
-  await record(event);
+  // Telemetry must not delay the search response. A stuck database write
+  // was holding each getItem open, so the results page never rendered.
+  void Promise.resolve()
+    .then(() => record(event))
+    .catch((error: unknown) => {
+      console.error(
+        JSON.stringify({
+          at: new Date().toISOString(),
+          message: "ebay api record failed",
+          error: error instanceof Error ? error.message : String(error),
+        }),
+      );
+    });
 }
 
 export async function fetchApplicationToken(

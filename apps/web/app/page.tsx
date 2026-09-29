@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { DEFAULT_EBAY_SITE } from "@watchseebuy/domain";
 import { getDb, getUserSettings } from "@watchseebuy/db";
 import { BrandLink, HeaderTools } from "@/components/header";
 import { BrandMark } from "@/components/brand-mark";
-import { EbaySiteSwitch } from "@/components/ebay-site-switch";
+import { HomeSearch } from "@/components/home-search";
 import { PreferenceCookieSync } from "@/components/preference-cookie-sync";
-import { SearchSubmit } from "@/components/search-submit";
 import { SiteFooter } from "@/components/site-footer";
 import { getRequestPreferences } from "@/lib/request-preferences";
 import { getSession } from "@/lib/session";
@@ -34,7 +32,7 @@ export const metadata: Metadata = {
 export default async function ComingSoonPage({
   searchParams,
 }: {
-  searchParams: Promise<{ site?: string }>;
+  searchParams: Promise<{ site?: string; mode?: string }>;
 }) {
   const query = await searchParams;
   const session = await getSession();
@@ -77,26 +75,11 @@ export default async function ComingSoonPage({
           <p className="tease-lede">{t("lede")}</p>
 
           {process.env.COMING_SOON === "1" ? null : (
-            <>
-              <form className="search tease-search" action="/search" method="get">
-                {site !== DEFAULT_EBAY_SITE ? (
-                  <input type="hidden" name="site" value={site} />
-                ) : null}
-                <input
-                  name="q"
-                  type="search"
-                  required
-                  placeholder={t("placeholder")}
-                  aria-label={t("searchLabel")}
-                />
-                <SearchSubmit />
-              </form>
-              <EbaySiteSwitch
-                site={site}
-                leadSite={prefs.defaultSite}
-                homeLinks
-              />
-            </>
+            <HomeSearch
+              site={site}
+              leadSite={prefs.defaultSite}
+              agent={query.mode !== "classic"}
+            />
           )}
 
           <ul className="tease-beats">

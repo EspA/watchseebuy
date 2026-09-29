@@ -31,7 +31,7 @@ export function BuildingBricksFilters({
   brickStatus?: string;
 }) {
   const hasSelection = Boolean(brickCategory || brickType || brickStatus);
-  const { open, onToggle } = useFilterGroup("bricks", hasSelection);
+  const { open, onSummaryClick } = useFilterGroup("bricks", hasSelection);
   const t = useTranslations("filters");
   const typeLabel: Record<string, string> = {
     set: t("setType"),
@@ -46,8 +46,8 @@ export function BuildingBricksFilters({
   };
 
   return (
-    <details className="filter-group" open={open} onToggle={onToggle}>
-      <summary>{t("bricks")}</summary>
+    <details className="filter-group" open={open}>
+      <summary onClick={onSummaryClick}>{t("bricks")}</summary>
       <label>
         {t("category")}
         <select

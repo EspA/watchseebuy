@@ -64,7 +64,7 @@ export function FiguresFilters({
       figurePunch,
   );
 
-  const { open, onToggle } = useFilterGroup("figures", hasSelection);
+  const { open, onSummaryClick } = useFilterGroup("figures", hasSelection);
   const t = useTranslations("filters");
   const packagingLabel = {
     carded: t("carded"),
@@ -80,8 +80,8 @@ export function FiguresFilters({
   };
 
   return (
-    <details className="filter-group" open={open} onToggle={onToggle}>
-      <summary>{t("figures")}</summary>
+    <details className="filter-group" open={open}>
+      <summary onClick={onSummaryClick}>{t("figures")}</summary>
       <label>
         {t("category")}
         <select

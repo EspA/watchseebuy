@@ -116,12 +116,12 @@ export function CardFilters({
       !CARD_GAME_WEDGE.includes(option.value),
   );
 
-  const { open, onToggle } = useFilterGroup("cards", hasSelection);
+  const { open, onSummaryClick } = useFilterGroup("cards", hasSelection);
   const t = useTranslations("filters");
 
   return (
-    <details className="filter-group" open={open} onToggle={onToggle}>
-      <summary>{t("cards")}</summary>
+    <details className="filter-group" open={open}>
+      <summary onClick={onSummaryClick}>{t("cards")}</summary>
       <label>
         {t("category")}
         <select
