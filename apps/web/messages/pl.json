@@ -17,8 +17,8 @@
     "label": "Język"
   },
   "home": {
-    "kicker": "Dla wymagającego kolekcjonera",
-    "lede": "PSA 10. Zafoliowany zestaw. Figurka w blisterze. Pilnujemy razem z tobą i mówimy, kiedy cena do twoich drzwi jest warta zakupu.",
+    "slogan": "Twój towarzysz w znajdowaniu vintage zabawek",
+    "lede": "Niezależnie od tego, czy to gradowana karta, rzadkie Lego, czy figurka w blisterze, pomagamy szukać, obserwować i kupić sztukę, której szukasz.",
     "placeholder": "Znajdź rzeczy z eBay",
     "searchLabel": "Szukaj kolekcjonaliów",
     "notShopping": "Nie kupujesz w {place}?",
@@ -35,7 +35,7 @@
     "classic": "Klasyczne",
     "ai": "Tryb AI",
     "switchLabel": "Tryb wyszukiwania",
-    "greeting": "Cześć!\nWitaj w WatchSeeBuy.com.\nOpisz rzecz, której szukasz, stan, zafoliowana, grading, cena... a pomożemy ci znaleźć twój skarb.",
+    "greeting": "Cześć!\nOpisz rzecz, której szukasz, stan, zafoliowana, grading, cena...",
     "search": "Szukaj",
     "submit": "Wyślij",
     "composerLabel": "Wiadomość do asystenta wyszukiwania",

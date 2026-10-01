@@ -17,8 +17,8 @@
     "label": "Idioma"
   },
   "home": {
-    "kicker": "Para el coleccionista exigente",
-    "lede": "El PSA 10. El set precintado. La figura en blister. Vigilamos contigo y te decimos cuándo el precio hasta tu puerta merece la compra.",
+    "slogan": "Tu compañero para encontrar juguetes vintage",
+    "lede": "Ya sea una carta graduada, un Lego raro o una figura en blister, te ayudamos a buscar, vigilar y comprar la pieza que buscas.",
     "placeholder": "Buscar piezas de eBay",
     "searchLabel": "Buscar coleccionables",
     "notShopping": "¿No compras en {place}?",
@@ -35,7 +35,7 @@
     "classic": "Clásica",
     "ai": "Modo IA",
     "switchLabel": "Modo de búsqueda",
-    "greeting": "¡Hola!\nBienvenido a WatchSeeBuy.com.\nDescribe la pieza que buscas, el estado, precintada, graduada, el precio... y te ayudaremos a encontrar tu joya.",
+    "greeting": "¡Hola!\nDescribe la pieza que buscas, el estado, precintada, graduada, el precio...",
     "search": "Buscar",
     "submit": "Enviar",
     "composerLabel": "Mensaje para el asistente de búsqueda",

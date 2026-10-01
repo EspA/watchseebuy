@@ -10,6 +10,17 @@ import {
 import { useTranslations } from "next-intl";
 import { applySiteCookie } from "@/lib/preference-cookies";
 
+function searchForm(
+  input: HTMLInputElement | null,
+  root: HTMLElement | null,
+): HTMLFormElement | null {
+  if (input?.form) return input.form;
+  const closest = root?.closest("form");
+  if (closest instanceof HTMLFormElement) return closest;
+  const byId = document.getElementById("search-form");
+  return byId instanceof HTMLFormElement ? byId : null;
+}
+
 function searchUrlForSite(form: HTMLFormElement | null, next: string): string {
   const params = new URLSearchParams(window.location.search);
   const query = form?.elements.namedItem("q");
@@ -22,7 +33,13 @@ function searchUrlForSite(form: HTMLFormElement | null, next: string): string {
   return encoded ? `/search?${encoded}` : "/search";
 }
 
-export function EbaySiteSelect({ site }: { site: string }) {
+export function EbaySiteSelect({
+  site,
+  variant = "bar",
+}: {
+  site: string;
+  variant?: "bar" | "filter";
+}) {
   const t = useTranslations("search");
   const navigateSearch = useNavigateSearch();
   const [open, setOpen] = useState(false);
@@ -52,8 +69,13 @@ export function EbaySiteSelect({ site }: { site: string }) {
   }, [open]);
 
   return (
-    <div className="search-site" ref={rootRef}>
-      <input ref={inputRef} type="hidden" name="site" value={value} />
+    <div
+      className={variant === "filter" ? "search-site is-filter" : "search-site"}
+      ref={rootRef}
+    >
+      {variant === "bar" ? (
+        <input ref={inputRef} type="hidden" name="site" value={value} />
+      ) : null}
       <button
         type="button"
         className="search-site-trigger"
@@ -84,9 +106,7 @@ export function EbaySiteSelect({ site }: { site: string }) {
                     setOpen(false);
                     navigateSearch(
                       searchUrlForSite(
-                        inputRef.current?.form ??
-                          rootRef.current?.closest("form") ??
-                          null,
+                        searchForm(inputRef.current, rootRef.current),
                         option.value,
                       ),
                     );

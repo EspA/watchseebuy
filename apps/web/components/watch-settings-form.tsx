@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { WATCH_FREQUENCY_FILTERS, type WatchFrequency } from "@watchseebuy/domain";
+import { MenuSelect } from "@/components/menu-select";
 import { dollarsField } from "@/lib/search-params";
 
 export function WatchSettingsForm({
@@ -38,7 +39,7 @@ export function WatchSettingsForm({
       </label>
       <label className="watch-settings-frequency">
         {t("frequency")}
-        <select
+        <MenuSelect
           name="frequency"
           defaultValue={frequency}
           onChange={(event) => event.currentTarget.form?.requestSubmit()}
@@ -48,7 +49,7 @@ export function WatchSettingsForm({
               {frequencyLabel[option.value] ?? option.label}
             </option>
           ))}
-        </select>
+        </MenuSelect>
       </label>
     </form>
   );

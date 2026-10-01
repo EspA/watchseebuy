@@ -192,45 +192,49 @@ export function AgentChat({
       <div className="agent-compose-wrap">
         <div className="agent-compose">
         {children}
-        <textarea
-          value={draft}
-          rows={1}
-          aria-label={t("composerLabel")}
-          disabled={pending}
-          onChange={(event) => setDraft(event.target.value)}
-          onKeyDown={onKeyDown}
-        />
-        <span className="agent-tip filter-tip">
-          <button
-            type="button"
-            className="agent-send"
-            aria-label={t("submit")}
-            aria-describedby={submitTipId}
-            disabled={pending || !draft.trim()}
-            onClick={() => void send()}
-          >
-            <ArrowUpIcon />
-          </button>
-          <span id={submitTipId} role="tooltip" className="filter-tip-bubble">
-            {t("submit")}
-          </span>
-        </span>
-        {messages.length > 0 ? (
-          <span className="agent-tip filter-tip">
-            <button
-              type="button"
-              className="agent-clear"
-              aria-label={t("clear")}
-              aria-describedby={clearTipId}
-              onClick={clearHistory}
-            >
-              <TrashIcon />
-            </button>
-            <span id={clearTipId} role="tooltip" className="filter-tip-bubble">
-              {t("clear")}
+        <div className="agent-field">
+          <textarea
+            value={draft}
+            rows={1}
+            aria-label={t("composerLabel")}
+            disabled={pending}
+            onChange={(event) => setDraft(event.target.value)}
+            onKeyDown={onKeyDown}
+          />
+          <div className="agent-field-actions">
+            <span className="agent-tip filter-tip">
+              <button
+                type="button"
+                className="agent-send"
+                aria-label={t("submit")}
+                aria-describedby={submitTipId}
+                disabled={pending || !draft.trim()}
+                onClick={() => void send()}
+              >
+                <ArrowUpIcon />
+              </button>
+              <span id={submitTipId} role="tooltip" className="filter-tip-bubble">
+                {t("submit")}
+              </span>
             </span>
-          </span>
-        ) : null}
+            {messages.length > 0 ? (
+              <span className="agent-tip filter-tip">
+                <button
+                  type="button"
+                  className="agent-clear"
+                  aria-label={t("clear")}
+                  aria-describedby={clearTipId}
+                  onClick={clearHistory}
+                >
+                  <TrashIcon />
+                </button>
+                <span id={clearTipId} role="tooltip" className="filter-tip-bubble">
+                  {t("clear")}
+                </span>
+              </span>
+            ) : null}
+          </div>
+        </div>
         </div>
       </div>
     </div>

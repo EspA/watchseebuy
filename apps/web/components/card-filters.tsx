@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState, type ChangeEvent } from "react";
 import { submitSearchForm } from "@/components/auto-search";
+import { MenuSelect } from "@/components/menu-select";
 import { useFilterGroup } from "@/components/filter-accordion";
 import { syncCatalogSearchForm } from "@/components/catalog-search-sync";
 import {
@@ -124,7 +125,7 @@ export function CardFilters({
       <summary onClick={onSummaryClick}>{t("cards")}</summary>
       <label>
         {t("category")}
-        <select
+        <MenuSelect
           form={SEARCH_FORM}
           name="cardLine"
           defaultValue={selectedLine}
@@ -154,11 +155,11 @@ export function CardFilters({
               <option value={option.value}>{option.label}</option>
             </optgroup>
           ))}
-        </select>
+        </MenuSelect>
       </label>
       <label hidden={selectedLine === "any"}>
         {t("type")}
-        <select
+        <MenuSelect
           form={SEARCH_FORM}
           name="cardCategory"
           value={selectedLine === "any" ? "any" : typeValue}
@@ -185,11 +186,11 @@ export function CardFilters({
               {option.label}
             </option>
           ))}
-        </select>
+        </MenuSelect>
       </label>
       <label hidden={!showGame}>
         {t("game")}
-        <select
+        <MenuSelect
           form={SEARCH_FORM}
           name="cardGame"
           defaultValue={showGame ? (cardGame ?? "any") : "any"}
@@ -230,11 +231,11 @@ export function CardFilters({
               </option>
             ))}
           </optgroup>
-        </select>
+        </MenuSelect>
       </label>
       <label>
         {t("grader")}
-        <select
+        <MenuSelect
           form={SEARCH_FORM}
           name="grader"
           defaultValue={grader ?? "any"}
@@ -249,11 +250,11 @@ export function CardFilters({
               {option.label}
             </option>
           ))}
-        </select>
+        </MenuSelect>
       </label>
       <label hidden={!showGrade}>
         {t("grade")}
-        <select
+        <MenuSelect
           form={SEARCH_FORM}
           name="grade"
           defaultValue={cardGrade ?? DEFAULT_CARD_GRADE}
@@ -264,11 +265,11 @@ export function CardFilters({
               {option.label}
             </option>
           ))}
-        </select>
+        </MenuSelect>
       </label>
       <label hidden={!showPokemonFacets}>
         {t("set")}
-        <select
+        <MenuSelect
           form={SEARCH_FORM}
           name="set"
           defaultValue={showPokemonFacets ? (cardSet ?? "any") : "any"}
@@ -286,11 +287,11 @@ export function CardFilters({
               )}
             </optgroup>
           ))}
-        </select>
+        </MenuSelect>
       </label>
       <label>
         {t("printing")}
-        <select
+        <MenuSelect
           form={SEARCH_FORM}
           name="printing"
           defaultValue={printing ?? "any"}
@@ -302,11 +303,11 @@ export function CardFilters({
               {option.label}
             </option>
           ))}
-        </select>
+        </MenuSelect>
       </label>
       <label>
         {t("language")}
-        <select
+        <MenuSelect
           form={SEARCH_FORM}
           name="language"
           defaultValue={language ?? "any"}
@@ -318,11 +319,11 @@ export function CardFilters({
               {option.label}
             </option>
           ))}
-        </select>
+        </MenuSelect>
       </label>
       <label hidden={!showPokemonFacets}>
         {t("rarity")}
-        <select
+        <MenuSelect
           form={SEARCH_FORM}
           name="rarity"
           defaultValue={showPokemonFacets ? (rarity ?? "any") : "any"}
@@ -334,7 +335,7 @@ export function CardFilters({
               {option.label}
             </option>
           ))}
-        </select>
+        </MenuSelect>
       </label>
       <div className="filter-chips">
         <input

@@ -11,6 +11,7 @@ import {
   timeZoneLabel,
 } from "@watchseebuy/domain";
 import { useEffect, useMemo, useState } from "react";
+import { MenuSelect } from "@/components/menu-select";
 import { applyPreferenceCookies } from "@/lib/preference-cookies";
 import { applyTheme, parseTheme, themeFromDocument, type Theme } from "@/lib/theme";
 
@@ -67,7 +68,7 @@ export function SettingsForm({
     >
       <label>
         {t("ebayStore")}
-        <select
+        <MenuSelect
           name="site"
           value={site}
           onChange={(event) => setSite(event.target.value)}
@@ -77,14 +78,14 @@ export function SettingsForm({
               {option.flag} {option.label}
             </option>
           ))}
-        </select>
+        </MenuSelect>
       </label>
       <p className="watch-note">
         {t("ebayStoreNote")}
       </p>
       <label>
         {t("siteLanguage")}
-        <select
+        <MenuSelect
           name="locale"
           value={language}
           onChange={(event) => setLanguage(event.target.value)}
@@ -94,7 +95,7 @@ export function SettingsForm({
               {option.label}
             </option>
           ))}
-        </select>
+        </MenuSelect>
       </label>
       <p className="watch-note">
         {t("siteLanguageNote")}
@@ -115,7 +116,7 @@ export function SettingsForm({
       </p>
       <label>
         {t("timezone")}
-        <select
+        <MenuSelect
           name="timezone"
           value={zone}
           onChange={(event) => setZone(event.target.value)}
@@ -133,14 +134,14 @@ export function SettingsForm({
               ))}
             </optgroup>
           ))}
-        </select>
+        </MenuSelect>
       </label>
       <p className="watch-note">
         {t("timezoneNote")}
       </p>
       <label>
         {t("appearance")}
-        <select
+        <MenuSelect
           name="theme"
           value={appearance}
           onChange={(event) => {
@@ -152,7 +153,7 @@ export function SettingsForm({
         >
           <option value="light">{t("light")}</option>
           <option value="dark">{t("dark")}</option>
-        </select>
+        </MenuSelect>
       </label>
       <p className="watch-note">
         {t("appearanceNote")}

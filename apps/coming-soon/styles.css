@@ -113,15 +113,6 @@ body {
   animation: tease-in 0.85s ease forwards;
 }
 
-.tease-kicker {
-  margin: 0 0 16px;
-  color: var(--accent);
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
 .tease-title {
   margin: 0;
   font-family: var(--font-serif);
@@ -146,14 +137,26 @@ body {
   animation-delay: 0.36s;
 }
 
-.tease-lede {
+.tease-slogan {
   margin: 28px 0 0;
+  color: var(--accent);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: tease-in 0.85s ease 0.44s forwards;
+}
+
+.tease-lede {
+  margin: 14px 0 0;
   max-width: 36rem;
   color: var(--muted);
   font-size: 1.15rem;
   line-height: 1.55;
   opacity: 0;
-  animation: tease-in 0.85s ease 0.44s forwards;
+  animation: tease-in 0.85s ease 0.5s forwards;
 }
 
 .tease-beats {
@@ -357,14 +360,17 @@ body {
     min-width: 0;
   }
 
-  .tease-kicker {
-    margin-bottom: 10px;
-    font-size: 0.68rem;
+  .tease-title {
+    font-size: clamp(2.35rem, 11.5vw, 3.25rem);
+  }
+
+  .tease-slogan {
+    font-size: 0.82rem;
     letter-spacing: 0.1em;
   }
 
-  .tease-title {
-    font-size: clamp(2.35rem, 11.5vw, 3.25rem);
+  .tease-lede {
+    font-size: 0.95rem;
   }
 
   .tease-mark {
@@ -381,6 +387,7 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .tease-mark,
   .tease-title span,
+  .tease-slogan,
   .tease-lede,
   .tease-beats {
     opacity: 1;

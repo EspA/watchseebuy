@@ -11,12 +11,10 @@ import { getSession } from "@/lib/session";
 
 export const metadata: Metadata = {
   title: "WatchSeeBuy",
-  description:
-    "The PSA 10. The factory-sealed set. The carded figure. We watch with you and tell you when the price to your door is worth buying.",
+  description: "Your vintage toys finder companion. Whether it's a graded card, a rare Lego, or a carded figure, we help you search, watch, and buy the piece you're looking for.",
   openGraph: {
     title: "WatchSeeBuy",
-    description:
-      "The PSA 10. The factory-sealed set. The carded figure. We watch with you and tell you when the price to your door is worth buying.",
+    description: "Your vintage toys finder companion. Whether it's a graded card, a rare Lego, or a carded figure, we help you search, watch, and buy the piece you're looking for.",
     url: "https://watchseebuy.com",
     siteName: "WatchSeeBuy",
     type: "website",
@@ -24,8 +22,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary",
     title: "WatchSeeBuy",
-    description:
-      "The PSA 10. The factory-sealed set. The carded figure. We watch with you and tell you when the price to your door is worth buying.",
+    description: "Your vintage toys finder companion. Whether it's a graded card, a rare Lego, or a carded figure, we help you search, watch, and buy the piece you're looking for.",
   },
 };
 
@@ -61,7 +58,6 @@ export default async function ComingSoonPage({
         <main className="tease-hero">
           <div className="tease-headline">
             <div className="tease-headline-copy">
-              <p className="tease-kicker">{t("kicker")}</p>
               <h1 className="tease-title" aria-label="Watch. See. Buy.">
                 <span>Watch.</span>
                 <span>See.</span>
@@ -72,6 +68,7 @@ export default async function ComingSoonPage({
               <BrandMark className="tease-mark" alt="WatchSeeBuy" />
             </div>
           </div>
+          <p className="tease-slogan">{t("slogan")}</p>
           <p className="tease-lede">{t("lede")}</p>
 
           {process.env.COMING_SOON === "1" ? null : (

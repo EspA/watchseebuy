@@ -1,6 +1,7 @@
 "use client";
 
 import type { InputHTMLAttributes, SelectHTMLAttributes } from "react";
+import { MenuSelect } from "@/components/menu-select";
 
 let scheduled: number | undefined;
 
@@ -33,7 +34,7 @@ export function scheduleSearchSubmit(
 export function AutoSelect(props: SelectHTMLAttributes<HTMLSelectElement>) {
   const { onChange, ...rest } = props;
   return (
-    <select
+    <MenuSelect
       {...rest}
       onChange={(event) => {
         onChange?.(event);

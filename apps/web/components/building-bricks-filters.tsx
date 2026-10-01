@@ -2,6 +2,7 @@
 
 import type { ChangeEvent } from "react";
 import { submitSearchForm } from "@/components/auto-search";
+import { MenuSelect } from "@/components/menu-select";
 import { useTranslations } from "next-intl";
 import { useFilterGroup } from "@/components/filter-accordion";
 import { syncCatalogSearchForm } from "@/components/catalog-search-sync";
@@ -50,7 +51,7 @@ export function BuildingBricksFilters({
       <summary onClick={onSummaryClick}>{t("bricks")}</summary>
       <label>
         {t("category")}
-        <select
+        <MenuSelect
           form={SEARCH_FORM}
           name="brickCategory"
           defaultValue={brickCategory ?? "any"}
@@ -75,11 +76,11 @@ export function BuildingBricksFilters({
               ))}
             </optgroup>
           ))}
-        </select>
+        </MenuSelect>
       </label>
       <label>
         {t("type")}
-        <select
+        <MenuSelect
           form={SEARCH_FORM}
           name="brickType"
           defaultValue={brickType ?? "any"}
@@ -91,11 +92,11 @@ export function BuildingBricksFilters({
               {typeLabel[option.value] ?? option.label}
             </option>
           ))}
-        </select>
+        </MenuSelect>
       </label>
       <label>
         {t("status")}
-        <select
+        <MenuSelect
           form={SEARCH_FORM}
           name="brickStatus"
           defaultValue={brickStatus ?? "any"}
@@ -107,7 +108,7 @@ export function BuildingBricksFilters({
               {statusLabel[option.value] ?? option.label}
             </option>
           ))}
-        </select>
+        </MenuSelect>
       </label>
     </details>
   );

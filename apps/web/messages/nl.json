@@ -17,8 +17,8 @@
     "label": "Taal"
   },
   "home": {
-    "kicker": "Voor de veeleisende verzamelaar",
-    "lede": "De PSA 10. De gesealde set. Het carded figuur. We kijken met je mee en zeggen wanneer de prijs tot je deur het kopen waard is.",
+    "slogan": "Je metgezel voor het vinden van vintage speelgoed",
+    "lede": "Of het nu een gegradeerde kaart, een zeldzame Lego of een figuur in blister is, we helpen je zoeken, volgen en het stuk kopen dat je zoekt.",
     "placeholder": "eBay-stukken vinden",
     "searchLabel": "Verzamelobjecten zoeken",
     "notShopping": "Niet aan het winkelen in {place}?",
@@ -35,7 +35,7 @@
     "classic": "Klassiek",
     "ai": "AI-modus",
     "switchLabel": "Zoekmodus",
-    "greeting": "Hoi!\nWelkom bij WatchSeeBuy.com.\nBeschrijf het stuk dat je zoekt, de staat, geseald, gegradeerd, de prijs... en we helpen je je vondst te vinden.",
+    "greeting": "Hoi!\nBeschrijf het stuk dat je zoekt, de staat, geseald, gegradeerd, de prijs...",
     "search": "Zoeken",
     "submit": "Versturen",
     "composerLabel": "Bericht aan de zoekassistent",

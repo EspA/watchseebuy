@@ -3,7 +3,6 @@ import { getTranslations } from "next-intl/server";
 import {
   attachPriceScores,
   landedCostCents,
-  excludeWordsField,
   listingMatchesCondition,
   listingMatchesConfidence,
   listingMatchesItemLocation,
@@ -23,7 +22,6 @@ import { createEbayClientFromEnv } from "@watchseebuy/ebay";
 import Link from "next/link";
 import { AgentChat } from "@/components/agent-chat";
 import { EbaySiteSelect } from "@/components/ebay-site-select";
-import { ExcludeWords } from "@/components/exclude-words";
 import { ListingCard } from "@/components/listing-card";
 import { SaveWatchForm } from "@/components/save-watch-form";
 import { SearchSort } from "@/components/search-sort";
@@ -328,10 +326,6 @@ export default async function SearchPage({
         {query.watch && agentMode ? (
           <input type="hidden" name="watch" value={query.watch} />
         ) : null}
-        <ExcludeWords
-          key={scoreScope}
-          value={excludeWordsField(intent.excludeKeywords)}
-        />
       </SearchForm>
 
       {q.trim() ? (

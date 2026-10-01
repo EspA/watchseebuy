@@ -90,6 +90,11 @@ export function AccountMenu() {
       </button>
       {open ? (
         <div className="account-menu" role="menu">
+          {session.user.email ? (
+            <p className="account-menu-email" title={session.user.email}>
+              {session.user.email}
+            </p>
+          ) : null}
           <Link className="account-menu-item" role="menuitem" href="/settings">
             {t("settings")}
           </Link>

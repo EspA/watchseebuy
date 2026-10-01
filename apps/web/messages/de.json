@@ -17,8 +17,8 @@
     "label": "Sprache"
   },
   "home": {
-    "kicker": "Für den anspruchsvollen Sammler",
-    "lede": "Die PSA 10. Das originalverpackte Set. Die carded Figur. Wir beobachten mit dir und sagen dir, wann der Preis zu deiner Tür das Kaufen wert ist.",
+    "slogan": "Dein Begleiter beim Finden von Vintage-Spielzeug",
+    "lede": "Ob eine bewertete Karte, ein seltenes Lego oder eine Figur im Blister: wir helfen dir, das gesuchte Stück zu suchen, zu beobachten und zu kaufen.",
     "placeholder": "eBay-Stücke finden",
     "searchLabel": "Sammlerstücke suchen",
     "notShopping": "Nicht in {place} unterwegs?",
@@ -35,7 +35,7 @@
     "classic": "Klassisch",
     "ai": "KI-Modus",
     "switchLabel": "Suchmodus",
-    "greeting": "Hallo!\nWillkommen bei WatchSeeBuy.com.\nBeschreibe das Stück, das du suchst, Zustand, versiegelt, bewertet, der Preis... und wir helfen dir, deinen Schatz zu finden.",
+    "greeting": "Hallo!\nBeschreibe das Stück, das du suchst, Zustand, versiegelt, bewertet, der Preis...",
     "search": "Suchen",
     "submit": "Absenden",
     "composerLabel": "Nachricht an den Suchassistenten",

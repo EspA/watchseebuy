@@ -17,8 +17,8 @@
     "label": "Lingua"
   },
   "home": {
-    "kicker": "Per il collezionista esigente",
-    "lede": "La PSA 10. Il set sigillato. La figura in blister. Osserviamo con te e ti diciamo quando il prezzo fino alla tua porta vale l’acquisto.",
+    "slogan": "Il tuo compagno per trovare giocattoli vintage",
+    "lede": "Che si tratti di una carta gradata, di un Lego raro o di una figura in blister, ti aiutiamo a cercare, osservare e comprare il pezzo che cerchi.",
     "placeholder": "Trova pezzi eBay",
     "searchLabel": "Cerca collezionabili",
     "notShopping": "Non compri in {place}?",
@@ -35,7 +35,7 @@
     "classic": "Classica",
     "ai": "Modalità IA",
     "switchLabel": "Modalità di ricerca",
-    "greeting": "Ciao!\nBenvenuto su WatchSeeBuy.com.\nDescrivi il pezzo che cerchi, le condizioni, sigillato, graduato, il prezzo... e ti aiuteremo a trovare il tuo pezzo raro.",
+    "greeting": "Ciao!\nDescrivi il pezzo che cerchi, le condizioni, sigillato, graduato, il prezzo...",
     "search": "Cerca",
     "submit": "Invia",
     "composerLabel": "Messaggio all’assistente di ricerca",

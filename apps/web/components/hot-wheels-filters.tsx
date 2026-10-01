@@ -2,6 +2,7 @@
 
 import { useState, type ChangeEvent } from "react";
 import { submitSearchForm } from "@/components/auto-search";
+import { MenuSelect } from "@/components/menu-select";
 import { useTranslations } from "next-intl";
 import { useFilterGroup } from "@/components/filter-accordion";
 import { syncCatalogSearchForm } from "@/components/catalog-search-sync";
@@ -52,7 +53,7 @@ export function HotWheelsFilters({
       <summary onClick={onSummaryClick}>{t("vehicles")}</summary>
       <label>
         {t("category")}
-        <select
+        <MenuSelect
           form={SEARCH_FORM}
           name="wheelsCategory"
           defaultValue={wheelsCategory ?? "any"}
@@ -92,11 +93,11 @@ export function HotWheelsFilters({
               ))}
             </optgroup>
           ))}
-        </select>
+        </MenuSelect>
       </label>
       <label hidden={!showScale}>
         {t("scale")}
-        <select
+        <MenuSelect
           form={SEARCH_FORM}
           name="wheelsScale"
           defaultValue={showScale ? (wheelsScale ?? "any") : "any"}
@@ -108,11 +109,11 @@ export function HotWheelsFilters({
               {option.label}
             </option>
           ))}
-        </select>
+        </MenuSelect>
       </label>
       <label>
         {t("packaging")}
-        <select
+        <MenuSelect
           form={SEARCH_FORM}
           name="wheelsPackaging"
           defaultValue={wheelsPackaging ?? "any"}
@@ -124,7 +125,7 @@ export function HotWheelsFilters({
               {packagingLabel[option.value]}
             </option>
           ))}
-        </select>
+        </MenuSelect>
       </label>
     </details>
   );

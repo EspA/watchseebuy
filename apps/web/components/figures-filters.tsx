@@ -2,6 +2,7 @@
 
 import { useState, type ChangeEvent } from "react";
 import { submitSearchForm } from "@/components/auto-search";
+import { MenuSelect } from "@/components/menu-select";
 import { useTranslations } from "next-intl";
 import { useFilterGroup } from "@/components/filter-accordion";
 import { syncCatalogSearchForm } from "@/components/catalog-search-sync";
@@ -84,7 +85,7 @@ export function FiguresFilters({
       <summary onClick={onSummaryClick}>{t("figures")}</summary>
       <label>
         {t("category")}
-        <select
+        <MenuSelect
           form={SEARCH_FORM}
           name="figureCategory"
           defaultValue={figureCategory ?? "any"}
@@ -116,11 +117,11 @@ export function FiguresFilters({
               ))}
             </optgroup>
           ))}
-        </select>
+        </MenuSelect>
       </label>
       <label hidden={!showScale}>
         {t("scale")}
-        <select
+        <MenuSelect
           form={SEARCH_FORM}
           name="figureScale"
           defaultValue={showScale ? (figureScale ?? "any") : "any"}
@@ -132,11 +133,11 @@ export function FiguresFilters({
               {option.label}
             </option>
           ))}
-        </select>
+        </MenuSelect>
       </label>
       <label>
         {t("packaging")}
-        <select
+        <MenuSelect
           form={SEARCH_FORM}
           name="figurePackaging"
           defaultValue={figurePackaging ?? "any"}
@@ -159,11 +160,11 @@ export function FiguresFilters({
               {packagingLabel[option.value]}
             </option>
           ))}
-        </select>
+        </MenuSelect>
       </label>
       <label hidden={!showCompleteness}>
         {t("completeness")}
-        <select
+        <MenuSelect
           form={SEARCH_FORM}
           name="figureCompleteness"
           defaultValue={
@@ -177,11 +178,11 @@ export function FiguresFilters({
               {completenessLabel[option.value]}
             </option>
           ))}
-        </select>
+        </MenuSelect>
       </label>
       <label hidden={!showPunch}>
         {t("cardPunch")}
-        <select
+        <MenuSelect
           form={SEARCH_FORM}
           name="figurePunch"
           defaultValue={showPunch ? (figurePunch ?? "any") : "any"}
@@ -193,7 +194,7 @@ export function FiguresFilters({
               {punchLabel[option.value]}
             </option>
           ))}
-        </select>
+        </MenuSelect>
       </label>
     </details>
   );

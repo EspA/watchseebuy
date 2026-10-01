@@ -17,8 +17,8 @@
     "label": "Language"
   },
   "home": {
-    "kicker": "For the exacting collector",
-    "lede": "The PSA 10. The factory-sealed set. The carded figure. We watch with you and tell you when the price to your door is worth buying.",
+    "slogan": "Your vintage toys finder companion",
+    "lede": "Whether it's a graded card, a rare Lego, or a carded figure, we help you search, watch, and buy the piece you're looking for.",
     "placeholder": "Find eBay pieces",
     "searchLabel": "Search collectibles",
     "notShopping": "Not shopping in {place}?",
@@ -35,7 +35,7 @@
     "classic": "Classic",
     "ai": "AI Mode",
     "switchLabel": "Search mode",
-    "greeting": "Hi there!\nWelcome to WatchSeeBuy.com.\nDescribe the piece you're looking for, condition, sealed, graded, the price... and we'll help you find your gem.",
+    "greeting": "Hi there!\nDescribe the piece you're looking for, condition, sealed, graded, the price...",
     "search": "Search",
     "submit": "Submit",
     "composerLabel": "Message the search assistant",

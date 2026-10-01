@@ -20,10 +20,12 @@ import { BuildingBricksFilters } from "@/components/building-bricks-filters";
 import { CardFilters } from "@/components/card-filters";
 import { ClearFiltersLink } from "@/components/clear-filters";
 import { ExcludeUnofficialFilter } from "@/components/exclude-unofficial";
+import { EbaySiteSelect } from "@/components/ebay-site-select";
+import { ExcludeWords } from "@/components/exclude-words";
 import { FilterAccordion } from "@/components/filter-accordion";
 import { FiguresFilters } from "@/components/figures-filters";
 import { HotWheelsFilters } from "@/components/hot-wheels-filters";
-import { MoreFilters } from "@/components/more-filters";
+import { FiltersToggle, MoreFilters } from "@/components/more-filters";
 import { dollarsField, searchParamsFromIntent } from "@/lib/search-params";
 
 const SEARCH_FORM = "search-form";
@@ -122,17 +124,6 @@ export async function SaveWatchForm({
         : bricksOpen
           ? "bricks"
           : suggestedGroup;
-  const moreFiltersActive =
-    Boolean(intent.minLandedCents) ||
-    moreFiltersOpen ||
-    cardsOpen ||
-    figuresOpen ||
-    vehiclesOpen ||
-    bricksOpen ||
-    intent.minPriceScore !== undefined ||
-    intent.minConfidence !== undefined ||
-    intent.excludeUnofficial === false;
-
   const watchThis =
     signedIn && atWatchLimit ? (
       <button className="btn watch-this" type="button" disabled>
@@ -167,9 +158,7 @@ export async function SaveWatchForm({
           })}
         </p>
       ) : null}
-      <MoreFilters
-        defaultOpen={moreFiltersActive}
-        extras={
+      <MoreFilters extras={
           <>
       {settingsPostal?.trim() ? (
         <details className="filter-group">
@@ -243,6 +232,10 @@ export async function SaveWatchForm({
           </AutoSelect>
         </label>
       </div>
+      <ExcludeWords
+        form={SEARCH_FORM}
+        value={excludeWordsField(intent.excludeKeywords)}
+      />
       <ExcludeUnofficialFilter checked={intent.excludeUnofficial !== false} />
       <FilterAccordion
         {...(specializedOpen ? { initialOpen: specializedOpen } : {})}
@@ -354,7 +347,10 @@ export async function SaveWatchForm({
         }
       >
         <div className="filter-heading">
-          {watchThis}
+          <div className="filter-heading-start">
+            {watchThis}
+            <FiltersToggle />
+          </div>
           <ClearFiltersLink
             href={`/search?${clearFilters}`}
             query={intent.query.trim() || q}
@@ -384,29 +380,35 @@ export async function SaveWatchForm({
             />
           </label>
         </div>
-        <label className="filter-condition">
-          {tf("condition")}
-          <AutoSelect
-            form={SEARCH_FORM}
-            name="condition"
-            defaultValue={
-              isEbayConditionId(intent.condition) ? intent.condition : "any"
-            }
-          >
-            <option value="any">{tf("any")}</option>
-            {CONDITION_GROUPS.map((group) => (
-              <optgroup key={group} label={conditionGroupLabel[group] ?? group}>
-                {CONDITION_FILTERS.filter((option) => option.group === group).map(
-                  (option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ),
-                )}
-              </optgroup>
-            ))}
-          </AutoSelect>
-        </label>
+        <div className="filter-condition-row">
+          <label className="filter-condition">
+            {tf("condition")}
+            <AutoSelect
+              form={SEARCH_FORM}
+              name="condition"
+              defaultValue={
+                isEbayConditionId(intent.condition) ? intent.condition : "any"
+              }
+            >
+              <option value="any">{tf("any")}</option>
+              {CONDITION_GROUPS.map((group) => (
+                <optgroup key={group} label={conditionGroupLabel[group] ?? group}>
+                  {CONDITION_FILTERS.filter((option) => option.group === group).map(
+                    (option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ),
+                  )}
+                </optgroup>
+              ))}
+            </AutoSelect>
+          </label>
+          <div className="filter-site">
+            <span>{t("ebaySite")}</span>
+            <EbaySiteSelect site={intent.ebaySite} variant="filter" />
+          </div>
+        </div>
       </MoreFilters>
     </div>
   );
