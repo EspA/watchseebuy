@@ -88,7 +88,7 @@ export const CARD_GRADER_FILTERS: CardFilterOption[] = [
   { value: "sgc", label: "SGC" },
 ];
 
-export const DEFAULT_CARD_GRADE = "10";
+export const DEFAULT_CARD_GRADE = "1";
 
 export const CARD_GRADE_FILTERS: CardFilterOption[] = [
   "10",
@@ -103,7 +103,7 @@ export const CARD_GRADE_FILTERS: CardFilterOption[] = [
   "3",
   "2",
   "1",
-].map((value) => ({ value, label: value }));
+].map((value) => ({ value, label: `${value}+` }));
 
 export const CARD_LANGUAGE_FILTERS: CardFilterOption[] = [
   { value: "english", label: "English" },
@@ -792,15 +792,24 @@ export function cardLanguageQueryTerm(
   return cardLanguageLabel(language);
 }
 
-/** `PSA 10` when both are set, otherwise just `PSA`. Raw is never injected. */
+/** Grader name only. Grade is a minimum and is applied after eBay returns. */
 export function cardGraderQueryTerm(
   selection: Pick<CardCatalogSelection, "grader" | "cardGrade">,
 ): string | undefined {
   if (!isSlabGrader(selection.grader)) return undefined;
-  const grader = cardGraderLabel(selection.grader);
+  return cardGraderLabel(selection.grader);
+}
+
+/** `CGC 8+` in watch copy. Grade 1+ is just the company. */
+export function cardGraderDescribe(
+  selection: Pick<CardCatalogSelection, "grader" | "cardGrade">,
+): string | undefined {
+  if (selection.grader === "raw") return "Raw";
+  const grader = cardGraderQueryTerm(selection);
   if (!grader) return undefined;
-  const grade = cardGradeLabel(selection.cardGrade);
-  return grade ? `${grader} ${grade}` : grader;
+  const grade = parseCardGrade(selection.cardGrade);
+  if (!grade || grade === "1") return grader;
+  return `${grader} ${grade}+`;
 }
 
 export function cardExcludeWords(
@@ -907,7 +916,10 @@ function allGraderLabels(): string[] {
   for (const grader of CARD_GRADER_FILTERS) {
     if (grader.value === "raw") continue;
     for (const grade of CARD_GRADE_FILTERS) {
-      labels.push(`${grader.label} ${grade.label}`);
+      labels.push(`${grader.label} ${grade.value}`);
+      if (grade.label !== grade.value) {
+        labels.push(`${grader.label} ${grade.label}`);
+      }
     }
     labels.push(grader.label);
   }
@@ -958,7 +970,13 @@ export function stripCatalogTerms(
   locale: AppLocale = DEFAULT_APP_LOCALE,
 ): string {
   let next = query;
-  for (const term of catalogQueryTerms(selection, locale)) {
+  const grader = cardGraderLabel(selection.grader);
+  const grade = parseCardGrade(selection.cardGrade);
+  const staleGrade =
+    grader && isSlabGrader(selection.grader) && grade
+      ? [`${grader} ${grade}`]
+      : [];
+  for (const term of [...staleGrade, ...catalogQueryTerms(selection, locale)]) {
     next = next.replace(phrasePattern(term), " ");
   }
   return next.replace(/\s+/g, " ").trim();

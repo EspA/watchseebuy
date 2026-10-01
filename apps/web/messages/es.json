@@ -54,6 +54,7 @@
     "excludeAria": "Palabras a excluir de la búsqueda",
     "ebaySite": "Sitio de eBay",
     "sort": "Ordenar",
+    "sortBest": "Mejor coincidencia",
     "sortPriceAsc": "Precio total: bajo a alto",
     "sortPriceDesc": "Precio total: alto a bajo",
     "sortScoreDesc": "Puntuación de precio: alta a baja",

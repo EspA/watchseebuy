@@ -54,6 +54,7 @@
     "excludeAria": "Words to exclude from search",
     "ebaySite": "eBay site",
     "sort": "Sort",
+    "sortBest": "Best match",
     "sortPriceAsc": "Total price: low to high",
     "sortPriceDesc": "Total price: high to low",
     "sortScoreDesc": "Price score: high to low",

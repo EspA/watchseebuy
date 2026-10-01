@@ -5,6 +5,7 @@ import {
   landedCostCents,
   listingMatchesCondition,
   listingMatchesConfidence,
+  listingMatchesGrader,
   listingMatchesItemLocation,
   listingMatchesListingType,
   listingMatchesPriceScore,
@@ -208,7 +209,8 @@ export default async function SearchPage({
         listingMatchesCondition(listing, intent.condition) &&
         listingMatchesListingType(listing, intent.listingType) &&
         listingMatchesItemLocation(listing, intent.itemLocation) &&
-        listingMatchesConfidence(listing, intent.minConfidence)
+        listingMatchesConfidence(listing, intent.minConfidence) &&
+        listingMatchesGrader(listing, intent.grader, intent.cardGrade)
       );
     });
   const identified =
@@ -219,11 +221,12 @@ export default async function SearchPage({
           prefs.locale,
         )
       : filtered;
-  const listings = attachPriceScores(identified)
-    .filter((listing) =>
-      listingMatchesPriceScore(listing, intent.minPriceScore),
-    )
-    .sort((a, b) => compareSearchListings(a, b, sort));
+  const listings = attachPriceScores(identified).filter((listing) =>
+    listingMatchesPriceScore(listing, intent.minPriceScore),
+  );
+  if (sort !== "best") {
+    listings.sort((a, b) => compareSearchListings(a, b, sort));
+  }
   const scoreScope = [
     q,
     query.min,

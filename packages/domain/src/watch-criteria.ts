@@ -38,7 +38,8 @@ import {
   cardGameLabel,
   cardSkippedDefaultExcludes,
   categorySupportsCardGame,
-  cardGraderQueryTerm,
+  cardGraderDescribe,
+  isSlabGrader,
   cardLanguageLabel,
   cardPrintingLabel,
   cardRarityLabel,
@@ -47,6 +48,7 @@ import {
   isPokemonCardGame,
   withoutCardExcludeWords,
 } from "./card-filters.ts";
+import { parseCollectibleFromText } from "./product-identity.ts";
 import {
   categorySupportsWheelsScale,
   wheelsCategoryIds,
@@ -1021,11 +1023,8 @@ export function describeWatch(criteria: WatchCriteria): string {
   if (printing) bits.push(printing);
   const language = cardLanguageLabel(criteria.language);
   if (language) bits.push(language);
-  if (criteria.grader === "raw") bits.push("Raw");
-  else {
-    const grader = cardGraderQueryTerm(criteria);
-    if (grader) bits.push(grader);
-  }
+  const grader = cardGraderDescribe(criteria);
+  if (grader) bits.push(grader);
   const cardCategory = cardCategoryLabel(criteria.cardCategory);
   if (cardCategory) bits.push(cardCategory);
   const cardGame = cardGameLabel(criteria.cardGame);
@@ -1059,6 +1058,26 @@ export function describeWatch(criteria: WatchCriteria): string {
     bits.push(`excluding ${excluded.join(", ")}`);
   }
   return bits.join(" · ");
+}
+
+export function listingMatchesGrader(
+  listing: { title?: string },
+  grader?: string,
+  minGrade?: string,
+): boolean {
+  if (!isSlabGrader(grader) || !grader) return true;
+  const hay = listing.title ?? "";
+  const parsed = parseCollectibleFromText(hay);
+  const wanted = grader.toLowerCase();
+  const company = parsed.company?.toLowerCase();
+  const mentions =
+    company === wanted || new RegExp(`\\b${wanted}\\b`, "i").test(hay);
+  if (!mentions) return false;
+  const min = Number(minGrade);
+  if (!Number.isFinite(min) || min <= 1) return true;
+  if (!parsed.grade) return true;
+  const grade = Number(parsed.grade);
+  return Number.isFinite(grade) && grade >= min;
 }
 
 export function listingMatchesCondition(

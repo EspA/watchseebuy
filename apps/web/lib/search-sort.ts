@@ -5,6 +5,7 @@ import {
 } from "@watchseebuy/domain";
 
 export type SearchSort =
+  | "best"
   | "price"
   | "price-desc"
   | "price-score"
@@ -12,17 +13,19 @@ export type SearchSort =
   | "seller-score"
   | "seller-score-asc";
 
+const SEARCH_SORTS = new Set<SearchSort>([
+  "best",
+  "price",
+  "price-desc",
+  "price-score",
+  "price-score-asc",
+  "seller-score",
+  "seller-score-asc",
+]);
+
 export function searchSortFromQuery(raw: string | undefined): SearchSort {
-  if (
-    raw === "price-desc" ||
-    raw === "price-score" ||
-    raw === "price-score-asc" ||
-    raw === "seller-score" ||
-    raw === "seller-score-asc"
-  ) {
-    return raw;
-  }
-  return "price";
+  if (raw && SEARCH_SORTS.has(raw as SearchSort)) return raw as SearchSort;
+  return "best";
 }
 
 export function compareSearchListings(
@@ -42,6 +45,7 @@ export function compareSearchListings(
   },
   sort: SearchSort,
 ): number {
+  if (sort === "best") return 0;
   if (sort === "price-score" || sort === "price-score-asc") {
     const missing = sort === "price-score" ? -1 : 11;
     const left = a.priceScore?.score ?? missing;

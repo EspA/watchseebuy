@@ -46,6 +46,7 @@ import {
   ebaySearchQuery,
   excludeWordsField,
   listingMatchesCondition,
+  listingMatchesGrader,
   listingMatchesItemLocation,
   listingMatchesListingType,
   mergeExcludeKeywords,
@@ -286,11 +287,11 @@ test("card catalog filters inject into eBay keywords, not Browse filter", () => 
   assert.equal(composeCatalogQuery("charizard", { grader: "psa" }), "charizard PSA");
   assert.equal(
     composeCatalogQuery("charizard", { grader: "psa", cardGrade: "10" }),
-    "charizard PSA 10",
+    "charizard PSA",
   );
   assert.equal(
     composeCatalogQuery("charizard", { grader: "cgc", cardGrade: "9.5" }),
-    "charizard CGC 9.5",
+    "charizard CGC",
   );
   assert.equal(composeCatalogQuery("charizard", { grader: "raw" }), "charizard");
   assert.equal(
@@ -361,8 +362,22 @@ test("card catalog filters inject into eBay keywords, not Browse filter", () => 
   assert.match(describeWatch(raw), /Raw/);
 
   const graded = applyWatchOverrides(base, { grader: "cgc", cardGrade: "10" });
-  assert.match(toCoverageQuery(graded).keywords, /cgc 10/);
-  assert.match(describeWatch(graded), /CGC 10/);
+  assert.match(toCoverageQuery(graded).keywords, /\bcgc\b/i);
+  assert.equal(toCoverageQuery(graded).keywords.includes("10"), false);
+  assert.match(describeWatch(graded), /CGC 10\+/);
+});
+
+test("grader filter keeps any CGC at 1+ and drops a lower slab at 8+", () => {
+  const cgc7 = {
+    title: "Pikachu 13 Bulbasaur Deck Intro Pack Japanese CGC 7 Near Mint",
+  };
+  const psa10 = {
+    title: "PSA 10 1999 Pokemon Japanese Intro Pack Bulbasaur Deck 13 Pikachu",
+  };
+  assert.equal(listingMatchesGrader(cgc7, "cgc", "1"), true);
+  assert.equal(listingMatchesGrader(cgc7, "cgc", "8"), false);
+  assert.equal(listingMatchesGrader(psa10, "cgc", "1"), false);
+  assert.equal(listingMatchesGrader(cgc7, undefined, "10"), true);
 });
 
 test("trading cards category is a Browse category_ids, not a keyword", () => {

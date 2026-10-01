@@ -11,6 +11,7 @@ import type {
 import { listingMatchesConfidence } from "./seller-confidence.ts";
 import {
   listingMatchesCondition,
+  listingMatchesGrader,
   listingMatchesItemLocation,
   listingMatchesListingType,
   type WatchCriteria,
@@ -94,6 +95,9 @@ export function matchListing(
 
   if (!listingMatchesCondition(listing, watch.condition)) {
     return { matches: false, landedCents, reasons: ["condition"] };
+  }
+  if (!listingMatchesGrader(listing, watch.grader, watch.cardGrade)) {
+    return { matches: false, landedCents, reasons: ["grader"] };
   }
 
   if (!listingMatchesListingType(listing, watch.listingType)) {

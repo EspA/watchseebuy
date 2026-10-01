@@ -14,6 +14,7 @@ export function SearchSort({ value }: { value: SearchSort }) {
         name="sort"
         defaultValue={value}
       >
+        <option value="best">{t("sortBest")}</option>
         <option value="price">{t("sortPriceAsc")}</option>
         <option value="price-desc">{t("sortPriceDesc")}</option>
         <option value="price-score">{t("sortScoreDesc")}</option>
