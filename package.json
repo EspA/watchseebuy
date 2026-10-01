@@ -13,7 +13,7 @@
     "build": "turbo build",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
-    "test": "npm run test -w @watchseebuy/domain && npm run test -w @watchseebuy/ebay && npm run test -w @watchseebuy/notify",
+    "test": "npm run test -w @watchseebuy/domain && npm run test -w @watchseebuy/ebay && npm run test -w @watchseebuy/notify && npm run test -w @watchseebuy/db",
     "dev:admin": "npm run dev -w @watchseebuy/admin",
     "db:generate": "npm run generate -w @watchseebuy/db",
     "db:migrate": "npm run migrate -w @watchseebuy/db",

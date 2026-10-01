@@ -1,6 +1,6 @@
-import { desc, sql } from "drizzle-orm";
+import { desc, inArray, sql } from "drizzle-orm";
 import type { Database } from "./client";
-import { ebayAccountDeletions } from "./schema";
+import { ebayAccountDeletions } from "./schema.ts";
 
 export type AccountDeletionRecord = {
   id: string;
@@ -101,6 +101,13 @@ export async function processEbayAccountDeletion(
   return { listingsRedacted, duplicate: !recorded.created };
 }
 
+export function deletedUsernamesLookup(db: Database, usernames: string[]) {
+  return db
+    .select({ username: ebayAccountDeletions.username })
+    .from(ebayAccountDeletions)
+    .where(inArray(sql`lower(${ebayAccountDeletions.username})`, usernames));
+}
+
 export async function deletedEbayUsernames(
   db: Database,
   usernames: string[],
@@ -113,10 +120,7 @@ export async function deletedEbayUsernames(
     ),
   ];
   if (normalized.length === 0) return new Set();
-  const rows = await db
-    .select({ username: ebayAccountDeletions.username })
-    .from(ebayAccountDeletions)
-    .where(sql`lower(${ebayAccountDeletions.username}) = ANY(${normalized})`);
+  const rows = await deletedUsernamesLookup(db, normalized);
   return new Set(
     rows
       .map((row) => row.username?.trim().toLowerCase())
