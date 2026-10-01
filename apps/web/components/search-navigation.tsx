@@ -43,10 +43,23 @@ function useSearchNav() {
 export function useNavigateSearch() {
   const { router, startTransition } = useSearchNav();
   return (href: string) => {
+    if (isCurrentSearch(href)) return;
     startTransition(() => {
       router.push(href, { scroll: false });
     });
   };
+}
+
+function isCurrentSearch(href: string): boolean {
+  if (typeof window === "undefined") return false;
+  const next = new URL(href, window.location.origin);
+  const current = new URL(window.location.href);
+  next.searchParams.sort();
+  current.searchParams.sort();
+  return (
+    next.pathname === current.pathname &&
+    next.searchParams.toString() === current.searchParams.toString()
+  );
 }
 
 function searchPathFromForm(form: HTMLFormElement): string {
@@ -88,6 +101,7 @@ export function SearchForm({ children }: { children: ReactNode }) {
         if (shouldLetBrowserSubmit(event)) return;
         event.preventDefault();
         const href = searchPathFromForm(event.currentTarget);
+        if (isCurrentSearch(href)) return;
         startTransition(() => {
           router.push(href, { scroll: false });
         });

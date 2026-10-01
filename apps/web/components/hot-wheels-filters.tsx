@@ -40,7 +40,7 @@ export function HotWheelsFilters({
     wheelsCategory || wheelsScale || wheelsPackaging,
   );
 
-  const { open, onToggle } = useFilterGroup("vehicles", hasSelection);
+  const { open, onSummaryClick } = useFilterGroup("vehicles", hasSelection);
   const t = useTranslations("filters");
   const packagingLabel = {
     carded: t("carded"),
@@ -48,8 +48,8 @@ export function HotWheelsFilters({
   };
 
   return (
-    <details className="filter-group" open={open} onToggle={onToggle}>
-      <summary>{t("vehicles")}</summary>
+    <details className="filter-group" open={open}>
+      <summary onClick={onSummaryClick}>{t("vehicles")}</summary>
       <label>
         {t("category")}
         <select

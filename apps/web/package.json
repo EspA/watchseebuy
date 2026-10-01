@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@google/genai": "^2.24.0",
     "@watchseebuy/db": "*",
     "@watchseebuy/domain": "*",
     "@watchseebuy/ebay": "*",

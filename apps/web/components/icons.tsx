@@ -17,6 +17,46 @@ export function ZoomIcon() {
   );
 }
 
+export function TrashIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M4.5 7h15" />
+      <path d="M9 7V5h6v2" />
+      <path d="M7.5 7l.8 12h7.4l.8-12" />
+      <path d="M10 10.5v6M14 10.5v6" />
+    </svg>
+  );
+}
+
+export function ArrowUpIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M12 19V6" />
+      <path d="m6.5 11.5 5.5-5.5 5.5 5.5" />
+    </svg>
+  );
+}
+
 export function SearchIcon() {
   return (
     <svg
