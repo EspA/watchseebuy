@@ -1,12 +1,22 @@
 import {
   DEFAULT_USER_TIMEZONE,
+  effectiveBillingPlan,
+  type BillingPlan,
   zonedCalendarDays,
   zonedDayBounds,
   zonedWindowStart,
 } from "@watchseebuy/domain";
 import { and, desc, eq, gte, isNull, lt, ne, or, sql } from "drizzle-orm";
 import type { Database } from "./client";
-import { account, ebayApiCalls, emailSends, user, userEvents, watches } from "./schema";
+import {
+  account,
+  ebayApiCalls,
+  emailSends,
+  subscriptions,
+  user,
+  userEvents,
+  watches,
+} from "./schema";
 import {
   backfillUnauthenticatedCounts,
   ensureUnauthenticatedUser,
@@ -35,6 +45,11 @@ export type AdminUserListRow = {
   watchesCount: number;
   searchCount: number;
   buyClickCount: number;
+  plan: BillingPlan;
+  billingInterval: string | null;
+  subscriptionStatus: string | null;
+  subscriptionExpiresAt: Date | null;
+  paypalSubscriptionId: string | null;
 };
 
 export type AdminUserDetail = AdminUserListRow & {
@@ -192,9 +207,15 @@ export async function listAdminUsers(db: Database): Promise<AdminUserListRow[]> 
       watchesCount: watchCounts.watchesCount,
       searchCount: user.searchCount,
       buyClickCount: user.buyClickCount,
+      storedPlan: subscriptions.plan,
+      storedInterval: subscriptions.billingInterval,
+      storedStatus: subscriptions.status,
+      storedExpiresAt: subscriptions.expiresAt,
+      paypalSubscriptionId: subscriptions.paypalSubscriptionId,
     })
     .from(user)
     .leftJoin(watchCounts, eq(watchCounts.userId, user.id))
+    .leftJoin(subscriptions, eq(subscriptions.userId, user.id))
     .orderBy(
       sql`case when ${user.id} = ${UNAUTHENTICATED_USER_ID} then 0 else 1 end`,
       desc(user.createdAt),
@@ -214,13 +235,38 @@ export async function listAdminUsers(db: Database): Promise<AdminUserListRow[]> 
     providers.set(row.userId, list);
   }
 
-  return rows.map((row) => ({
-    ...row,
-    providerIds: providers.get(row.id) ?? [],
-    watchesCount: asInt(row.watchesCount),
-    searchCount: asInt(row.searchCount),
-    buyClickCount: asInt(row.buyClickCount),
-  }));
+  return rows.map((row) => {
+    const snapshot = row.storedPlan
+      ? {
+          plan: row.storedPlan,
+          status: row.storedStatus ?? "expired",
+          expiresAt: row.storedExpiresAt,
+          billingInterval: row.storedInterval,
+        }
+      : null;
+    const plan = effectiveBillingPlan(snapshot);
+    return {
+      id: row.id,
+      email: row.email,
+      name: row.name,
+      firstName: row.firstName,
+      lastName: row.lastName,
+      lastLoginAt: row.lastLoginAt,
+      lastIp: row.lastIp,
+      lastCountry: row.lastCountry,
+      loginCount: row.loginCount,
+      createdAt: row.createdAt,
+      providerIds: providers.get(row.id) ?? [],
+      watchesCount: asInt(row.watchesCount),
+      searchCount: asInt(row.searchCount),
+      buyClickCount: asInt(row.buyClickCount),
+      plan,
+      billingInterval: plan === "free" ? null : row.storedInterval,
+      subscriptionStatus: plan === "free" ? null : row.storedStatus,
+      subscriptionExpiresAt: plan === "free" ? null : row.storedExpiresAt,
+      paypalSubscriptionId: row.paypalSubscriptionId,
+    };
+  });
 }
 
 export async function getAdminUserDetail(

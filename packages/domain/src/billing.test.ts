@@ -1,12 +1,14 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  COMPLIMENTARY_INTERVAL,
   PAID_PRICE_CENTS,
   PLAN_ENTITLEMENTS,
   cancelledExpiresAt,
   coveragePollIntervalMs,
   effectiveBillingPlan,
   formatUsdFromCents,
+  parseAdminPlanGrant,
   parsePaidPlanKey,
   paypalAmount,
 } from "./billing.ts";
@@ -62,6 +64,31 @@ test("a paid plan stays active until it expires", () => {
       now,
     ),
     "free",
+  );
+});
+
+test("admin can grant complimentary premium", () => {
+  assert.deepEqual(parseAdminPlanGrant("premium", COMPLIMENTARY_INTERVAL), {
+    plan: "premium",
+    interval: COMPLIMENTARY_INTERVAL,
+  });
+  assert.deepEqual(parseAdminPlanGrant("free", "monthly"), {
+    plan: "free",
+    interval: null,
+  });
+  assert.equal(parseAdminPlanGrant("premium", "weekly"), null);
+  const now = new Date("2026-06-01T00:00:00.000Z");
+  assert.equal(
+    effectiveBillingPlan(
+      {
+        plan: "premium_plus",
+        status: "active",
+        expiresAt: new Date("2036-06-01T00:00:00.000Z"),
+        billingInterval: COMPLIMENTARY_INTERVAL,
+      },
+      now,
+    ),
+    "premium_plus",
   );
 });
 

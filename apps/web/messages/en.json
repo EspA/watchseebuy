@@ -18,7 +18,7 @@
     "label": "Language"
   },
   "home": {
-    "slogan": "Your vintage toys finder companion",
+    "slogan": "Your companion for finding toys on eBay",
     "lede": "Whether it's a graded card, a rare Lego, or a carded figure, we help you search, watch, and buy the piece you're looking for.",
     "placeholder": "Find eBay pieces",
     "searchLabel": "Search collectibles",
@@ -36,10 +36,11 @@
     "classic": "Classic",
     "ai": "AI Mode",
     "switchLabel": "Search mode",
-    "greeting": "Hi there!\nDescribe the piece you're looking for, condition, sealed, graded, the price...",
+    "greeting": "Hi there!\nDescribe the piece you're looking for, the condition, the price, and we will browse eBay for you.",
     "search": "Search",
     "submit": "Submit",
     "composerLabel": "Message the search assistant",
+    "placeholder": "Write here...",
     "thinking": "Searching…",
     "outOfScope": "I can only help you browse the catalog.",
     "unavailable": "The assistant is unavailable. Classic search still works.",

@@ -45,6 +45,7 @@ export {
   getUserSubscription,
   paypalCatalogKeyForId,
   savePaypalCatalogId,
+  setAdminUserPlan,
   upsertUserSubscription,
   type UserSubscription,
 } from "./subscriptions";

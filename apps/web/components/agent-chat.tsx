@@ -226,7 +226,9 @@ export function AgentChat({
           <textarea
             value={draft}
             rows={1}
+            autoFocus
             aria-label={t("composerLabel")}
+            placeholder={t("placeholder")}
             disabled={pending}
             onChange={(event) => setDraft(event.target.value)}
             onKeyDown={onKeyDown}

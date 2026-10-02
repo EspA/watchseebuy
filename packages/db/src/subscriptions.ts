@@ -1,6 +1,15 @@
+import {
+  adminGrantExpiresAt,
+  COMPLIMENTARY_INTERVAL,
+  fallbackPeriodEnd,
+  isBillingInterval,
+  type AdminBillingInterval,
+  type BillingPlan,
+} from "@watchseebuy/domain";
 import { eq } from "drizzle-orm";
 import type { Database } from "./client";
 import { paypalCatalog, subscriptions } from "./schema";
+import { isUnauthenticatedUserId } from "./telemetry";
 
 export type UserSubscription = {
   userId: string;
@@ -47,6 +56,50 @@ export async function getSubscriptionByPaypalId(
     .where(eq(subscriptions.paypalSubscriptionId, paypalSubscriptionId))
     .limit(1);
   return row ?? null;
+}
+
+export async function setAdminUserPlan(
+  db: Database,
+  userId: string,
+  grant: { plan: BillingPlan; interval: AdminBillingInterval | null },
+) {
+  if (isUnauthenticatedUserId(userId)) {
+    throw new Error("Cannot change plan for unauthenticated guests");
+  }
+  const now = new Date();
+  if (grant.plan === "free") {
+    await upsertUserSubscription(db, {
+      userId,
+      plan: "free",
+      billingInterval: null,
+      status: "expired",
+      expiresAt: now,
+      paypalSubscriptionId: null,
+    });
+    return;
+  }
+  if (grant.interval === COMPLIMENTARY_INTERVAL) {
+    await upsertUserSubscription(db, {
+      userId,
+      plan: grant.plan,
+      billingInterval: COMPLIMENTARY_INTERVAL,
+      status: "active",
+      expiresAt: adminGrantExpiresAt(now),
+      paypalSubscriptionId: null,
+    });
+    return;
+  }
+  if (!grant.interval || !isBillingInterval(grant.interval)) {
+    throw new Error("Paid admin grants need a billing interval");
+  }
+  await upsertUserSubscription(db, {
+    userId,
+    plan: grant.plan,
+    billingInterval: grant.interval,
+    status: "active",
+    expiresAt: fallbackPeriodEnd(grant.interval, now),
+    paypalSubscriptionId: null,
+  });
 }
 
 export async function upsertUserSubscription(

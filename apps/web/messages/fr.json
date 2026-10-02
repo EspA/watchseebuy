@@ -18,7 +18,7 @@
     "label": "Langue"
   },
   "home": {
-    "slogan": "Votre compagnon pour trouver des jouets vintage",
+    "slogan": "Votre compagnon pour trouver des jouets sur eBay",
     "lede": "Qu’il s’agisse d’une carte gradée, d’un Lego rare ou d’une figurine sous blister, nous vous aidons à chercher, surveiller et acheter la pièce que vous cherchez.",
     "placeholder": "Trouver des pièces eBay",
     "searchLabel": "Rechercher des objets de collection",
@@ -36,10 +36,11 @@
     "classic": "Classique",
     "ai": "Mode IA",
     "switchLabel": "Mode de recherche",
-    "greeting": "Bonjour !\nDécrivez la pièce que vous cherchez, l’état, scellée, gradée, le prix...",
+    "greeting": "Bonjour !\nDécrivez la pièce que vous cherchez, l’état, le prix, et nous parcourrons eBay pour vous.",
     "search": "Rechercher",
     "submit": "Envoyer",
     "composerLabel": "Message à l’assistant de recherche",
+    "placeholder": "Écrivez ici...",
     "thinking": "Recherche…",
     "outOfScope": "Je peux seulement vous aider à parcourir le catalogue.",
     "unavailable": "L’assistant est indisponible. La recherche classique fonctionne toujours.",

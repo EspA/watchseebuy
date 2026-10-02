@@ -583,6 +583,10 @@ a.account-menu-item {
   padding: 12px 14px;
 }
 
+.agent-compose textarea::placeholder {
+  color: var(--muted);
+}
+
 .agent-compose textarea:focus {
   outline: 2px solid color-mix(in srgb, var(--ink) 18%, transparent);
   outline-offset: 1px;
@@ -2223,6 +2227,7 @@ a.account-menu-item {
   .search-split .watch-save,
   .watch-save {
     position: relative;
+    top: auto;
     padding: 10px 12px;
   }
 
@@ -2976,12 +2981,12 @@ footer,
 
 .tease-slogan {
   margin: 28px auto 0;
+  max-width: 36rem;
   color: var(--accent);
-  font-size: 0.95rem;
+  font-size: 1.5rem;
   font-weight: 600;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.01em;
   line-height: 1.4;
-  text-transform: uppercase;
   opacity: 0;
   animation: tease-in 0.85s ease 0.44s forwards;
 }
@@ -3132,8 +3137,7 @@ footer,
   }
 
   .tease-slogan {
-    font-size: 0.82rem;
-    letter-spacing: 0.1em;
+    font-size: 1.2rem;
   }
 
   .tease-lede {

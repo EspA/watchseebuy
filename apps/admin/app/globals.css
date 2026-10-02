@@ -331,6 +331,46 @@ tr.selected td {
   color: var(--muted);
 }
 
+.banner {
+  margin: 0 0 16px;
+  color: var(--ink);
+}
+
+.plan-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 16px;
+  margin: 16px 0 0;
+}
+
+.plan-form label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.plan-form select {
+  font: inherit;
+  min-width: 180px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--ink);
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+
+.plan-form .btn {
+  height: 40px;
+}
+
 .back {
   color: var(--muted);
   text-decoration: none;

@@ -139,12 +139,12 @@ body {
 
 .tease-slogan {
   margin: 28px 0 0;
+  max-width: 36rem;
   color: var(--accent);
-  font-size: 0.95rem;
+  font-size: 1.5rem;
   font-weight: 600;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.01em;
   line-height: 1.4;
-  text-transform: uppercase;
   opacity: 0;
   animation: tease-in 0.85s ease 0.44s forwards;
 }
@@ -365,8 +365,7 @@ body {
   }
 
   .tease-slogan {
-    font-size: 0.82rem;
-    letter-spacing: 0.1em;
+    font-size: 1.2rem;
   }
 
   .tease-lede {

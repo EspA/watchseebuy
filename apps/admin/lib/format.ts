@@ -1,4 +1,9 @@
-import { DEFAULT_USER_TIMEZONE, socialAuthLabel } from "@watchseebuy/domain";
+import {
+  DEFAULT_USER_TIMEZONE,
+  isComplimentaryInterval,
+  socialAuthLabel,
+  type BillingPlan,
+} from "@watchseebuy/domain";
 
 const DATE = new Intl.DateTimeFormat("en-US", {
   dateStyle: "medium",
@@ -61,6 +66,31 @@ export function formatProviders(providerIds: string[]) {
       return socialAuthLabel(id);
     })
     .join(", ");
+}
+
+export function formatPlanName(plan: BillingPlan) {
+  if (plan === "premium_plus") return "Premium+";
+  if (plan === "premium") return "Premium";
+  return "Free";
+}
+
+export function formatBillingInterval(interval: string | null | undefined) {
+  if (interval === "monthly") return "monthly";
+  if (interval === "annual") return "annual";
+  if (isComplimentaryInterval(interval)) return "complimentary";
+  return null;
+}
+
+export function formatPlanColumn(row: {
+  plan: BillingPlan;
+  billingInterval: string | null;
+  subscriptionStatus: string | null;
+}) {
+  const name = formatPlanName(row.plan);
+  if (row.plan === "free") return name;
+  const interval = formatBillingInterval(row.billingInterval);
+  const cancelled = row.subscriptionStatus === "cancelled" ? " (cancelled)" : "";
+  return interval ? `${name} · ${interval}${cancelled}` : `${name}${cancelled}`;
 }
 
 export function formatEventKind(kind: string) {

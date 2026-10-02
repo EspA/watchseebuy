@@ -3,6 +3,8 @@ export const BILLING_PLANS = ["free", "premium", "premium_plus"] as const;
 export type BillingPlan = (typeof BILLING_PLANS)[number];
 export type PaidPlan = Exclude<BillingPlan, "free">;
 export type BillingInterval = "monthly" | "annual";
+export const COMPLIMENTARY_INTERVAL = "complimentary";
+export type AdminBillingInterval = BillingInterval | typeof COMPLIMENTARY_INTERVAL;
 
 const HOUR_MS = 60 * 60 * 1000;
 
@@ -54,6 +56,33 @@ export function isPaidPlan(value: string): value is PaidPlan {
 
 export function isBillingInterval(value: string): value is BillingInterval {
   return value === "monthly" || value === "annual";
+}
+
+export function isComplimentaryInterval(
+  value: string | null | undefined,
+): boolean {
+  return value === COMPLIMENTARY_INTERVAL;
+}
+
+export function adminGrantExpiresAt(now = new Date()): Date {
+  const next = new Date(now.getTime());
+  next.setUTCFullYear(next.getUTCFullYear() + 10);
+  return next;
+}
+
+export function parseAdminPlanGrant(
+  planRaw: string,
+  intervalRaw: string,
+): { plan: BillingPlan; interval: AdminBillingInterval | null } | null {
+  if (!isBillingPlan(planRaw)) return null;
+  if (planRaw === "free") return { plan: "free", interval: null };
+  if (intervalRaw === COMPLIMENTARY_INTERVAL) {
+    return { plan: planRaw, interval: COMPLIMENTARY_INTERVAL };
+  }
+  if (isBillingInterval(intervalRaw)) {
+    return { plan: planRaw, interval: intervalRaw };
+  }
+  return null;
 }
 
 export function paidPlanKey(plan: PaidPlan, interval: BillingInterval): string {

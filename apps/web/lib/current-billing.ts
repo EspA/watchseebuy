@@ -2,6 +2,7 @@ import { getDb, getUserSubscription } from "@watchseebuy/db";
 import {
   effectiveBillingPlan,
   isBillingInterval,
+  isComplimentaryInterval,
   type BillingInterval,
   type BillingPlan,
   type SubscriptionSnapshot,
@@ -25,8 +26,12 @@ export async function currentBilling(userId: string): Promise<CurrentBilling> {
       }
     : null;
   const plan = effectiveBillingPlan(snapshot);
+  const complimentary = isComplimentaryInterval(snapshot?.billingInterval);
   const interval =
-    plan !== "free" && snapshot?.billingInterval && isBillingInterval(snapshot.billingInterval)
+    plan !== "free" &&
+    !complimentary &&
+    snapshot?.billingInterval &&
+    isBillingInterval(snapshot.billingInterval)
       ? snapshot.billingInterval
       : null;
   const status =
@@ -37,6 +42,6 @@ export async function currentBilling(userId: string): Promise<CurrentBilling> {
     plan,
     interval,
     status,
-    expiresAt: plan === "free" ? null : (snapshot?.expiresAt ?? null),
+    expiresAt: plan === "free" || complimentary ? null : (snapshot?.expiresAt ?? null),
   };
 }

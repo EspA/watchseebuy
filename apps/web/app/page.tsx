@@ -11,10 +11,10 @@ import { getSession } from "@/lib/session";
 
 export const metadata: Metadata = {
   title: "WatchSeeBuy",
-  description: "Your vintage toys finder companion. Whether it's a graded card, a rare Lego, or a carded figure, we help you search, watch, and buy the piece you're looking for.",
+  description: "Your companion for finding toys on eBay. Whether it's a graded card, a rare Lego, or a carded figure, we help you search, watch, and buy the piece you're looking for.",
   openGraph: {
     title: "WatchSeeBuy",
-    description: "Your vintage toys finder companion. Whether it's a graded card, a rare Lego, or a carded figure, we help you search, watch, and buy the piece you're looking for.",
+    description: "Your companion for finding toys on eBay. Whether it's a graded card, a rare Lego, or a carded figure, we help you search, watch, and buy the piece you're looking for.",
     url: "https://watchseebuy.com",
     siteName: "WatchSeeBuy",
     type: "website",
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary",
     title: "WatchSeeBuy",
-    description: "Your vintage toys finder companion. Whether it's a graded card, a rare Lego, or a carded figure, we help you search, watch, and buy the piece you're looking for.",
+    description: "Your companion for finding toys on eBay. Whether it's a graded card, a rare Lego, or a carded figure, we help you search, watch, and buy the piece you're looking for.",
   },
 };
 

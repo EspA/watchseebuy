@@ -18,7 +18,7 @@
     "label": "Sprache"
   },
   "home": {
-    "slogan": "Dein Begleiter beim Finden von Vintage-Spielzeug",
+    "slogan": "Dein Begleiter zum Finden von Spielzeug auf eBay",
     "lede": "Ob eine bewertete Karte, ein seltenes Lego oder eine Figur im Blister: wir helfen dir, das gesuchte Stück zu suchen, zu beobachten und zu kaufen.",
     "placeholder": "eBay-Stücke finden",
     "searchLabel": "Sammlerstücke suchen",
@@ -36,10 +36,11 @@
     "classic": "Klassisch",
     "ai": "KI-Modus",
     "switchLabel": "Suchmodus",
-    "greeting": "Hallo!\nBeschreibe das Stück, das du suchst, Zustand, versiegelt, bewertet, der Preis...",
+    "greeting": "Hallo!\nBeschreibe das Stück, das du suchst, den Zustand, den Preis, und wir durchsuchen eBay für dich.",
     "search": "Suchen",
     "submit": "Absenden",
     "composerLabel": "Nachricht an den Suchassistenten",
+    "placeholder": "Hier schreiben...",
     "thinking": "Suche…",
     "outOfScope": "Ich kann nur beim Durchsuchen des Katalogs helfen.",
     "unavailable": "Der Assistent ist nicht verfügbar. Die klassische Suche funktioniert weiter.",
