@@ -178,6 +178,11 @@
     "planNoExpiry": "Nessuna data di scadenza.",
     "planRenews": "Si rinnova il {date}.",
     "planEnds": "Termina il {date}.",
+    "cancelSubscription": "Annulla abbonamento",
+    "cancelConfirm": "Annullare questo abbonamento? Non ci saranno altri addebiti, e {plan} resta fino al {date}.",
+    "keepPlan": "Tieni questo piano",
+    "planCancelled": "Abbonamento annullato. Questo piano resta fino alla scadenza.",
+    "planCancelFailed": "Impossibile annullare l’abbonamento. Riprova.",
     "seePlans": "Vedi i piani",
     "planName": {
       "free": "Gratis",
@@ -218,7 +223,6 @@
   },
   "pricing": {
     "title": "Piani",
-    "lede": "La ricerca resta aperta. Un piano aumenta quanti pezzi puoi osservare, ogni quanto si controlla l’attivazione al cambiamento e quante volte puoi usare la Modalità IA.",
     "cycle": "Periodo di fatturazione",
     "monthly": "Mensile",
     "annual": "Annuale",

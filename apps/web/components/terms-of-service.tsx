@@ -99,7 +99,7 @@ export function TermsOfServiceContent() {
         watches, how often Trigger on change is checked, and the AI Mode
         allowance described on the Plans page. The free plan does not expire.
         Paid plans renew through PayPal until you cancel. Cancel anytime in
-        PayPal; the paid plan stays in effect until the date shown in Settings,
+        Settings; the paid plan stays in effect until the date shown there,
         then the account returns to the free plan. An annual subscription is
         billed once per year at the price of ten months.
       </p>

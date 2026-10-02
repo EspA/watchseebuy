@@ -178,6 +178,11 @@
     "planNoExpiry": "Sin fecha de vencimiento.",
     "planRenews": "Se renueva el {date}.",
     "planEnds": "Termina el {date}.",
+    "cancelSubscription": "Cancelar suscripción",
+    "cancelConfirm": "¿Cancelar esta suscripción? No se te volverá a cobrar, y {plan} sigue hasta el {date}.",
+    "keepPlan": "Conservar este plan",
+    "planCancelled": "Suscripción cancelada. Conservas este plan hasta que termine.",
+    "planCancelFailed": "No se pudo cancelar la suscripción. Inténtalo de nuevo.",
     "seePlans": "Ver planes",
     "planName": {
       "free": "Gratis",
@@ -218,7 +223,6 @@
   },
   "pricing": {
     "title": "Planes",
-    "lede": "La búsqueda sigue abierta. Un plan aumenta cuántas piezas puedes vigilar, cada cuánto se comprueba Activar al cambiar y cuántas veces puedes usar el Modo IA.",
     "cycle": "Periodo de facturación",
     "monthly": "Mensual",
     "annual": "Anual",

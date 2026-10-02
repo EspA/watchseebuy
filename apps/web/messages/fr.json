@@ -178,6 +178,11 @@
     "planNoExpiry": "Pas de date d’expiration.",
     "planRenews": "Se renouvelle le {date}.",
     "planEnds": "Se termine le {date}.",
+    "cancelSubscription": "Annuler l’abonnement",
+    "cancelConfirm": "Annuler cet abonnement ? Vous ne serez plus facturé, et {plan} reste actif jusqu’au {date}.",
+    "keepPlan": "Garder cette formule",
+    "planCancelled": "Abonnement annulé. Cette formule reste active jusqu’à son échéance.",
+    "planCancelFailed": "Impossible d’annuler l’abonnement. Réessayez.",
     "seePlans": "Voir les formules",
     "planName": {
       "free": "Gratuit",
@@ -218,7 +223,6 @@
   },
   "pricing": {
     "title": "Formules",
-    "lede": "La recherche reste ouverte. Une formule augmente le nombre de pièces suivies, la fréquence du déclenchement au changement et l’usage du Mode IA.",
     "cycle": "Période de facturation",
     "monthly": "Mensuel",
     "annual": "Annuel",

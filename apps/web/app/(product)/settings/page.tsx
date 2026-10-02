@@ -6,6 +6,7 @@ import {
 import { getDb, getUserAuthSummary, getUserSettings } from "@watchseebuy/db";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { CancelSubscription } from "@/components/cancel-subscription";
 import { PasswordSettings } from "@/components/password-settings";
 import { SettingsForm } from "@/components/settings-form";
 import { currentBilling } from "@/lib/current-billing";
@@ -58,6 +59,10 @@ export default async function SettingsPage({
       <h1>{t("title")}</h1>
       {saved ? <p className="banner">{t("saved")}</p> : null}
       {plan === "active" ? <p className="banner">{t("planActive")}</p> : null}
+      {plan === "cancelled" ? <p className="banner">{t("planCancelled")}</p> : null}
+      {plan === "cancel_failed" ? (
+        <p className="muted">{t("planCancelFailed")}</p>
+      ) : null}
       {notice ? (
         <p className={password === "set" ? "banner" : "muted"}>{notice}</p>
       ) : null}
@@ -70,6 +75,12 @@ export default async function SettingsPage({
             <p className="muted">{t(`planInterval.${billing.interval}`)}</p>
           ) : null}
           <p className="muted">{planNote}</p>
+          {billing.status === "active" && expires ? (
+            <CancelSubscription
+              planName={t(`planName.${billing.plan}`)}
+              endsOn={expires}
+            />
+          ) : null}
           <p className="settings-plan-link">
             <Link href="/pricing">{t("seePlans")}</Link>
           </p>

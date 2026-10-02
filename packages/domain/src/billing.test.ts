@@ -3,6 +3,7 @@ import { test } from "node:test";
 import {
   PAID_PRICE_CENTS,
   PLAN_ENTITLEMENTS,
+  cancelledExpiresAt,
   coveragePollIntervalMs,
   effectiveBillingPlan,
   formatUsdFromCents,
@@ -62,6 +63,17 @@ test("a paid plan stays active until it expires", () => {
     ),
     "free",
   );
+});
+
+test("cancelling keeps the later paid period", () => {
+  const now = new Date("2026-06-01T00:00:00.000Z");
+  const stored = new Date("2026-07-01T00:00:00.000Z");
+  const sooner = new Date("2026-06-15T00:00:00.000Z");
+  const later = new Date("2026-08-01T00:00:00.000Z");
+  assert.equal(cancelledExpiresAt(stored, null, now).toISOString(), stored.toISOString());
+  assert.equal(cancelledExpiresAt(stored, sooner, now).toISOString(), stored.toISOString());
+  assert.equal(cancelledExpiresAt(stored, later, now).toISOString(), later.toISOString());
+  assert.equal(cancelledExpiresAt(null, null, now).toISOString(), now.toISOString());
 });
 
 test("on-change polls follow the fastest plan on a coverage query", () => {

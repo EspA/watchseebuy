@@ -178,6 +178,11 @@
     "planNoExpiry": "Geen vervaldatum.",
     "planRenews": "Verlengt op {date}.",
     "planEnds": "Eindigt op {date}.",
+    "cancelSubscription": "Abonnement opzeggen",
+    "cancelConfirm": "Dit abonnement opzeggen? Je wordt niet opnieuw gefactureerd, en {plan} blijft tot {date}.",
+    "keepPlan": "Dit abonnement houden",
+    "planCancelled": "Abonnement opgezegd. Je houdt dit abonnement tot het eindigt.",
+    "planCancelFailed": "Opzeggen is niet gelukt. Probeer het opnieuw.",
     "seePlans": "Bekijk abonnementen",
     "planName": {
       "free": "Gratis",
@@ -218,7 +223,6 @@
   },
   "pricing": {
     "title": "Abonnementen",
-    "lede": "Zoeken blijft open. Een abonnement verhoogt hoeveel stukken je volgt, hoe vaak Trigger bij wijziging controleert en hoe vaak je AI-modus gebruikt.",
     "cycle": "Factuurperiode",
     "monthly": "Maandelijks",
     "annual": "Jaarlijks",

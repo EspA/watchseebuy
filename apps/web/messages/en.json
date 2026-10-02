@@ -178,6 +178,11 @@
     "planNoExpiry": "No expiration date.",
     "planRenews": "Renews {date}.",
     "planEnds": "Ends {date}.",
+    "cancelSubscription": "Cancel subscription",
+    "cancelConfirm": "Cancel this subscription? You will not be billed again, and {plan} stays until {date}.",
+    "keepPlan": "Keep this plan",
+    "planCancelled": "Subscription cancelled. You keep this plan until it ends.",
+    "planCancelFailed": "Could not cancel the subscription. Try again.",
     "seePlans": "See plans",
     "planName": {
       "free": "Free",
@@ -218,7 +223,6 @@
   },
   "pricing": {
     "title": "Plans",
-    "lede": "Search stays open. A plan raises how many pieces you can watch, how quickly Trigger on change checks, and how often you can use AI Mode.",
     "cycle": "Billing period",
     "monthly": "Monthly",
     "annual": "Annual",

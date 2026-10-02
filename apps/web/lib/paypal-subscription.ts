@@ -8,6 +8,7 @@ import {
   upsertUserSubscription,
 } from "@watchseebuy/db";
 import {
+  cancelledExpiresAt,
   fallbackPeriodEnd,
   isBillingInterval,
   isPaidPlan,
@@ -137,13 +138,20 @@ export async function syncPaypalSubscription(
       plan,
       billingInterval: interval,
       status: "cancelled",
-      expiresAt: subscription.nextBillingTime ?? current?.expiresAt ?? new Date(),
+      expiresAt: cancelledExpiresAt(current?.expiresAt ?? null, subscription.nextBillingTime),
       paypalSubscriptionId: subscription.id,
     });
     return;
   }
 
   if (subscription.status !== "ACTIVE") return;
+
+  if (
+    current?.paypalSubscriptionId === subscription.id &&
+    current.status === "cancelled"
+  ) {
+    return;
+  }
 
   if (current?.paypalSubscriptionId && current.paypalSubscriptionId !== subscription.id) {
     await cancelPaypalSubscription(current.paypalSubscriptionId);
@@ -221,6 +229,56 @@ async function ensureProduct() {
   if (!id) throw new Error("PayPal product was not created");
   await savePaypalCatalogId(db, paypalProductKey(), id);
   return id;
+}
+
+export async function cancelUserSubscription(
+  userId: string,
+): Promise<"cancelled" | "unchanged"> {
+  const db = getDb();
+  const current = await getUserSubscription(db, userId);
+  if (
+    !current?.paypalSubscriptionId ||
+    current.status !== "active" ||
+    !isPaidPlan(current.plan)
+  ) {
+    return "unchanged";
+  }
+
+  try {
+    await paypalRequest(
+      "POST",
+      `/v1/billing/subscriptions/${encodeURIComponent(current.paypalSubscriptionId)}/cancel`,
+      { reason: "Cancelled in WatchSeeBuy settings" },
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    if (!message.includes("(422)")) throw error;
+  }
+
+  let remote: PaypalSubscription | null = null;
+  try {
+    remote = await fetchPaypalSubscription(current.paypalSubscriptionId);
+  } catch (error) {
+    console.error(
+      "paypal subscription refresh after cancel failed",
+      error instanceof Error ? error.message : error,
+    );
+  }
+
+  if (remote?.status === "CANCELLED") {
+    await syncPaypalSubscription(remote, userId);
+    return "cancelled";
+  }
+
+  await upsertUserSubscription(db, {
+    userId,
+    plan: current.plan,
+    billingInterval: current.billingInterval,
+    status: "cancelled",
+    expiresAt: current.expiresAt,
+    paypalSubscriptionId: current.paypalSubscriptionId,
+  });
+  return "cancelled";
 }
 
 async function cancelPaypalSubscription(subscriptionId: string) {

@@ -96,6 +96,24 @@ export function effectiveBillingPlan(
   return snapshot.plan;
 }
 
+/** Keep the paid period when a subscription is cancelled before it ends. */
+export function cancelledExpiresAt(
+  stored: Date | null,
+  nextBillingTime: Date | null,
+  now = new Date(),
+): Date {
+  const candidates = [stored, nextBillingTime].filter(
+    (date): date is Date =>
+      date instanceof Date && !Number.isNaN(date.getTime()),
+  );
+  const future = candidates.filter((date) => date.getTime() > now.getTime());
+  const pool = future.length > 0 ? future : candidates;
+  if (pool.length === 0) return now;
+  return pool.reduce((latest, date) =>
+    date.getTime() > latest.getTime() ? date : latest,
+  );
+}
+
 export function fallbackPeriodEnd(
   interval: BillingInterval,
   now = new Date(),

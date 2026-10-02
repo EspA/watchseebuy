@@ -24,7 +24,6 @@ export default async function PricingPage({
   return (
     <main className="page pricing-page">
       <h1>{t("title")}</h1>
-      <p className="muted pricing-lede">{t("lede")}</p>
       {notice ? <p className="banner">{notice}</p> : null}
       <PricingPlans
         signedIn={Boolean(session)}

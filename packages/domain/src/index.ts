@@ -342,6 +342,7 @@ export {
   PAID_PRICE_CENTS,
   PLAN_ENTITLEMENTS,
   agentSearchMonthKey,
+  cancelledExpiresAt,
   coveragePollIntervalMs,
   effectiveBillingPlan,
   fallbackPeriodEnd,

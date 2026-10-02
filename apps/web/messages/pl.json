@@ -178,6 +178,11 @@
     "planNoExpiry": "Bez daty wygaśnięcia.",
     "planRenews": "Odnawia się {date}.",
     "planEnds": "Kończy się {date}.",
+    "cancelSubscription": "Anuluj subskrypcję",
+    "cancelConfirm": "Anulować tę subskrypcję? Nie będzie kolejnych opłat, a {plan} zostaje do {date}.",
+    "keepPlan": "Zostaw ten plan",
+    "planCancelled": "Subskrypcja anulowana. Ten plan zostaje do końca okresu.",
+    "planCancelFailed": "Nie udało się anulować subskrypcji. Spróbuj ponownie.",
     "seePlans": "Zobacz plany",
     "planName": {
       "free": "Darmowy",
@@ -218,7 +223,6 @@
   },
   "pricing": {
     "title": "Plany",
-    "lede": "Wyszukiwanie zostaje otwarte. Plan zwiększa liczbę obserwowanych rzeczy, częstotliwość wyzwalania przy zmianie i liczbę użyć trybu AI.",
     "cycle": "Okres rozliczenia",
     "monthly": "Miesięcznie",
     "annual": "Rocznie",

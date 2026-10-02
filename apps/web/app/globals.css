@@ -1961,9 +1961,19 @@ a.account-menu-item {
   margin: 16px 0 0;
 }
 
-.pricing-lede {
-  max-width: 40rem;
-  margin-top: 0;
+.settings-cancel {
+  margin-top: 16px;
+}
+
+.settings-plan-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.settings-plan-actions .btn {
+  padding: 10px 14px;
 }
 
 .pricing-cycle {

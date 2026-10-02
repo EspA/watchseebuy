@@ -178,6 +178,11 @@
     "planNoExpiry": "Kein Ablaufdatum.",
     "planRenews": "Verlängert sich am {date}.",
     "planEnds": "Endet am {date}.",
+    "cancelSubscription": "Abonnement kündigen",
+    "cancelConfirm": "Dieses Abonnement kündigen? Es wird nicht erneut abgerechnet, und {plan} bleibt bis zum {date}.",
+    "keepPlan": "Tarif behalten",
+    "planCancelled": "Abonnement gekündigt. Dieser Tarif bleibt bis zum Ablaufdatum.",
+    "planCancelFailed": "Das Abonnement konnte nicht gekündigt werden. Versuch es erneut.",
     "seePlans": "Tarife ansehen",
     "planName": {
       "free": "Kostenlos",
@@ -218,7 +223,6 @@
   },
   "pricing": {
     "title": "Tarife",
-    "lede": "Die Suche bleibt offen. Ein Tarif erhöht, wie viele Stücke du beobachten kannst, wie schnell „Bei Änderung“ prüft und wie oft du den KI-Modus nutzen kannst.",
     "cycle": "Abrechnungszeitraum",
     "monthly": "Monatlich",
     "annual": "Jährlich",
