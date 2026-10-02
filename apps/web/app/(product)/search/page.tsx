@@ -2,6 +2,8 @@ import { unstable_noStore as noStore } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import {
   attachPriceScores,
+  compactSearchFilters,
+  describeWatch,
   landedCostCents,
   listingMatchesCondition,
   listingMatchesConfidence,
@@ -13,7 +15,7 @@ import {
   toCoverageQuery,
   withinLandedRange,
   atWatchLimit,
-  FREE_WATCH_LIMIT,
+  watchLimitForPlan,
   SEARCH_PAGE_SIZE,
   parseSearchPage,
   searchOffset,
@@ -40,6 +42,7 @@ import { headers } from "next/headers";
 import { clientMeta, persistUserEvent } from "@/lib/client-meta";
 import { intentFromSearchQuery, searchBarQuery } from "@/lib/search-params";
 import { compareSearchListings, searchSortFromQuery } from "@/lib/search-sort";
+import { currentBilling } from "@/lib/current-billing";
 import { getRequestPreferences } from "@/lib/request-preferences";
 import { getSession } from "@/lib/session";
 
@@ -105,8 +108,10 @@ export default async function SearchPage({
   const watchCount = session
     ? await countWatchesForUser(getDb(), session.user.id)
     : 0;
+  const billing = session ? await currentBilling(session.user.id) : null;
+  const watchLimit = watchLimitForPlan(billing?.plan ?? "free");
   const watchLimitReached =
-    Boolean(session) && !query.watch && atWatchLimit(watchCount);
+    Boolean(session) && !query.watch && atWatchLimit(watchCount, billing?.plan ?? "free");
   const zip =
     query.zip !== undefined ? query.zip : (settings?.shipToPostal ?? undefined);
   const prefs = await getRequestPreferences({
@@ -170,6 +175,7 @@ export default async function SearchPage({
     site: query.site ?? prefs.site,
   });
   const coverage = toCoverageQuery(intent);
+  const agentMode = query.mode !== "classic";
   if (q.trim()) {
     const meta = clientMeta(await headers());
     void persistUserEvent({
@@ -179,10 +185,12 @@ export default async function SearchPage({
       meta: {
         q: q.trim().slice(0, 200),
         site: intent.ebaySite,
+        mode: agentMode ? "agent" : "classic",
+        filters: compactSearchFilters(intent, coverage),
+        summary: describeWatch(intent).slice(0, 400),
       },
     });
   }
-  const agentMode = query.mode !== "classic";
   const ebay = createEbayClientFromEnv(agentMode ? "web_agent" : "web_search");
   const result = q.trim()
       ? await ebay.search(coverage, {
@@ -292,15 +300,20 @@ export default async function SearchPage({
       {query.error === "limit" ? (
         <p className="banner">
           {t.rich("watchLimit", {
-            limit: FREE_WATCH_LIMIT,
+            limit: watchLimit,
             watches: (chunks) => <Link href="/watches">{chunks}</Link>,
+            plans: (chunks) => <Link href="/pricing">{chunks}</Link>,
           })}
         </p>
       ) : null}
       <SearchForm>
         {agentMode ? (
           <>
-            <AgentChat site={intent.ebaySite} search={agentSearchState(query)}>
+            <AgentChat
+              site={intent.ebaySite}
+              search={agentSearchState(query)}
+              signedIn={Boolean(session)}
+            >
               <EbaySiteSelect site={intent.ebaySite} />
             </AgentChat>
             <input type="hidden" name="q" value={q} />
@@ -344,7 +357,9 @@ export default async function SearchPage({
               ? { settingsPostal: settings.shipToPostal }
               : {})}
             {...(suggestedGroup ? { suggestedGroup } : {})}
-            {...(watchLimitReached ? { atWatchLimit: true } : {})}
+            {...(watchLimitReached
+              ? { atWatchLimit: true, watchLimit }
+              : { watchLimit })}
           />
           <SearchResultsPane>
           {listings.length > 0 ? (

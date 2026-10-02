@@ -14,7 +14,10 @@ test("free accounts cap at ten watches", () => {
   assert.equal(atWatchLimit(11), true);
 });
 
-test("premium is not capped yet", () => {
-  assert.equal(watchLimitForPlan("premium"), Number.POSITIVE_INFINITY);
+test("paid plans raise the watch cap", () => {
+  assert.equal(watchLimitForPlan("premium"), 100);
+  assert.equal(watchLimitForPlan("premium_plus"), 300);
   assert.equal(atWatchLimit(50, "premium"), false);
+  assert.equal(atWatchLimit(100, "premium"), true);
+  assert.equal(atWatchLimit(100, "premium_plus"), false);
 });

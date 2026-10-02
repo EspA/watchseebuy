@@ -38,6 +38,7 @@ export async function SaveWatchForm({
   settingsPostal,
   suggestedGroup,
   atWatchLimit,
+  watchLimit = FREE_WATCH_LIMIT,
   agentMode,
 }: {
   q: string;
@@ -47,6 +48,7 @@ export async function SaveWatchForm({
   settingsPostal?: string;
   suggestedGroup?: FilterGroupId;
   atWatchLimit?: boolean;
+  watchLimit?: number;
   agentMode?: boolean;
 }) {
   if (!q.trim()) return null;
@@ -153,8 +155,9 @@ export async function SaveWatchForm({
       {signedIn && atWatchLimit ? (
         <p className="watch-note watch-limit-note">
           {t.rich("watchLimit", {
-            limit: FREE_WATCH_LIMIT,
+            limit: watchLimit,
             watches: (chunks) => <Link href="/watches">{chunks}</Link>,
+            plans: (chunks) => <Link href="/pricing">{chunks}</Link>,
           })}
         </p>
       ) : null}

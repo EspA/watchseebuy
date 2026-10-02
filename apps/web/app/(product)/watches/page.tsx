@@ -1,8 +1,8 @@
 import { getTranslations } from "next-intl/server";
 import {
   describeWatch,
-  FREE_WATCH_LIMIT,
   parseWatchFrequency,
+  watchLimitForPlan,
   type WatchCriteria,
 } from "@watchseebuy/domain";
 import { getDb, listWatchesForUser } from "@watchseebuy/db";
@@ -10,6 +10,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { DeleteWatchForm } from "@/components/delete-watch-form";
 import { WatchSettingsForm } from "@/components/watch-settings-form";
+import { currentBilling } from "@/lib/current-billing";
 import { getSession } from "@/lib/session";
 import { searchHrefForWatch } from "@/lib/watch-search";
 
@@ -30,6 +31,8 @@ export default async function WatchesPage({
   }
 
   const { saved } = await searchParams;
+  const billing = await currentBilling(session.user.id);
+  const watchLimit = watchLimitForPlan(billing.plan);
   const items = await listWatchesForUser(getDb(), session.user.id);
   const t = await getTranslations("watches");
 
@@ -49,9 +52,9 @@ export default async function WatchesPage({
       ) : (
         <>
           <p className="muted watch-count">
-            {t(items.length >= FREE_WATCH_LIMIT ? "countFull" : "count", {
+            {t(items.length >= watchLimit ? "countFull" : "count", {
               count: items.length,
-              limit: FREE_WATCH_LIMIT,
+              limit: watchLimit,
             })}
           </p>
           <ul className="watch-list">

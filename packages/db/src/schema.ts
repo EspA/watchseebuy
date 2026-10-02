@@ -290,6 +290,41 @@ export const ebayApiDaily = pgTable(
   ],
 );
 
+export const subscriptions = pgTable(
+  "subscriptions",
+  {
+    userId: text("user_id")
+      .primaryKey()
+      .references(() => user.id, { onDelete: "cascade" }),
+    plan: text("plan").notNull(),
+    billingInterval: text("billing_interval"),
+    status: text("status").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
+    paypalSubscriptionId: text("paypal_subscription_id"),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("subscriptions_paypal_subscription_id_uidx").on(
+      t.paypalSubscriptionId,
+    ),
+  ],
+);
+
+export const paypalCatalog = pgTable("paypal_catalog", {
+  key: text("key").primaryKey(),
+  paypalId: text("paypal_id").notNull(),
+});
+
+export const agentSearchQuota = pgTable("agent_search_quota", {
+  key: text("key").primaryKey(),
+  count: integer("count").notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
 export const maintenanceRuns = pgTable("maintenance_runs", {
   job: text("job").primaryKey(),
   lastRanAt: timestamp("last_ran_at", { withTimezone: true }).notNull(),

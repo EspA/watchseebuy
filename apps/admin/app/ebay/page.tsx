@@ -49,9 +49,10 @@ export default async function EbayStatsPage({
       <h1>eBay API</h1>
       <p className="lede">
         Calls through the shared client, including the partner Browse proxy.
-        Days are UTC. Pick a day to filter the API table, or click a failure
-        count to see the error body. Source <code>partner_browse</code> is
-        The Timeless Vault; it shares this app&apos;s eBay quota.
+        Days are Eastern Time. Pick a day to filter the API table, or click a
+        failure count to see the error body. Source{" "}
+        <code>partner_browse</code> is The Timeless Vault; it shares this
+        app&apos;s eBay quota.
       </p>
       <nav className="windows" aria-label="Time window">
         {EBAY_STAT_WINDOWS.map((windowDays) => (
@@ -93,7 +94,7 @@ export default async function EbayStatsPage({
         </div>
       </div>
       <div className="panel">
-        <h2>Per day (UTC)</h2>
+        <h2>Per day (ET)</h2>
         {daily.every((row) => row.total === 0) ? (
           <p className="muted">No eBay calls recorded in this window.</p>
         ) : (
@@ -222,7 +223,7 @@ export default async function EbayStatsPage({
             ))}
         </nav>
         {day ? (
-          <p className="muted">{formatUtcDay(day)} (UTC)</p>
+          <p className="muted">{formatUtcDay(day)} (ET)</p>
         ) : (
           <p className="muted">Last {days} days</p>
         )}

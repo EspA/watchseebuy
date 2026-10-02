@@ -1,6 +1,24 @@
-import { and, desc, eq, gte, lt, sql } from "drizzle-orm";
+import {
+  DEFAULT_USER_TIMEZONE,
+  zonedCalendarDays,
+  zonedDayBounds,
+  zonedWindowStart,
+} from "@watchseebuy/domain";
+import { and, desc, eq, gte, isNull, lt, ne, or, sql } from "drizzle-orm";
 import type { Database } from "./client";
 import { account, ebayApiCalls, emailSends, user, userEvents, watches } from "./schema";
+import {
+  backfillUnauthenticatedCounts,
+  ensureUnauthenticatedUser,
+  UNAUTHENTICATED_USER_ID,
+} from "./telemetry";
+
+export const ADMIN_STATS_TIMEZONE = DEFAULT_USER_TIMEZONE;
+
+/** Literal zone name. A bound parameter is parsed as an interval. */
+const ADMIN_TZ_SQL = sql.raw(
+  `'${ADMIN_STATS_TIMEZONE.replaceAll("'", "''")}'`,
+);
 
 export type AdminUserListRow = {
   id: string;
@@ -101,30 +119,15 @@ export function parseEbayStatWindow(
 }
 
 export function utcDayBounds(day: string): { start: Date; end: Date } | null {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return null;
-  const start = new Date(`${day}T00:00:00.000Z`);
-  if (Number.isNaN(start.getTime())) return null;
-  return { start, end: new Date(start.getTime() + 86_400_000) };
+  return zonedDayBounds(day, ADMIN_STATS_TIMEZONE);
 }
 
 function calendarWindowStart(days: number) {
-  const now = new Date();
-  return new Date(
-    Date.UTC(
-      now.getUTCFullYear(),
-      now.getUTCMonth(),
-      now.getUTCDate() - (days - 1),
-    ),
-  );
+  return zonedWindowStart(days, new Date(), ADMIN_STATS_TIMEZONE);
 }
 
-function eachUtcDay(days: number): string[] {
-  const start = calendarWindowStart(days);
-  const keys: string[] = [];
-  for (let i = 0; i < days; i += 1) {
-    keys.push(new Date(start.getTime() + i * 86_400_000).toISOString().slice(0, 10));
-  }
-  return keys;
+function eachAdminDay(days: number): string[] {
+  return zonedCalendarDays(days, new Date(), ADMIN_STATS_TIMEZONE);
 }
 
 export function fillEbayApiDays(
@@ -132,7 +135,7 @@ export function fillEbayApiDays(
   rows: EbayApiDayRow[],
 ): EbayApiDayRow[] {
   const byDay = new Map(rows.map((row) => [row.day, row]));
-  return eachUtcDay(days).map(
+  return eachAdminDay(days).map(
     (day) =>
       byDay.get(day) ?? {
         day,
@@ -164,6 +167,7 @@ function asInt(value: unknown) {
 }
 
 export async function listAdminUsers(db: Database): Promise<AdminUserListRow[]> {
+  await backfillUnauthenticatedCounts(db);
   const watchCounts = db
     .select({
       userId: watches.userId,
@@ -191,7 +195,10 @@ export async function listAdminUsers(db: Database): Promise<AdminUserListRow[]> 
     })
     .from(user)
     .leftJoin(watchCounts, eq(watchCounts.userId, user.id))
-    .orderBy(desc(user.createdAt));
+    .orderBy(
+      sql`case when ${user.id} = ${UNAUTHENTICATED_USER_ID} then 0 else 1 end`,
+      desc(user.createdAt),
+    );
 
   const accounts = await db
     .select({
@@ -220,6 +227,9 @@ export async function getAdminUserDetail(
   db: Database,
   userId: string,
 ): Promise<AdminUserDetail | null> {
+  if (userId === UNAUTHENTICATED_USER_ID) {
+    await ensureUnauthenticatedUser(db);
+  }
   const [settings] = await db
     .select({
       shipToPostal: user.shipToPostal,
@@ -245,7 +255,11 @@ export async function getAdminUserDetail(
       meta: userEvents.meta,
     })
     .from(userEvents)
-    .where(eq(userEvents.userId, userId))
+    .where(
+      userId === UNAUTHENTICATED_USER_ID
+        ? or(eq(userEvents.userId, userId), isNull(userEvents.userId))
+        : eq(userEvents.userId, userId),
+    )
     .orderBy(desc(userEvents.occurredAt))
     .limit(25);
 
@@ -271,7 +285,7 @@ export function parseEbayStatDay(
   days: number,
 ): string | undefined {
   if (!raw || !utcDayBounds(raw)) return undefined;
-  return eachUtcDay(days).includes(raw) ? raw : undefined;
+  return eachAdminDay(days).includes(raw) ? raw : undefined;
 }
 
 function ebayApiViewWhere(days: number, day?: string) {
@@ -368,7 +382,7 @@ export async function ebayApiDailyStats(
   db: Database,
   days: number,
 ): Promise<EbayApiDayRow[]> {
-  const daySql = sql<string>`to_char((${ebayApiCalls.calledAt} AT TIME ZONE 'UTC')::date, 'YYYY-MM-DD')`;
+  const daySql = sql<string>`to_char((${ebayApiCalls.calledAt} AT TIME ZONE ${ADMIN_TZ_SQL})::date, 'YYYY-MM-DD')`;
   const rows = await db
     .select({
       day: daySql,
@@ -379,8 +393,8 @@ export async function ebayApiDailyStats(
     })
     .from(ebayApiCalls)
     .where(gte(ebayApiCalls.calledAt, calendarWindowStart(days)))
-    .groupBy(sql`(${ebayApiCalls.calledAt} AT TIME ZONE 'UTC')::date`)
-    .orderBy(sql`(${ebayApiCalls.calledAt} AT TIME ZONE 'UTC')::date`);
+    .groupBy(sql`(${ebayApiCalls.calledAt} AT TIME ZONE ${ADMIN_TZ_SQL})::date`)
+    .orderBy(sql`(${ebayApiCalls.calledAt} AT TIME ZONE ${ADMIN_TZ_SQL})::date`);
 
   return fillEbayApiDays(
     days,
@@ -521,6 +535,7 @@ export async function emailBreakdown(
 export async function countUsers(db: Database) {
   const [row] = await db
     .select({ n: sql<number>`count(*)::int` })
-    .from(user);
+    .from(user)
+    .where(ne(user.id, UNAUTHENTICATED_USER_ID));
   return asInt(row?.n);
 }

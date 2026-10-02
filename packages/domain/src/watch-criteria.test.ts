@@ -41,6 +41,7 @@ import {
   applyWatchOverrides,
   asWatchCriteria,
   browseFilterParts,
+  compactSearchFilters,
   describeListingLocation,
   describeWatch,
   ebaySearchQuery,
@@ -823,4 +824,26 @@ test("ebay site is a Browse marketplace id and changes coverage", () => {
   assert.equal(toCoverageQuery(uk).ebaySite, "EBAY_GB");
   assert.notEqual(toCoverageQuery(uk).key, toCoverageQuery(base).key);
   assert.match(describeWatch(uk), /United Kingdom/);
+});
+
+test("compactSearchFilters keeps applied browse filters and skips defaults", () => {
+  const intent = applyWatchOverrides(parseSearchIntent("charizard psa 10"), {
+    condition: "graded",
+    grader: "psa",
+    cardGrade: "10",
+    maxLandedCents: 50_000,
+    shipToPostal: "10001",
+    shipToCountry: "US",
+    listingType: "bin",
+  });
+  const filters = compactSearchFilters(intent, toCoverageQuery(intent));
+  assert.equal(filters.condition, "graded");
+  assert.equal(filters.grader, "psa");
+  assert.equal(filters.grade, "10");
+  assert.equal(filters.maxCents, 50_000);
+  assert.equal(filters.zip, "10001");
+  assert.equal(filters.to, "US");
+  assert.equal(filters.listing, "bin");
+  assert.equal(filters.located, undefined);
+  assert.ok(typeof filters.browseQ === "string" || filters.browseQ === undefined);
 });

@@ -2,6 +2,7 @@ import { searchParamsFromIntent, toCoverageQuery, watchLimitForPlan } from "@wat
 import { getDb, saveWatch } from "@watchseebuy/db";
 import { NextResponse } from "next/server";
 import { absoluteUrl } from "@/lib/absolute-url";
+import { currentBilling } from "@/lib/current-billing";
 import { intentFromSearchQuery } from "@/lib/search-params";
 import { getSession } from "@/lib/session";
 
@@ -59,12 +60,13 @@ export async function POST(request: Request) {
   const coverage = toCoverageQuery(intent);
 
   const watchId = String(form.get("watch") ?? "").trim();
+  const billing = await currentBilling(session.user.id);
   const saved = await saveWatch(getDb(), {
     userId: session.user.id,
     label: q,
     criteria: intent,
     coverage,
-    watchLimit: watchLimitForPlan("free"),
+    watchLimit: watchLimitForPlan(billing.plan),
     ...(watchId ? { watchId } : {}),
   });
 

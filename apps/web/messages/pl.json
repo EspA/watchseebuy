@@ -5,7 +5,8 @@
     "search": "Szukaj",
     "watches": "Obserwowane",
     "openMenu": "Otwórz menu",
-    "closeMenu": "Zamknij menu"
+    "closeMenu": "Zamknij menu",
+    "plans": "Plany"
   },
   "account": {
     "account": "Konto",
@@ -43,7 +44,15 @@
     "outOfScope": "Mogę tylko pomóc w przeglądaniu katalogu.",
     "unavailable": "Asystent jest niedostępny. Wyszukiwanie klasyczne nadal działa.",
     "emptyReply": "Powiedz, jakiej rzeczy szukasz.",
-    "clear": "Wyczyść rozmowę"
+    "clear": "Wyczyść rozmowę",
+    "limitTitle": "Zaloguj się, aby dalej korzystać z trybu AI",
+    "limitBody": "Wykorzystano 10 wyszukiwań AI. Zaloguj się, aby kontynuować, albo przejdź do wyszukiwania klasycznego.",
+    "limitSignIn": "Zaloguj",
+    "limitClassic": "Wyszukiwanie klasyczne",
+    "limitDismiss": "Zamknij",
+    "upgradeTitle": "Wykorzystałeś wyszukiwania trybu AI w tym miesiącu",
+    "upgradeBody": "Plan darmowy obejmuje 100 wyszukiwań trybu AI miesięcznie. Premium obejmuje nielimitowany tryb AI.",
+    "upgradePlans": "Zobacz plany"
   },
   "search": {
     "placeholder": "Znajdź rzeczy z eBay",
@@ -74,7 +83,7 @@
     "clearFilters": "Wyczyść filtry",
     "noMatchFilters": "Nic nie pasuje do tych filtrów. Poszerz cenę, stan albo lokalizację.",
     "noListings": "Brak ogłoszeń dla tego wyszukiwania.",
-    "watchLimit": "Możesz obserwować {limit} rzeczy naraz. Zatrzymaj jedną w <watches>Obserwowane</watches>, żeby dodać kolejną.",
+    "watchLimit": "Możesz obserwować {limit} rzeczy naraz. Zatrzymaj jedną w <watches>Obserwowane</watches> albo zobacz <plans>Plany</plans>.",
     "watchThis": "Obserwuj",
     "stopOne": "Zatrzymaj jedną"
   },
@@ -163,7 +172,22 @@
     "light": "Jasny",
     "dark": "Ciemny",
     "appearanceNote": "Zapamiętywane na tym koncie, gdy jesteś zalogowany.",
-    "save": "Zapisz"
+    "save": "Zapisz",
+    "plan": "Plan",
+    "planActive": "Twoja subskrypcja jest aktywna.",
+    "planNoExpiry": "Bez daty wygaśnięcia.",
+    "planRenews": "Odnawia się {date}.",
+    "planEnds": "Kończy się {date}.",
+    "seePlans": "Zobacz plany",
+    "planName": {
+      "free": "Darmowy",
+      "premium": "Premium",
+      "premium_plus": "Premium+"
+    },
+    "planInterval": {
+      "monthly": "Rozliczenie miesięczne.",
+      "annual": "Rozliczenie roczne."
+    }
   },
   "watches": {
     "saved": "Obserwacja zapisana. Alerty przychodzą według wybranego harmonogramu.",
@@ -191,5 +215,35 @@
     "tos": "Regulamin",
     "contact": "Kontakt",
     "disclosure": "WatchSeeBuy jest niezależnym produktem. Jeśli kupujesz przez nasze linki, możemy dostać prowizję z eBay Partner Network. To nie zmienia ceny, którą płacisz."
+  },
+  "pricing": {
+    "title": "Plany",
+    "lede": "Wyszukiwanie zostaje otwarte. Plan zwiększa liczbę obserwowanych rzeczy, częstotliwość wyzwalania przy zmianie i liczbę użyć trybu AI.",
+    "cycle": "Okres rozliczenia",
+    "monthly": "Miesięcznie",
+    "annual": "Rocznie",
+    "annualNote": "2 miesiące gratis",
+    "perMonth": "/miesiąc",
+    "perYear": "/rok",
+    "current": "Obecny plan",
+    "subscribe": "Subskrybuj",
+    "included": "W cenie",
+    "freePrice": "$0",
+    "classicUnlimited": "Nielimitowane wyszukiwanie klasyczne",
+    "watches": "{count} obserwowanych",
+    "onChange": "Wyzwalanie przy zmianie co {interval}",
+    "aiLimited": "{count} wyszukiwań trybu AI miesięcznie",
+    "aiUnlimited": "Nielimitowane wyszukiwanie w trybie AI",
+    "earlyAccess": "Bądź pierwszy, który wypróbuje nowe ekskluzywne funkcje",
+    "intervalHour": "1 godzina",
+    "interval15": "15 minut",
+    "interval5": "5 minut",
+    "unavailable": "Płatność PayPal jest teraz niedostępna. Twój plan się nie zmienia.",
+    "cancelled": "Płatność została anulowana. Twój plan się nie zmienia.",
+    "name": {
+      "free": "Darmowy",
+      "premium": "Premium",
+      "premium_plus": "Premium+"
+    }
   }
 }

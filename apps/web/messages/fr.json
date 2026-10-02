@@ -5,7 +5,8 @@
     "search": "Recherche",
     "watches": "Alertes",
     "openMenu": "Ouvrir le menu",
-    "closeMenu": "Fermer le menu"
+    "closeMenu": "Fermer le menu",
+    "plans": "Formules"
   },
   "account": {
     "account": "Compte",
@@ -43,7 +44,15 @@
     "outOfScope": "Je peux seulement vous aider à parcourir le catalogue.",
     "unavailable": "L’assistant est indisponible. La recherche classique fonctionne toujours.",
     "emptyReply": "Dites-moi la pièce que vous cherchez.",
-    "clear": "Effacer la conversation"
+    "clear": "Effacer la conversation",
+    "limitTitle": "Connectez-vous pour continuer en mode IA",
+    "limitBody": "Vous avez utilisé vos 10 recherches IA. Connectez-vous pour continuer, ou passez à la recherche classique.",
+    "limitSignIn": "Se connecter",
+    "limitClassic": "Recherche classique",
+    "limitDismiss": "Fermer",
+    "upgradeTitle": "Vous avez utilisé les recherches Mode IA de ce mois",
+    "upgradeBody": "La formule gratuite comprend 100 recherches Mode IA par mois. Premium comprend le Mode IA illimité.",
+    "upgradePlans": "Voir les formules"
   },
   "search": {
     "placeholder": "Trouver des pièces eBay",
@@ -74,7 +83,7 @@
     "clearFilters": "Effacer les filtres",
     "noMatchFilters": "Rien ne correspond à ces filtres. Élargissez le prix, l’état ou le lieu.",
     "noListings": "Aucune annonce pour cette recherche.",
-    "watchLimit": "Vous pouvez surveiller {limit} pièces à la fois. Arrêtez-en une dans <watches>Alertes</watches> pour en ajouter une autre.",
+    "watchLimit": "Vous pouvez surveiller {limit} pièces à la fois. Arrêtez-en une dans <watches>Alertes</watches>, ou consultez les <plans>Formules</plans>.",
     "watchThis": "Surveiller",
     "stopOne": "Arrêter une"
   },
@@ -163,7 +172,22 @@
     "light": "Clair",
     "dark": "Sombre",
     "appearanceNote": "Mémorisé sur ce compte lorsque vous êtes connecté.",
-    "save": "Enregistrer"
+    "save": "Enregistrer",
+    "plan": "Formule",
+    "planActive": "Votre abonnement est actif.",
+    "planNoExpiry": "Pas de date d’expiration.",
+    "planRenews": "Se renouvelle le {date}.",
+    "planEnds": "Se termine le {date}.",
+    "seePlans": "Voir les formules",
+    "planName": {
+      "free": "Gratuit",
+      "premium": "Premium",
+      "premium_plus": "Premium+"
+    },
+    "planInterval": {
+      "monthly": "Facturé chaque mois.",
+      "annual": "Facturé chaque année."
+    }
   },
   "watches": {
     "saved": "Alerte enregistrée. Les notifications arrivent selon le rythme que vous choisissez.",
@@ -191,5 +215,35 @@
     "tos": "Conditions d’utilisation",
     "contact": "Nous contacter",
     "disclosure": "WatchSeeBuy est un produit indépendant. Si vous achetez via nos liens, nous pouvons percevoir une commission du eBay Partner Network. Cela ne change pas le prix que vous payez."
+  },
+  "pricing": {
+    "title": "Formules",
+    "lede": "La recherche reste ouverte. Une formule augmente le nombre de pièces suivies, la fréquence du déclenchement au changement et l’usage du Mode IA.",
+    "cycle": "Période de facturation",
+    "monthly": "Mensuel",
+    "annual": "Annuel",
+    "annualNote": "2 mois offerts",
+    "perMonth": "/mois",
+    "perYear": "/an",
+    "current": "Formule actuelle",
+    "subscribe": "S’abonner",
+    "included": "Inclus",
+    "freePrice": "$0",
+    "classicUnlimited": "Recherche classique illimitée",
+    "watches": "{count} alertes",
+    "onChange": "Déclenchement au changement toutes les {interval}",
+    "aiLimited": "{count} recherches Mode IA par mois",
+    "aiUnlimited": "Recherche Mode IA illimitée",
+    "earlyAccess": "Soyez le premier à essayer les nouvelles fonctions exclusives",
+    "intervalHour": "1 heure",
+    "interval15": "15 minutes",
+    "interval5": "5 minutes",
+    "unavailable": "Le paiement PayPal n’est pas disponible pour le moment. Votre formule est inchangée.",
+    "cancelled": "Le paiement a été annulé. Votre formule est inchangée.",
+    "name": {
+      "free": "Gratuit",
+      "premium": "Premium",
+      "premium_plus": "Premium+"
+    }
   }
 }

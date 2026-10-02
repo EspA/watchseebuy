@@ -76,6 +76,7 @@ export default async function ComingSoonPage({
               site={site}
               leadSite={prefs.defaultSite}
               agent={query.mode !== "classic"}
+              signedIn={Boolean(session)}
             />
           )}
 

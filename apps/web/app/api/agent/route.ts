@@ -1,5 +1,13 @@
 import {
+  getDb,
+  incrementAgentSearchQuota,
+  readAgentSearchQuota,
+  writeAgentSearchQuota,
+} from "@watchseebuy/db";
+import {
+  PLAN_ENTITLEMENTS,
   agentSearchGuide,
+  agentSearchMonthKey,
   DEFAULT_EBAY_SITE,
   interpretAgentTurn,
   parseAppLocale,
@@ -7,8 +15,21 @@ import {
 } from "@watchseebuy/domain";
 import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import { getLocale } from "next-intl/server";
+import { cookies, headers } from "next/headers";
 import { NextResponse } from "next/server";
+import {
+  AGENT_QUOTA_COOKIE,
+  ANONYMOUS_AGENT_SEARCH_LIMIT,
+  agentQuotaCookieOptions,
+  agentQuotaKey,
+  anonymousAgentSearchAllowed,
+  readAgentSearchCount,
+  signAgentSearchCount,
+} from "@/lib/agent-quota";
+import { currentBilling } from "@/lib/current-billing";
+import { clientMeta } from "@/lib/client-meta";
 import { intentFromSearchQuery, type SearchQuery } from "@/lib/search-params";
+import { getSession } from "@/lib/session";
 
 const MODEL_DEFAULT = "gemini-3.5-flash-lite";
 const MAX_MESSAGES = 24;
@@ -131,6 +152,14 @@ export async function POST(request: Request) {
     DEFAULT_EBAY_SITE;
   const search = searchQueryFrom(body.search, site);
   const locale = parseAppLocale(await getLocale()) ?? "en";
+  const session = await getSession();
+  const quota = session ? null : await anonymousQuota();
+  if (quota && !anonymousAgentSearchAllowed(quota.used)) {
+    return quotaResponse({ action: "sign_in_required" }, quota.used, quota.secret);
+  }
+  if (session && (await signedInQuotaBlocked(session.user.id))) {
+    return NextResponse.json({ action: "upgrade_required" });
+  }
 
   let raw: unknown;
   try {
@@ -165,11 +194,117 @@ export async function POST(request: Request) {
     });
   }
   const href = `/search?${turn.params.toString()}`;
-  return NextResponse.json({
-    action: "search",
-    reply: turn.reply,
-    href,
-    fresh: turn.fresh,
+  const nextUsed = quota ? quota.used + 1 : 0;
+  if (quota?.ip && quota.secret) rememberAnonymousQuota(quota.ip, quota.secret, nextUsed);
+  if (session) rememberSignedInSearch(session.user.id);
+  return quotaResponse(
+    {
+      action: "search",
+      reply: turn.reply,
+      href,
+      fresh: turn.fresh,
+      ...(quota && nextUsed >= ANONYMOUS_AGENT_SEARCH_LIMIT
+        ? { limitReached: true }
+        : {}),
+    },
+    quota ? nextUsed : null,
+    quota?.secret ?? "",
+  );
+}
+
+type AnonymousQuota = { used: number; secret: string; ip: string | null };
+
+async function anonymousQuota(): Promise<AnonymousQuota> {
+  const secret = process.env.BETTER_AUTH_SECRET?.trim() ?? "";
+  const headerList = await headers();
+  const cookieStore = await cookies();
+  const fromCookie = readAgentSearchCount(
+    cookieStore.get(AGENT_QUOTA_COOKIE)?.value,
+    secret,
+  );
+  const ip = clientMeta(headerList).ip;
+  if (!secret || !ip || !anonymousAgentSearchAllowed(fromCookie)) {
+    return { used: fromCookie, secret, ip };
+  }
+  const stored = await storedAgentSearches(ip, secret);
+  return { used: Math.max(fromCookie, stored), secret, ip };
+}
+
+async function storedAgentSearches(ip: string, secret: string): Promise<number> {
+  try {
+    const key = agentQuotaKey(ip, secret);
+    return await withTimeout(readAgentSearchQuota(getDb(), key), 400);
+  } catch {
+    return 0;
+  }
+}
+
+async function signedInQuotaBlocked(userId: string): Promise<boolean> {
+  try {
+    const billing = await currentBilling(userId);
+    const limit = PLAN_ENTITLEMENTS[billing.plan].aiSearchesPerMonth;
+    if (limit === null) return false;
+    const used = await readAgentSearchQuota(getDb(), agentSearchMonthKey(userId));
+    return used >= limit;
+  } catch {
+    return false;
+  }
+}
+
+function rememberSignedInSearch(userId: string) {
+  void (async () => {
+    try {
+      const billing = await currentBilling(userId);
+      if (PLAN_ENTITLEMENTS[billing.plan].aiSearchesPerMonth === null) return;
+      await incrementAgentSearchQuota(getDb(), agentSearchMonthKey(userId));
+    } catch (error) {
+      console.error(
+        "agent quota write failed",
+        error instanceof Error ? error.message : error,
+      );
+    }
+  })();
+}
+
+function rememberAnonymousQuota(ip: string, secret: string, count: number) {
+  const key = agentQuotaKey(ip, secret);
+  void (async () => {
+    try {
+      await writeAgentSearchQuota(getDb(), key, count);
+    } catch (error) {
+      console.error(
+        "agent quota write failed",
+        error instanceof Error ? error.message : error,
+      );
+    }
+  })();
+}
+
+function quotaResponse(body: unknown, count: number | null, secret: string) {
+  const response = NextResponse.json(body);
+  if (count !== null && secret) {
+    response.cookies.set(
+      AGENT_QUOTA_COOKIE,
+      signAgentSearchCount(count, secret),
+      agentQuotaCookieOptions(),
+    );
+  }
+  return response;
+}
+
+function withTimeout(promise: Promise<number>, ms: number): Promise<number> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(0), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      () => {
+        clearTimeout(timer);
+        resolve(0);
+      },
+    );
   });
 }
 

@@ -38,6 +38,8 @@ function isAppMiddlewarePath(pathname: string): boolean {
     pathname.startsWith("/watches/") ||
     pathname === "/settings" ||
     pathname.startsWith("/settings/") ||
+    pathname === "/pricing" ||
+    pathname.startsWith("/pricing/") ||
     pathname.startsWith("/sign-in") ||
     pathname.startsWith(ACCOUNT_DELETION_PATH)
   );

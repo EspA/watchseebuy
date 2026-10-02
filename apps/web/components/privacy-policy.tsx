@@ -68,6 +68,11 @@ export function PrivacyPolicyContent() {
           notes land at 8pm local), and appearance (light or dark).
         </li>
         <li>
+          <strong>Subscription.</strong> If you subscribe, we store your plan,
+          billing period, expiration, and the PayPal subscription id. PayPal
+          processes the payment. We do not store card or bank numbers.
+        </li>
+        <li>
           <strong>Communications.</strong> Name, email, optional phone, and
           whatever you include when you write to us.
         </li>
@@ -189,8 +194,9 @@ export function PrivacyPolicyContent() {
       <ul>
         <li>
           <strong>Vendors</strong> who perform services on our behalf — hosting
-          (Google Cloud in the United States) and our mail provider, to deliver
-          sign-in mail, alerts, and contact-form messages to{" "}
+          (Google Cloud in the United States), PayPal to process a subscription
+          you start, and our mail provider, to deliver sign-in mail, alerts,
+          and contact-form messages to{" "}
           <a href="mailto:contact@watchseebuy.com">contact@watchseebuy.com</a>
         </li>
         <li>
@@ -275,7 +281,8 @@ export function PrivacyPolicyContent() {
       </p>
       <ul>
         <li>
-          Account, settings, and watches until you delete them or ask us to
+          Account, settings, watches, and subscription status until you delete
+          them or ask us to
         </li>
         <li>Sessions until they expire or you sign out</li>
         <li>

@@ -175,8 +175,11 @@ matches              watch_id + listing_id, landed_price, comp_delta, unique(wat
 alerts               match_id, channel, sent_at, click_token
 sold_comp_cache      item_key, window, median, sample_size, fetched_at
 ebay_api_calls       api, source, ok, http_status, duration_ms, error
+                     (raw rows + error bodies kept 60 days; daily counts kept)
 email_sends          kind, status (delivered | failed | logged_only), error
-user_events          kind (search | buy_click), user_id, ip, meta
+user_events          kind (search | buy_click), user_id, ip, meta.mode
+                     (classic | agent). Signed-out events use user
+                     `unauthenticated`. Purged after 60 days.
 ```
 
 Indexes on `coverage_query_id`, `ebay_item_id`, and `click_token`. That is the backbone.

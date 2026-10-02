@@ -4,6 +4,7 @@
     "home": "Home",
     "search": "Search",
     "watches": "Watches",
+    "plans": "Plans",
     "openMenu": "Open menu",
     "closeMenu": "Close menu"
   },
@@ -43,7 +44,15 @@
     "outOfScope": "I can only help you browse the catalog.",
     "unavailable": "The assistant is unavailable. Classic search still works.",
     "emptyReply": "Tell me the piece you want to find.",
-    "clear": "Clear conversation"
+    "clear": "Clear conversation",
+    "limitTitle": "Sign in to keep using AI Mode",
+    "limitBody": "You've used your 10 AI searches. Sign in to continue, or switch to classic search.",
+    "limitSignIn": "Sign in",
+    "limitClassic": "Classic search",
+    "limitDismiss": "Close",
+    "upgradeTitle": "You've used this month's AI Mode searches",
+    "upgradeBody": "The free plan includes 100 AI Mode searches a month. Premium includes unlimited AI Mode.",
+    "upgradePlans": "See plans"
   },
   "search": {
     "placeholder": "Find eBay pieces",
@@ -74,7 +83,7 @@
     "clearFilters": "Clear filters",
     "noMatchFilters": "Nothing matches those filters. Try widening price, condition, or location.",
     "noListings": "No listings matched that search.",
-    "watchLimit": "You can watch {limit} pieces at a time. Stop one on <watches>Watches</watches> to add another.",
+    "watchLimit": "You can watch {limit} pieces at a time. Stop one on <watches>Watches</watches>, or see <plans>Plans</plans>.",
     "watchThis": "Watch this",
     "stopOne": "Stop one"
   },
@@ -163,7 +172,22 @@
     "light": "Light",
     "dark": "Dark",
     "appearanceNote": "Remembered on this account when you are signed in.",
-    "save": "Save"
+    "save": "Save",
+    "plan": "Plan",
+    "planActive": "Your subscription is active.",
+    "planNoExpiry": "No expiration date.",
+    "planRenews": "Renews {date}.",
+    "planEnds": "Ends {date}.",
+    "seePlans": "See plans",
+    "planName": {
+      "free": "Free",
+      "premium": "Premium",
+      "premium_plus": "Premium+"
+    },
+    "planInterval": {
+      "monthly": "Billed monthly.",
+      "annual": "Billed annually."
+    }
   },
   "watches": {
     "saved": "Watch saved. Alerts come on the schedule you pick.",
@@ -191,5 +215,35 @@
     "tos": "Terms of service",
     "contact": "Contact Us",
     "disclosure": "WatchSeeBuy is an independent product. If you buy through our links, we may earn a commission from the eBay Partner Network. That does not change the price you pay."
+  },
+  "pricing": {
+    "title": "Plans",
+    "lede": "Search stays open. A plan raises how many pieces you can watch, how quickly Trigger on change checks, and how often you can use AI Mode.",
+    "cycle": "Billing period",
+    "monthly": "Monthly",
+    "annual": "Annual",
+    "annualNote": "2 months free",
+    "perMonth": "/month",
+    "perYear": "/year",
+    "current": "Current plan",
+    "subscribe": "Subscribe",
+    "included": "Included",
+    "freePrice": "$0",
+    "classicUnlimited": "Unlimited Classic search",
+    "watches": "{count} watches",
+    "onChange": "Trigger on change every {interval}",
+    "aiLimited": "{count} AI Mode searches per month",
+    "aiUnlimited": "Unlimited AI Mode search",
+    "earlyAccess": "Be the first to experience new exclusive features",
+    "intervalHour": "1 hour",
+    "interval15": "15 minutes",
+    "interval5": "5 minutes",
+    "unavailable": "PayPal checkout is not available right now. Your plan is unchanged.",
+    "cancelled": "Checkout was cancelled. Your plan is unchanged.",
+    "name": {
+      "free": "Free",
+      "premium": "Premium",
+      "premium_plus": "Premium+"
+    }
   }
 }

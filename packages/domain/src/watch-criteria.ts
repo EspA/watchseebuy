@@ -1060,6 +1060,70 @@ export function describeWatch(criteria: WatchCriteria): string {
   return bits.join(" · ");
 }
 
+function putFilter(
+  filters: Record<string, unknown>,
+  key: string,
+  value: unknown,
+) {
+  if (value === undefined || value === null || value === "" || value === false) {
+    return;
+  }
+  if (Array.isArray(value) && value.length === 0) return;
+  filters[key] = value;
+}
+
+/** Browse and page filters actually applied to a search, skipping defaults. */
+export function compactSearchFilters(
+  intent: WatchCriteria,
+  coverage?: CoverageQuery,
+): Record<string, unknown> {
+  const filters: Record<string, unknown> = {};
+  putFilter(filters, "minCents", intent.minLandedCents);
+  putFilter(filters, "maxCents", intent.maxLandedCents);
+  if (intent.condition !== "any") putFilter(filters, "condition", intent.condition);
+  if (intent.listingType !== "all") putFilter(filters, "listing", intent.listingType);
+  if (intent.itemLocation && intent.itemLocation !== "any") {
+    putFilter(filters, "located", intent.itemLocation);
+  }
+  putFilter(filters, "to", intent.shipToCountry);
+  putFilter(filters, "zip", intent.shipToPostal);
+  putFilter(filters, "confidence", intent.minConfidence);
+  putFilter(filters, "score", intent.minPriceScore);
+  if (intent.excludeKeywords.length > 0) {
+    putFilter(filters, "exclude", intent.excludeKeywords.slice(0, 20));
+  }
+  putFilter(filters, "set", intent.cardSet);
+  putFilter(filters, "rarity", intent.rarity);
+  putFilter(filters, "printing", intent.printing);
+  putFilter(filters, "language", intent.language);
+  putFilter(filters, "grader", intent.grader);
+  putFilter(filters, "grade", intent.cardGrade);
+  putFilter(filters, "cardCategory", intent.cardCategory);
+  putFilter(filters, "cardGame", intent.cardGame);
+  putFilter(filters, "noReprints", intent.cardNoReprints);
+  putFilter(filters, "noProxy", intent.cardNoProxy);
+  if (intent.excludeUnofficial === false) putFilter(filters, "unofficial", true);
+  putFilter(filters, "figureCategory", intent.figureCategory);
+  putFilter(filters, "figureScale", intent.figureScale);
+  putFilter(filters, "figurePackaging", intent.figurePackaging);
+  putFilter(filters, "figureCompleteness", intent.figureCompleteness);
+  putFilter(filters, "figurePunch", intent.figurePunch);
+  putFilter(filters, "brickCategory", intent.brickCategory);
+  putFilter(filters, "brickType", intent.brickType);
+  putFilter(filters, "brickStatus", intent.brickStatus);
+  putFilter(filters, "wheelsCategory", intent.wheelsCategory);
+  putFilter(filters, "wheelsScale", intent.wheelsScale);
+  putFilter(filters, "wheelsPackaging", intent.wheelsPackaging);
+  if (coverage) {
+    putFilter(filters, "categoryIds", coverage.categoryIds);
+    putFilter(filters, "aspectFilter", coverage.aspectFilter);
+    if (coverage.keywords && coverage.keywords !== intent.query) {
+      putFilter(filters, "browseQ", coverage.keywords.slice(0, 200));
+    }
+  }
+  return filters;
+}
+
 export function listingMatchesGrader(
   listing: { title?: string },
   grader?: string,

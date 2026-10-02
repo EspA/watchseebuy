@@ -8,9 +8,9 @@ const BATCH = 5_000;
 const MAX_BATCHES = 20;
 
 export const RETENTION = {
-  ebayApiCallsDays: 30,
-  emailSendsDays: 90,
-  userEventsDays: 90,
+  ebayApiCallsDays: 60,
+  emailSendsDays: 60,
+  userEventsDays: 60,
   alertsDays: 90,
   matchesDays: 180,
   soldCompCacheDays: 7,
@@ -145,7 +145,7 @@ async function rollupEbayApiCalls(db: Database, now: Date) {
   await db.execute(sql`
     INSERT INTO ebay_api_daily (day, api, source, total, success, failure, rate_limited)
     SELECT
-      (called_at AT TIME ZONE 'UTC')::date AS day,
+      (called_at AT TIME ZONE 'America/New_York')::date AS day,
       api,
       source,
       count(*)::int,

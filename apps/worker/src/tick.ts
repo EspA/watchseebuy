@@ -1,4 +1,5 @@
 import {
+  PLAN_ENTITLEMENTS,
   applyListingIdentity,
   asWatchCriteria,
   attachPriceScores,
@@ -50,11 +51,14 @@ export async function tick(now = new Date()) {
   const db = getDb();
   const ebay = createEbayClientFromEnv("worker_poll");
   const pollMs = Number(process.env.COVERAGE_POLL_MS ?? DEFAULT_POLL_MS);
-  const staleBefore = new Date(
-    now.getTime() - (Number.isFinite(pollMs) && pollMs > 0 ? pollMs : DEFAULT_POLL_MS),
-  );
+  const defaultPollMs =
+    Number.isFinite(pollMs) && pollMs > 0 ? pollMs : DEFAULT_POLL_MS;
 
-  const due = await listCoverageDueForPoll(db, staleBefore);
+  const due = await listCoverageDueForPoll(db, now, {
+    defaultPollMs,
+    premiumPollMs: PLAN_ENTITLEMENTS.premium.onChangeIntervalMs,
+    premiumPlusPollMs: PLAN_ENTITLEMENTS.premium_plus.onChangeIntervalMs,
+  });
   const hydrateLimit = hydrateLimitFromEnv();
   let polled = 0;
   let newMatches = 0;

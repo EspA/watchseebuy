@@ -81,7 +81,11 @@ export function interpretAgentTurn(
 
   const criteria = criteriaFromAgent(
     raw,
-    fresh ? { ebaySite: input.ebaySite } : input,
+    fresh
+      ? input.ebaySite
+        ? { ebaySite: input.ebaySite }
+        : {}
+      : input,
   );
   if (!criteria.query.trim()) return { action: "clarify", reply, fresh };
 

@@ -1,10 +1,11 @@
-export const FREE_WATCH_LIMIT = 10;
+import { PLAN_ENTITLEMENTS, type BillingPlan } from "./billing.ts";
 
-export type WatchPlan = "free" | "premium";
+export const FREE_WATCH_LIMIT = PLAN_ENTITLEMENTS.free.maxWatches;
+
+export type WatchPlan = BillingPlan;
 
 export function watchLimitForPlan(plan: WatchPlan = "free"): number {
-  if (plan === "premium") return Number.POSITIVE_INFINITY;
-  return FREE_WATCH_LIMIT;
+  return PLAN_ENTITLEMENTS[plan].maxWatches;
 }
 
 export function atWatchLimit(count: number, plan: WatchPlan = "free"): boolean {

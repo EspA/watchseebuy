@@ -5,7 +5,8 @@
     "search": "Zoeken",
     "watches": "Volgen",
     "openMenu": "Menu openen",
-    "closeMenu": "Menu sluiten"
+    "closeMenu": "Menu sluiten",
+    "plans": "Abonnementen"
   },
   "account": {
     "account": "Account",
@@ -43,7 +44,15 @@
     "outOfScope": "Ik kan alleen helpen de catalogus te bekijken.",
     "unavailable": "De assistent is niet beschikbaar. Klassiek zoeken werkt nog steeds.",
     "emptyReply": "Vertel welk stuk je zoekt.",
-    "clear": "Gesprek wissen"
+    "clear": "Gesprek wissen",
+    "limitTitle": "Log in om AI-modus te blijven gebruiken",
+    "limitBody": "Je hebt je 10 AI-zoekopdrachten gebruikt. Log in om verder te gaan, of wissel naar klassiek zoeken.",
+    "limitSignIn": "Inloggen",
+    "limitClassic": "Klassiek zoeken",
+    "limitDismiss": "Sluiten",
+    "upgradeTitle": "Je hebt de AI-modus-zoekopdrachten van deze maand gebruikt",
+    "upgradeBody": "Het gratis abonnement bevat 100 AI-modus-zoekopdrachten per maand. Premium bevat onbeperkte AI-modus.",
+    "upgradePlans": "Bekijk abonnementen"
   },
   "search": {
     "placeholder": "eBay-stukken vinden",
@@ -74,7 +83,7 @@
     "clearFilters": "Filters wissen",
     "noMatchFilters": "Niets past bij die filters. Verruim prijs, conditie of locatie.",
     "noListings": "Geen listings voor die zoekopdracht.",
-    "watchLimit": "Je kunt {limit} stukken tegelijk volgen. Stop er een op <watches>Volgen</watches> om er een bij te zetten.",
+    "watchLimit": "Je kunt {limit} stukken tegelijk volgen. Stop er een op <watches>Volgen</watches>, of bekijk de <plans>Abonnementen</plans>.",
     "watchThis": "Volgen",
     "stopOne": "Stop er een"
   },
@@ -163,7 +172,22 @@
     "light": "Licht",
     "dark": "Donker",
     "appearanceNote": "Onthouden op dit account als je bent ingelogd.",
-    "save": "Opslaan"
+    "save": "Opslaan",
+    "plan": "Abonnement",
+    "planActive": "Je abonnement is actief.",
+    "planNoExpiry": "Geen vervaldatum.",
+    "planRenews": "Verlengt op {date}.",
+    "planEnds": "Eindigt op {date}.",
+    "seePlans": "Bekijk abonnementen",
+    "planName": {
+      "free": "Gratis",
+      "premium": "Premium",
+      "premium_plus": "Premium+"
+    },
+    "planInterval": {
+      "monthly": "Maandelijks gefactureerd.",
+      "annual": "Jaarlijks gefactureerd."
+    }
   },
   "watches": {
     "saved": "Volglijst opgeslagen. Meldingen komen volgens het schema dat je kiest.",
@@ -191,5 +215,35 @@
     "tos": "Servicevoorwaarden",
     "contact": "Contact",
     "disclosure": "WatchSeeBuy is een onafhankelijk product. Als je via onze links koopt, kunnen we een commissie van het eBay Partner Network verdienen. Dat verandert de prijs die je betaalt niet."
+  },
+  "pricing": {
+    "title": "Abonnementen",
+    "lede": "Zoeken blijft open. Een abonnement verhoogt hoeveel stukken je volgt, hoe vaak Trigger bij wijziging controleert en hoe vaak je AI-modus gebruikt.",
+    "cycle": "Factuurperiode",
+    "monthly": "Maandelijks",
+    "annual": "Jaarlijks",
+    "annualNote": "2 maanden gratis",
+    "perMonth": "/maand",
+    "perYear": "/jaar",
+    "current": "Huidig abonnement",
+    "subscribe": "Abonneren",
+    "included": "Inbegrepen",
+    "freePrice": "$0",
+    "classicUnlimited": "Onbeperkt klassiek zoeken",
+    "watches": "{count} volglijsten",
+    "onChange": "Trigger bij wijziging elke {interval}",
+    "aiLimited": "{count} AI-modus-zoekopdrachten per maand",
+    "aiUnlimited": "Onbeperkt zoeken in AI-modus",
+    "earlyAccess": "Wees de eerste die nieuwe exclusieve functies probeert",
+    "intervalHour": "1 uur",
+    "interval15": "15 minuten",
+    "interval5": "5 minuten",
+    "unavailable": "PayPal-betaling is nu niet beschikbaar. Je abonnement blijft hetzelfde.",
+    "cancelled": "Het afrekenen is geannuleerd. Je abonnement blijft hetzelfde.",
+    "name": {
+      "free": "Gratis",
+      "premium": "Premium",
+      "premium_plus": "Premium+"
+    }
   }
 }

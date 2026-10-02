@@ -12,10 +12,12 @@ export function HomeSearch({
   site,
   leadSite,
   agent,
+  signedIn,
 }: {
   site: string;
   leadSite: string;
   agent: boolean;
+  signedIn: boolean;
 }) {
   const router = useRouter();
   const t = useTranslations("home");
@@ -36,7 +38,7 @@ export function HomeSearch({
           onChange={choose}
         />
         {agent ? (
-          <AgentChat site={site} />
+          <AgentChat site={site} signedIn={signedIn} />
         ) : (
           <form className="search tease-search" action="/search" method="get">
             <input type="hidden" name="mode" value="classic" />

@@ -1,10 +1,11 @@
-import { and, eq, inArray, isNull, lte, or, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import type { Database } from "./client";
 import {
   alerts,
   coverageQueries,
   listings,
   matches,
+  subscriptions,
   user,
   watches,
 } from "./schema";
@@ -50,10 +51,30 @@ export type UnsentMatch = {
 
 export async function listCoverageDueForPoll(
   db: Database,
-  staleBefore: Date,
+  now: Date,
+  intervals: {
+    defaultPollMs: number;
+    premiumPollMs: number;
+    premiumPlusPollMs: number;
+  },
 ) {
+  const pollMs = sql`MIN(
+    CASE
+      WHEN ${watches.alertFrequency} = 'on_change'
+        AND ${subscriptions.plan} = 'premium_plus'
+        AND ${subscriptions.status} IN ('active', 'cancelled')
+        AND ${subscriptions.expiresAt} > ${now}
+      THEN LEAST(${intervals.defaultPollMs}, ${intervals.premiumPlusPollMs})
+      WHEN ${watches.alertFrequency} = 'on_change'
+        AND ${subscriptions.plan} = 'premium'
+        AND ${subscriptions.status} IN ('active', 'cancelled')
+        AND ${subscriptions.expiresAt} > ${now}
+      THEN LEAST(${intervals.defaultPollMs}, ${intervals.premiumPollMs})
+      ELSE ${intervals.defaultPollMs}
+    END
+  )`;
   return db
-    .selectDistinct({
+    .select({
       id: coverageQueries.id,
       key: coverageQueries.key,
       keywords: coverageQueries.keywords,
@@ -64,10 +85,20 @@ export async function listCoverageDueForPoll(
     })
     .from(coverageQueries)
     .innerJoin(watches, eq(watches.coverageQueryId, coverageQueries.id))
-    .where(
+    .leftJoin(subscriptions, eq(subscriptions.userId, watches.userId))
+    .groupBy(
+      coverageQueries.id,
+      coverageQueries.key,
+      coverageQueries.keywords,
+      coverageQueries.condition,
+      coverageQueries.ebaySite,
+      coverageQueries.listingType,
+      coverageQueries.lastPolledAt,
+    )
+    .having(
       or(
         isNull(coverageQueries.lastPolledAt),
-        lte(coverageQueries.lastPolledAt, staleBefore),
+        sql`${coverageQueries.lastPolledAt} <= ${now} - (${pollMs} * interval '1 millisecond')`,
       ),
     );
 }

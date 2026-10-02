@@ -1,8 +1,14 @@
-import { getAdminUserDetail, getDb } from "@watchseebuy/db";
+import { getAdminUserDetail, getDb, isUnauthenticatedUserId } from "@watchseebuy/db";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { describeIpLocation } from "@/lib/geo";
-import { formatDate, formatEventKind, formatProviders } from "@/lib/format";
+import {
+  formatDate,
+  formatEventDetail,
+  formatEventKind,
+  formatProviders,
+  formatSearchMode,
+} from "@/lib/format";
 import { requireAdmin } from "@/lib/require-admin";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +23,7 @@ export default async function UserDetailPage({
   const user = await getAdminUserDetail(getDb(), id);
   if (!user) notFound();
   const location = await describeIpLocation(user.lastIp, user.lastCountry);
+  const guest = isUnauthenticatedUserId(user.id);
 
   return (
     <main className="page">
@@ -25,19 +32,23 @@ export default async function UserDetailPage({
           Users
         </Link>
       </p>
-      <h1>{user.email}</h1>
-      <p className="lede">{user.name}</p>
+      <h1>{guest ? "Unauthenticated" : user.email}</h1>
+      <p className="lede">
+        {guest
+          ? "Searches and buy clicks from visitors who are not signed in."
+          : user.name}
+      </p>
       <dl className="dl">
         <dt>First name</dt>
         <dd>{user.firstName ?? "—"}</dd>
         <dt>Last name</dt>
         <dd>{user.lastName ?? "—"}</dd>
         <dt>Last login</dt>
-        <dd>{formatDate(user.lastLoginAt)}</dd>
+        <dd>{guest ? "—" : formatDate(user.lastLoginAt)}</dd>
         <dt>Auth count</dt>
-        <dd>{user.loginCount}</dd>
+        <dd>{guest ? "—" : user.loginCount}</dd>
         <dt>Auth method</dt>
-        <dd>{formatProviders(user.providerIds)}</dd>
+        <dd>{guest ? "—" : formatProviders(user.providerIds)}</dd>
         <dt>Last IP</dt>
         <dd>{user.lastIp ?? "—"}</dd>
         <dt>Location</dt>
@@ -69,6 +80,7 @@ export default async function UserDetailPage({
               <tr>
                 <th>When</th>
                 <th>Kind</th>
+                <th>Mode</th>
                 <th>IP</th>
                 <th>Detail</th>
               </tr>
@@ -78,10 +90,13 @@ export default async function UserDetailPage({
                 <tr key={event.id}>
                   <td>{formatDate(event.occurredAt)}</td>
                   <td>{formatEventKind(event.kind)}</td>
-                  <td>{event.ip ?? "—"}</td>
-                  <td className="muted">
-                    {event.meta ? JSON.stringify(event.meta) : "—"}
+                  <td>
+                    {event.kind === "search"
+                      ? formatSearchMode(event.meta)
+                      : "—"}
                   </td>
+                  <td>{event.ip ?? "—"}</td>
+                  <td className="muted">{formatEventDetail(event.meta)}</td>
                 </tr>
               ))}
             </tbody>

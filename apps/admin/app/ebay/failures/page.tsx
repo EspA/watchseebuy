@@ -14,7 +14,7 @@ import { requireAdmin } from "@/lib/require-admin";
 export const dynamic = "force-dynamic";
 
 function filterLabel(query: ReturnType<typeof parseEbayFailureQuery>) {
-  const parts = [`Last ${query.days} days (UTC)`];
+  const parts = [`Last ${query.days} days (ET)`];
   if (query.day) parts.push(query.day);
   if (query.api) parts.push(query.api);
   if (query.source) parts.push(query.source);

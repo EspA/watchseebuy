@@ -35,10 +35,30 @@ export {
   type WatchForAlert,
 } from "./alerts";
 export {
+  incrementAgentSearchQuota,
+  readAgentSearchQuota,
+  writeAgentSearchQuota,
+} from "./agent-quota";
+export {
+  getPaypalCatalogId,
+  getSubscriptionByPaypalId,
+  getUserSubscription,
+  paypalCatalogKeyForId,
+  savePaypalCatalogId,
+  upsertUserSubscription,
+  type UserSubscription,
+} from "./subscriptions";
+export {
   recordConsumerLogin,
   recordEbayApiCall,
   recordEmailSend,
   recordUserEvent,
+  backfillUnauthenticatedCounts,
+  ensureUnauthenticatedUser,
+  isUnauthenticatedUserId,
+  UNAUTHENTICATED_EMAIL,
+  UNAUTHENTICATED_NAME,
+  UNAUTHENTICATED_USER_ID,
   type EbayApiName,
   type EbayApiSource,
   type EmailKind,
@@ -73,6 +93,7 @@ export {
   parseEbayStatDay,
   parseEbayStatWindow,
   utcDayBounds,
+  ADMIN_STATS_TIMEZONE,
   EBAY_FAILURE_PAGE_SIZE,
   EBAY_STAT_WINDOWS,
   type AdminUserDetail,

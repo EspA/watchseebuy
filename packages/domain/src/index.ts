@@ -244,6 +244,7 @@ export {
   CONDITION_GROUPS,
   conditionLabel,
   coverageKeywords,
+  compactSearchFilters,
   describeWatch,
   ebaySearchQuery,
   excludeWordsField,
@@ -315,6 +316,7 @@ export {
   DEFAULT_USER_TIMEZONE,
   WATCH_DIGEST_HOUR,
   WATCH_WEEKLY_DIGEST_DAY,
+  addCalendarDays,
   isIanaTimeZone,
   listTimeZones,
   nextWatchDigestAt,
@@ -322,6 +324,10 @@ export {
   resolveUserTimeZone,
   timeZoneGroups,
   timeZoneLabel,
+  zonedCalendarDays,
+  zonedDateKey,
+  zonedDayBounds,
+  zonedWindowStart,
 } from "./user-timezone";
 export { isWatchDigestDue } from "./alert-schedule";
 export {
@@ -331,6 +337,26 @@ export {
   searchOffset,
   searchPageCount,
 } from "./search-page";
+export {
+  BILLING_PLANS,
+  PAID_PRICE_CENTS,
+  PLAN_ENTITLEMENTS,
+  agentSearchMonthKey,
+  coveragePollIntervalMs,
+  effectiveBillingPlan,
+  fallbackPeriodEnd,
+  formatUsdFromCents,
+  isBillingInterval,
+  isBillingPlan,
+  isPaidPlan,
+  paidPlanKey,
+  parsePaidPlanKey,
+  paypalAmount,
+  type BillingInterval,
+  type BillingPlan,
+  type PaidPlan,
+  type SubscriptionSnapshot,
+} from "./billing";
 export {
   FREE_WATCH_LIMIT,
   atWatchLimit,

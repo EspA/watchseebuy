@@ -5,7 +5,8 @@
     "search": "Buscar",
     "watches": "Alertas",
     "openMenu": "Abrir menú",
-    "closeMenu": "Cerrar menú"
+    "closeMenu": "Cerrar menú",
+    "plans": "Planes"
   },
   "account": {
     "account": "Cuenta",
@@ -43,7 +44,15 @@
     "outOfScope": "Solo puedo ayudarte a explorar el catálogo.",
     "unavailable": "El asistente no está disponible. La búsqueda clásica sigue funcionando.",
     "emptyReply": "Dime la pieza que quieres encontrar.",
-    "clear": "Borrar la conversación"
+    "clear": "Borrar la conversación",
+    "limitTitle": "Inicia sesión para seguir usando el modo IA",
+    "limitBody": "Has usado tus 10 búsquedas con IA. Inicia sesión para continuar, o cambia a la búsqueda clásica.",
+    "limitSignIn": "Iniciar sesión",
+    "limitClassic": "Búsqueda clásica",
+    "limitDismiss": "Cerrar",
+    "upgradeTitle": "Has usado las búsquedas de Modo IA de este mes",
+    "upgradeBody": "El plan gratis incluye 100 búsquedas de Modo IA al mes. Premium incluye Modo IA ilimitado.",
+    "upgradePlans": "Ver planes"
   },
   "search": {
     "placeholder": "Buscar piezas de eBay",
@@ -74,7 +83,7 @@
     "clearFilters": "Borrar filtros",
     "noMatchFilters": "Nada coincide con esos filtros. Amplía precio, estado o ubicación.",
     "noListings": "Ningún anuncio coincidió con esa búsqueda.",
-    "watchLimit": "Puedes vigilar {limit} piezas a la vez. Detén una en <watches>Alertas</watches> para añadir otra.",
+    "watchLimit": "Puedes vigilar {limit} piezas a la vez. Detén una en <watches>Alertas</watches>, o mira los <plans>Planes</plans>.",
     "watchThis": "Vigilar",
     "stopOne": "Detener una"
   },
@@ -163,7 +172,22 @@
     "light": "Claro",
     "dark": "Oscuro",
     "appearanceNote": "Se recuerda en esta cuenta cuando has iniciado sesión.",
-    "save": "Guardar"
+    "save": "Guardar",
+    "plan": "Plan",
+    "planActive": "Tu suscripción está activa.",
+    "planNoExpiry": "Sin fecha de vencimiento.",
+    "planRenews": "Se renueva el {date}.",
+    "planEnds": "Termina el {date}.",
+    "seePlans": "Ver planes",
+    "planName": {
+      "free": "Gratis",
+      "premium": "Premium",
+      "premium_plus": "Premium+"
+    },
+    "planInterval": {
+      "monthly": "Facturación mensual.",
+      "annual": "Facturación anual."
+    }
   },
   "watches": {
     "saved": "Alerta guardada. Los avisos llegan en el horario que elijas.",
@@ -191,5 +215,35 @@
     "tos": "Términos del servicio",
     "contact": "Contacto",
     "disclosure": "WatchSeeBuy es un producto independiente. Si compras a través de nuestros enlaces, podemos ganar una comisión de eBay Partner Network. Eso no cambia el precio que pagas."
+  },
+  "pricing": {
+    "title": "Planes",
+    "lede": "La búsqueda sigue abierta. Un plan aumenta cuántas piezas puedes vigilar, cada cuánto se comprueba Activar al cambiar y cuántas veces puedes usar el Modo IA.",
+    "cycle": "Periodo de facturación",
+    "monthly": "Mensual",
+    "annual": "Anual",
+    "annualNote": "2 meses gratis",
+    "perMonth": "/mes",
+    "perYear": "/año",
+    "current": "Plan actual",
+    "subscribe": "Suscribirse",
+    "included": "Incluido",
+    "freePrice": "$0",
+    "classicUnlimited": "Búsqueda clásica ilimitada",
+    "watches": "{count} alertas",
+    "onChange": "Activar al cambiar cada {interval}",
+    "aiLimited": "{count} búsquedas de Modo IA al mes",
+    "aiUnlimited": "Búsqueda de Modo IA ilimitada",
+    "earlyAccess": "Sé el primero en probar nuevas funciones exclusivas",
+    "intervalHour": "1 hora",
+    "interval15": "15 minutos",
+    "interval5": "5 minutos",
+    "unavailable": "El pago con PayPal no está disponible ahora. Tu plan no cambia.",
+    "cancelled": "El pago se canceló. Tu plan no cambia.",
+    "name": {
+      "free": "Gratis",
+      "premium": "Premium",
+      "premium_plus": "Premium+"
+    }
   }
 }

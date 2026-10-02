@@ -93,6 +93,22 @@ export function TermsOfServiceContent() {
         alert (you will need to sign in).
       </p>
 
+      <h2>Plans</h2>
+      <p>
+        Search works without a paid plan. A subscription raises the number of
+        watches, how often Trigger on change is checked, and the AI Mode
+        allowance described on the Plans page. The free plan does not expire.
+        Paid plans renew through PayPal until you cancel. Cancel anytime in
+        PayPal; the paid plan stays in effect until the date shown in Settings,
+        then the account returns to the free plan. An annual subscription is
+        billed once per year at the price of ten months.
+      </p>
+      <p>
+        Prices are in US dollars and are shown before you leave for PayPal. We
+        do not store your card or bank details. PayPal’s own terms apply to the
+        payment. Fees are not refunded except where the law requires it.
+      </p>
+
       <h2>Price to your door, scores, and comps</h2>
       <p>
         Price to your door is an estimate: item price plus shipping plus a

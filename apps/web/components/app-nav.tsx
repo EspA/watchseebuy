@@ -21,6 +21,11 @@ export function AppNav() {
       label: t("watches"),
       match: (path: string) => path === "/watches" || path.startsWith("/watches/"),
     },
+    {
+      href: "/pricing",
+      label: t("plans"),
+      match: (path: string) => path === "/pricing" || path.startsWith("/pricing/"),
+    },
   ] as const;
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);

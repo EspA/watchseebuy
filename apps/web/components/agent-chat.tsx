@@ -9,6 +9,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 import { ArrowUpIcon, TrashIcon } from "@/components/icons";
 import {
   useNavigateSearch,
@@ -17,6 +18,7 @@ import {
 
 const STORAGE_KEY = "wsb.agent.transcript";
 const DETACHED_KEY = "wsb.agent.detached";
+const LIMIT_KEY = "wsb.agent.limit";
 const MAX_STORED = 24;
 
 type StoredMessage = { role: "user" | "assistant"; content: string };
@@ -24,10 +26,12 @@ type StoredMessage = { role: "user" | "assistant"; content: string };
 export function AgentChat({
   site,
   search,
+  signedIn = false,
   children,
 }: {
   site: string;
   search?: Record<string, string>;
+  signedIn?: boolean;
   children?: ReactNode;
 }) {
   const t = useTranslations("agent");
@@ -38,6 +42,8 @@ export function AgentChat({
   const [pending, setPending] = useState(false);
   const [catalogWait, setCatalogWait] = useState(false);
   const [ready, setReady] = useState(false);
+  const [limitOpen, setLimitOpen] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const submitTipId = useId();
   const clearTipId = useId();
@@ -50,6 +56,15 @@ export function AgentChat({
     detachedRef.current = readDetached() !== null;
     setReady(true);
   }, []);
+
+  useEffect(() => {
+    if (signedIn) {
+      clearLimitFlag();
+      setLimitOpen(false);
+      return;
+    }
+    if (readLimitFlag()) setLimitOpen(true);
+  }, [signedIn]);
 
   useEffect(() => {
     const stored = readDetached();
@@ -125,6 +140,20 @@ export function AgentChat({
       });
       const body: unknown = await response.json().catch(() => null);
       if (requestRef.current !== request) return;
+      if (isSignInRequired(body)) {
+        setMessages(messages);
+        remember(messages);
+        setDraft(content);
+        openLimit();
+        return;
+      }
+      if (isUpgradeRequired(body)) {
+        setMessages(messages);
+        remember(messages);
+        setDraft(content);
+        setUpgradeOpen(true);
+        return;
+      }
       const reply: StoredMessage = {
         role: "assistant",
         content: assistantText(body, t),
@@ -138,6 +167,7 @@ export function AgentChat({
         detachedRef.current = true;
         writeDetached(searchFingerprint(search));
       }
+      if (isLimitReached(body)) openLimit();
       if (isSearch(body)) {
         const href = withAgentMode(body.href, window.location.search, fresh);
         if (!sameResults(href)) {
@@ -237,7 +267,99 @@ export function AgentChat({
         </div>
         </div>
       </div>
+      {limitOpen ? (
+        <AgentLimitDialog
+          kind="sign_in"
+          onClose={dismissLimit}
+          onClassic={() => {
+            dismissLimit();
+            navigateSearch(classicSearchHref());
+          }}
+        />
+      ) : null}
+      {upgradeOpen ? (
+        <AgentLimitDialog
+          kind="upgrade"
+          onClose={() => setUpgradeOpen(false)}
+          onClassic={() => {
+            setUpgradeOpen(false);
+            navigateSearch(classicSearchHref());
+          }}
+        />
+      ) : null}
     </div>
+  );
+
+  function openLimit() {
+    writeLimitFlag();
+    setLimitOpen(true);
+  }
+
+  function dismissLimit() {
+    clearLimitFlag();
+    setLimitOpen(false);
+  }
+}
+
+function AgentLimitDialog({
+  kind,
+  onClose,
+  onClassic,
+}: {
+  kind: "sign_in" | "upgrade";
+  onClose: () => void;
+  onClassic: () => void;
+}) {
+  const t = useTranslations("agent");
+  const titleId = useId();
+  const signInRef = useRef<HTMLAnchorElement>(null);
+  const onCloseRef = useRef(onClose);
+  const [signInHref, setSignInHref] = useState("/sign-in");
+  onCloseRef.current = onClose;
+
+  useEffect(() => {
+    const next = `${window.location.pathname}${window.location.search}`;
+    setSignInHref(`/sign-in?next=${encodeURIComponent(next)}`);
+    signInRef.current?.focus();
+    const onKey = (event: globalThis.KeyboardEvent) => {
+      if (event.key === "Escape") onCloseRef.current();
+    };
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKey);
+    };
+  }, []);
+
+  const title = kind === "upgrade" ? t("upgradeTitle") : t("limitTitle");
+  const body = kind === "upgrade" ? t("upgradeBody") : t("limitBody");
+  const actionHref = kind === "upgrade" ? "/pricing" : signInHref;
+  const actionLabel = kind === "upgrade" ? t("upgradePlans") : t("limitSignIn");
+
+  return createPortal(
+    <div className="agent-limit" role="dialog" aria-modal="true" aria-labelledby={titleId}>
+      <button
+        type="button"
+        className="agent-limit-backdrop"
+        aria-label={t("limitDismiss")}
+        onClick={onClose}
+      />
+      <div className="agent-limit-card">
+        <h2 id={titleId}>{title}</h2>
+        <p>{body}</p>
+        <div className="agent-limit-actions">
+          <a ref={signInRef} className="btn" href={actionHref}>
+            {actionLabel}
+          </a>
+          <button type="button" className="btn secondary" onClick={onClassic}>
+            {t("limitClassic")}
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -259,6 +381,18 @@ function assistantText(
     return t("emptyReply");
   }
   return t("unavailable");
+}
+
+function isSignInRequired(body: unknown): boolean {
+  return isRecord(body) && body.action === "sign_in_required";
+}
+
+function isUpgradeRequired(body: unknown): boolean {
+  return isRecord(body) && body.action === "upgrade_required";
+}
+
+function isLimitReached(body: unknown): boolean {
+  return isRecord(body) && body.limitReached === true;
 }
 
 function isSearch(body: unknown): body is { action: "search"; href: string } {
@@ -334,6 +468,36 @@ function clearDetached() {
     sessionStorage.removeItem(DETACHED_KEY);
   } catch {
     // The in-memory flag is cleared by the caller.
+  }
+}
+
+function classicSearchHref(): string {
+  const url = new URL(window.location.href);
+  url.searchParams.set("mode", "classic");
+  return `${url.pathname}?${url.searchParams.toString()}`;
+}
+
+function readLimitFlag(): boolean {
+  try {
+    return sessionStorage.getItem(LIMIT_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function writeLimitFlag() {
+  try {
+    sessionStorage.setItem(LIMIT_KEY, "1");
+  } catch {
+    // The dialog still opens for this page.
+  }
+}
+
+function clearLimitFlag() {
+  try {
+    sessionStorage.removeItem(LIMIT_KEY);
+  } catch {
+    // The in-memory dialog is closed by the caller.
   }
 }
 

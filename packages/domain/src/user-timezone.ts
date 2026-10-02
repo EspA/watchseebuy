@@ -38,6 +38,79 @@ export function resolveUserTimeZone(raw: string | undefined | null): string {
   return parseUserTimeZone(raw) ?? DEFAULT_USER_TIMEZONE;
 }
 
+export function zonedDateKey(
+  date: Date,
+  timeZone = DEFAULT_USER_TIMEZONE,
+): string {
+  const parts = zonedParts(date, timeZone);
+  return `${parts.year}-${String(parts.month).padStart(2, "0")}-${String(parts.day).padStart(2, "0")}`;
+}
+
+export function addCalendarDays(day: string, delta: number): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(day);
+  if (!match) return day;
+  const next = new Date(
+    Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]) + delta),
+  );
+  return next.toISOString().slice(0, 10);
+}
+
+export function zonedDayBounds(
+  day: string,
+  timeZone = DEFAULT_USER_TIMEZONE,
+): { start: Date; end: Date } | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return null;
+  const [year, month, dayNum] = day.split("-").map(Number) as [
+    number,
+    number,
+    number,
+  ];
+  const start = wallTimeToUtc(
+    { year, month, day: dayNum, hour: 0, minute: 0, second: 0 },
+    timeZone,
+  );
+  const next = addCalendarDays(day, 1);
+  const [nextYear, nextMonth, nextDay] = next.split("-").map(Number) as [
+    number,
+    number,
+    number,
+  ];
+  const end = wallTimeToUtc(
+    {
+      year: nextYear,
+      month: nextMonth,
+      day: nextDay,
+      hour: 0,
+      minute: 0,
+      second: 0,
+    },
+    timeZone,
+  );
+  return { start, end };
+}
+
+export function zonedCalendarDays(
+  days: number,
+  now = new Date(),
+  timeZone = DEFAULT_USER_TIMEZONE,
+): string[] {
+  const today = zonedDateKey(now, timeZone);
+  const keys: string[] = [];
+  for (let i = days - 1; i >= 0; i -= 1) {
+    keys.push(addCalendarDays(today, -i));
+  }
+  return keys;
+}
+
+export function zonedWindowStart(
+  days: number,
+  now = new Date(),
+  timeZone = DEFAULT_USER_TIMEZONE,
+): Date {
+  const first = zonedCalendarDays(days, now, timeZone)[0] ?? zonedDateKey(now, timeZone);
+  return zonedDayBounds(first, timeZone)?.start ?? now;
+}
+
 export function listTimeZones(): string[] {
   if (typeof Intl !== "undefined" && "supportedValuesOf" in Intl) {
     return Intl.supportedValuesOf("timeZone");

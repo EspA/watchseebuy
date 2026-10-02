@@ -1,4 +1,9 @@
-import { countUsers, getDb, listAdminUsers } from "@watchseebuy/db";
+import {
+  countUsers,
+  getDb,
+  isUnauthenticatedUserId,
+  listAdminUsers,
+} from "@watchseebuy/db";
 import Link from "next/link";
 import { formatDate, formatProviders } from "@/lib/format";
 import { requireAdmin } from "@/lib/require-admin";
@@ -37,14 +42,28 @@ export default async function UsersPage() {
               {users.map((row) => (
                 <tr key={row.id}>
                   <td>
-                    <Link href={`/users/${row.id}`}>{row.email}</Link>
+                    <Link href={`/users/${row.id}`}>
+                      {isUnauthenticatedUserId(row.id)
+                        ? "Unauthenticated"
+                        : row.email}
+                    </Link>
                   </td>
                   <td>
-                    {[row.firstName, row.lastName].filter(Boolean).join(" ") ||
-                      row.name}
+                    {isUnauthenticatedUserId(row.id)
+                      ? "Guest searches"
+                      : [row.firstName, row.lastName].filter(Boolean).join(" ") ||
+                        row.name}
                   </td>
-                  <td>{formatDate(row.lastLoginAt)}</td>
-                  <td>{formatProviders(row.providerIds)}</td>
+                  <td>
+                    {isUnauthenticatedUserId(row.id)
+                      ? "—"
+                      : formatDate(row.lastLoginAt)}
+                  </td>
+                  <td>
+                    {isUnauthenticatedUserId(row.id)
+                      ? "—"
+                      : formatProviders(row.providerIds)}
+                  </td>
                   <td>{row.watchesCount}</td>
                   <td>{row.searchCount}</td>
                   <td>{row.buyClickCount}</td>

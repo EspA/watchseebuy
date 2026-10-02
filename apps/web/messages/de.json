@@ -5,7 +5,8 @@
     "search": "Suche",
     "watches": "Beobachtungen",
     "openMenu": "Menü öffnen",
-    "closeMenu": "Menü schließen"
+    "closeMenu": "Menü schließen",
+    "plans": "Tarife"
   },
   "account": {
     "account": "Konto",
@@ -43,7 +44,15 @@
     "outOfScope": "Ich kann nur beim Durchsuchen des Katalogs helfen.",
     "unavailable": "Der Assistent ist nicht verfügbar. Die klassische Suche funktioniert weiter.",
     "emptyReply": "Sag mir, welches Stück du suchst.",
-    "clear": "Unterhaltung löschen"
+    "clear": "Unterhaltung löschen",
+    "limitTitle": "Melde dich an, um den KI-Modus weiter zu nutzen",
+    "limitBody": "Du hast deine 10 KI-Suchen verbraucht. Melde dich an, um weiterzumachen, oder wechsle zur klassischen Suche.",
+    "limitSignIn": "Anmelden",
+    "limitClassic": "Klassische Suche",
+    "limitDismiss": "Schließen",
+    "upgradeTitle": "Du hast die KI-Suchen dieses Monats aufgebraucht",
+    "upgradeBody": "Der kostenlose Tarif umfasst 100 KI-Modus-Suchen im Monat. Premium umfasst unbegrenzten KI-Modus.",
+    "upgradePlans": "Tarife ansehen"
   },
   "search": {
     "placeholder": "eBay-Stücke finden",
@@ -74,7 +83,7 @@
     "clearFilters": "Filter löschen",
     "noMatchFilters": "Nichts passt zu diesen Filtern. Erweitere Preis, Zustand oder Standort.",
     "noListings": "Keine Inserate zu dieser Suche.",
-    "watchLimit": "Du kannst {limit} Stücke gleichzeitig beobachten. Stoppe eines unter <watches>Beobachtungen</watches>, um ein weiteres hinzuzufügen.",
+    "watchLimit": "Du kannst {limit} Stücke gleichzeitig beobachten. Stoppe eines unter <watches>Beobachtungen</watches>, oder sieh dir die <plans>Tarife</plans> an.",
     "watchThis": "Beobachten",
     "stopOne": "Eines stoppen"
   },
@@ -163,7 +172,22 @@
     "light": "Hell",
     "dark": "Dunkel",
     "appearanceNote": "Wird in diesem Konto gespeichert, wenn du angemeldet bist.",
-    "save": "Speichern"
+    "save": "Speichern",
+    "plan": "Tarif",
+    "planActive": "Dein Abonnement ist aktiv.",
+    "planNoExpiry": "Kein Ablaufdatum.",
+    "planRenews": "Verlängert sich am {date}.",
+    "planEnds": "Endet am {date}.",
+    "seePlans": "Tarife ansehen",
+    "planName": {
+      "free": "Kostenlos",
+      "premium": "Premium",
+      "premium_plus": "Premium+"
+    },
+    "planInterval": {
+      "monthly": "Monatlich abgerechnet.",
+      "annual": "Jährlich abgerechnet."
+    }
   },
   "watches": {
     "saved": "Beobachtung gespeichert. Hinweise kommen nach dem Zeitplan, den du wählst.",
@@ -191,5 +215,35 @@
     "tos": "Nutzungsbedingungen",
     "contact": "Kontakt",
     "disclosure": "WatchSeeBuy ist ein unabhängiges Produkt. Wenn du über unsere Links kaufst, können wir eine Provision vom eBay Partner Network erhalten. Das ändert nicht den Preis, den du zahlst."
+  },
+  "pricing": {
+    "title": "Tarife",
+    "lede": "Die Suche bleibt offen. Ein Tarif erhöht, wie viele Stücke du beobachten kannst, wie schnell „Bei Änderung“ prüft und wie oft du den KI-Modus nutzen kannst.",
+    "cycle": "Abrechnungszeitraum",
+    "monthly": "Monatlich",
+    "annual": "Jährlich",
+    "annualNote": "2 Monate gratis",
+    "perMonth": "/Monat",
+    "perYear": "/Jahr",
+    "current": "Aktueller Tarif",
+    "subscribe": "Abonnieren",
+    "included": "Enthalten",
+    "freePrice": "$0",
+    "classicUnlimited": "Unbegrenzte klassische Suche",
+    "watches": "{count} Beobachtungen",
+    "onChange": "Bei Änderung alle {interval}",
+    "aiLimited": "{count} KI-Modus-Suchen pro Monat",
+    "aiUnlimited": "Unbegrenzte KI-Modus-Suche",
+    "earlyAccess": "Sei der Erste, der neue exklusive Funktionen ausprobiert",
+    "intervalHour": "1 Stunde",
+    "interval15": "15 Minuten",
+    "interval5": "5 Minuten",
+    "unavailable": "PayPal-Checkout ist gerade nicht verfügbar. Dein Tarif bleibt unverändert.",
+    "cancelled": "Der Checkout wurde abgebrochen. Dein Tarif bleibt unverändert.",
+    "name": {
+      "free": "Kostenlos",
+      "premium": "Premium",
+      "premium_plus": "Premium+"
+    }
   }
 }

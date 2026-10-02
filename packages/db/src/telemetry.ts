@@ -2,6 +2,14 @@ import { eq, sql } from "drizzle-orm";
 import type { Database } from "./client";
 import { ebayApiCalls, emailSends, user, userEvents } from "./schema";
 
+export const UNAUTHENTICATED_USER_ID = "unauthenticated";
+export const UNAUTHENTICATED_EMAIL = "unauthenticated@watchseebuy.invalid";
+export const UNAUTHENTICATED_NAME = "Unauthenticated";
+
+export function isUnauthenticatedUserId(id: string) {
+  return id === UNAUTHENTICATED_USER_ID;
+}
+
 export type EbayApiName =
   | "oauth"
   | "browse_search"
@@ -134,6 +142,36 @@ export async function recordEmailSend(
   });
 }
 
+export async function ensureUnauthenticatedUser(db: Database) {
+  await db
+    .insert(user)
+    .values({
+      id: UNAUTHENTICATED_USER_ID,
+      name: UNAUTHENTICATED_NAME,
+      email: UNAUTHENTICATED_EMAIL,
+      emailVerified: false,
+    })
+    .onConflictDoNothing({ target: user.id });
+}
+
+export async function backfillUnauthenticatedCounts(db: Database) {
+  await ensureUnauthenticatedUser(db);
+  await db.execute(sql`
+    UPDATE "user" AS u SET
+      search_count = GREATEST(u.search_count, COALESCE((
+        SELECT count(*)::int FROM user_events e
+        WHERE e.kind = 'search'
+          AND (e.user_id IS NULL OR e.user_id = ${UNAUTHENTICATED_USER_ID})
+      ), 0)),
+      buy_click_count = GREATEST(u.buy_click_count, COALESCE((
+        SELECT count(*)::int FROM user_events e
+        WHERE e.kind = 'buy_click'
+          AND (e.user_id IS NULL OR e.user_id = ${UNAUTHENTICATED_USER_ID})
+      ), 0))
+    WHERE u.id = ${UNAUTHENTICATED_USER_ID}
+  `);
+}
+
 export async function recordUserEvent(
   db: Database,
   input: {
@@ -144,28 +182,37 @@ export async function recordUserEvent(
   },
 ) {
   await writeTelemetry(async () => {
+    const userId = input.userId || UNAUTHENTICATED_USER_ID;
+    if (userId === UNAUTHENTICATED_USER_ID) {
+      await ensureUnauthenticatedUser(db);
+    }
+
     await db.insert(userEvents).values({
       id: crypto.randomUUID(),
       kind: input.kind,
-      userId: input.userId ?? null,
+      userId,
       ip: input.ip ?? null,
       meta: input.meta ?? null,
     });
 
-    if (!input.userId) return;
+    const patch: {
+      searchCount?: ReturnType<typeof sql>;
+      buyClickCount?: ReturnType<typeof sql>;
+      updatedAt: Date;
+      lastIp?: string;
+      lastCountry?: string;
+    } = { updatedAt: new Date() };
     if (input.kind === "search") {
-      await db
-        .update(user)
-        .set({ searchCount: sql`${user.searchCount} + 1` })
-        .where(eq(user.id, input.userId));
+      patch.searchCount = sql`${user.searchCount} + 1`;
+    } else if (input.kind === "buy_click") {
+      patch.buyClickCount = sql`${user.buyClickCount} + 1`;
+    } else {
       return;
     }
-    if (input.kind === "buy_click") {
-      await db
-        .update(user)
-        .set({ buyClickCount: sql`${user.buyClickCount} + 1` })
-        .where(eq(user.id, input.userId));
+    if (userId === UNAUTHENTICATED_USER_ID) {
+      if (input.ip) patch.lastIp = input.ip;
     }
+    await db.update(user).set(patch).where(eq(user.id, userId));
   });
 }
 
