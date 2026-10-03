@@ -1280,6 +1280,18 @@ a.account-menu-item {
   width: auto;
 }
 
+.search-sort .menu-select-menu {
+  left: auto;
+  right: 0;
+  width: max-content;
+  min-width: 100%;
+  max-width: calc(100vw - 32px);
+}
+
+.search-sort .menu-select-option {
+  white-space: normal;
+}
+
 .search-pagination {
   display: flex;
   align-items: center;
@@ -2360,6 +2372,7 @@ a.account-menu-item {
     border: 0;
   }
 
+  .search-page .search-split .watch-save,
   .search-split .watch-save,
   .watch-save {
     position: relative;
