@@ -42,7 +42,7 @@
     "composerLabel": "Messaggio all’assistente di ricerca",
     "placeholder": "Descrivi qui",
     "thinking": "Cerco…",
-    "outOfScope": "Posso solo aiutarti a sfogliare il catalogo.",
+    "outOfScope": "Mi dispiace, ma posso solo aiutarti a trovare giocattoli su eBay.",
     "unavailable": "L’assistente non è disponibile. La ricerca classica funziona ancora.",
     "emptyReply": "Dimmi il pezzo che vuoi trovare.",
     "clear": "Cancella la conversazione",

@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import {
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
   type KeyboardEvent,
@@ -45,6 +46,7 @@ export function AgentChat({
   const [limitOpen, setLimitOpen] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
+  const composerRef = useRef<HTMLTextAreaElement>(null);
   const submitTipId = useId();
   const clearTipId = useId();
   const sawCatalogPending = useRef(false);
@@ -192,6 +194,18 @@ export function AgentChat({
     }
   }
 
+  useLayoutEffect(() => {
+    const field = composerRef.current;
+    if (!field) return;
+    const fit = () => {
+      field.style.height = "auto";
+      field.style.height = `${field.scrollHeight}px`;
+    };
+    fit();
+    window.addEventListener("resize", fit);
+    return () => window.removeEventListener("resize", fit);
+  }, [draft]);
+
   function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
     if (event.key !== "Enter" || event.shiftKey) return;
     event.preventDefault();
@@ -224,6 +238,7 @@ export function AgentChat({
         {children}
         <div className="agent-field">
           <textarea
+            ref={composerRef}
             value={draft}
             rows={1}
             autoFocus

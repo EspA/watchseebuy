@@ -18,10 +18,7 @@ export function themeFromDocument(): Theme {
 
 export function preferredTheme(): Theme {
   const stored = localStorage.getItem(THEME_STORAGE_KEY);
-  if (isTheme(stored)) return stored;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
+  return isTheme(stored) ? stored : "light";
 }
 
 export function applyTheme(theme: Theme) {
@@ -30,4 +27,4 @@ export function applyTheme(theme: Theme) {
   document.cookie = `${THEME_STORAGE_KEY}=${theme}; path=/; max-age=${THEME_COOKIE_MAX_AGE}; samesite=lax`;
 }
 
-export const THEME_INIT_SCRIPT = `(function(){try{var k=${JSON.stringify(THEME_STORAGE_KEY)};var c=document.cookie.match(new RegExp("(?:^|; )"+k+"=(light|dark)"));var s=c&&c[1];if(!s)s=localStorage.getItem(k);var t=s==="light"||s==="dark"?s:(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.dataset.theme=t;}catch(e){}})();`;
+export const THEME_INIT_SCRIPT = `(function(){try{var k=${JSON.stringify(THEME_STORAGE_KEY)};var c=document.cookie.match(new RegExp("(?:^|; )"+k+"=(light|dark)"));var s=c&&c[1];if(!s)s=localStorage.getItem(k);var t=s==="light"||s==="dark"?s:"light";document.documentElement.dataset.theme=t;}catch(e){}})();`;

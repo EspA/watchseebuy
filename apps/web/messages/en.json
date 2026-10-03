@@ -42,7 +42,7 @@
     "composerLabel": "Message the search assistant",
     "placeholder": "Describe here",
     "thinking": "Searching…",
-    "outOfScope": "I can only help you browse the catalog.",
+    "outOfScope": "Sorry but I can only help you find toys on eBay.",
     "unavailable": "The assistant is unavailable. Classic search still works.",
     "emptyReply": "Tell me the piece you want to find.",
     "clear": "Clear conversation",
