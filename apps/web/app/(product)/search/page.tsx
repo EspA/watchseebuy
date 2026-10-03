@@ -290,8 +290,9 @@ export default async function SearchPage({
   const t = await getTranslations("search");
 
   return (
-    <main className="page">
+    <main className="page search-page">
       <SearchPendingProvider>
+      <div className="search-chrome">
       <SearchModeSwitch
         mode={agentMode ? "agent" : "classic"}
         classicHref={searchHrefWithMode(query, "classic")}
@@ -343,6 +344,7 @@ export default async function SearchPage({
           <input type="hidden" name="watch" value={query.watch} />
         ) : null}
       </SearchForm>
+      </div>
 
       {q.trim() ? (
         <div className="search-split">

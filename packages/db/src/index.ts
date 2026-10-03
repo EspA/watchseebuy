@@ -2,6 +2,7 @@ export * from "./schema";
 export { createDb, getDb, type Database } from "./client";
 export {
   getUserAuthSummary,
+  getUserMailProfile,
   getUserSettings,
   updateUserSettings,
   type UserAuthSummary,
@@ -50,9 +51,12 @@ export {
   type UserSubscription,
 } from "./subscriptions";
 export {
+  claimEmailSend,
+  finishEmailSend,
   recordConsumerLogin,
   recordEbayApiCall,
   recordEmailSend,
+  releaseEmailSend,
   recordUserEvent,
   backfillUnauthenticatedCounts,
   ensureUnauthenticatedUser,

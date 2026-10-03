@@ -299,6 +299,12 @@ export {
   type InterpretedAgentTurn,
 } from "./agent-search";
 export {
+  agentScoreFloorsFromText,
+  agentSortFromText,
+  type AgentResultSort,
+  type AgentScoreFloors,
+} from "./agent-sort";
+export {
   dollarsField,
   searchParamsFromIntent,
   searchPathForWatch,

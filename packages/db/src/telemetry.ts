@@ -23,7 +23,12 @@ export type EbayApiSource =
   | "account_deletion"
   | "partner_browse";
 
-export type EmailKind = "alert" | "magic_link" | "password_reset" | "contact";
+export type EmailKind =
+  | "alert"
+  | "magic_link"
+  | "password_reset"
+  | "contact"
+  | "subscription";
 export type EmailSendStatus = "delivered" | "failed" | "logged_only";
 
 export type UserEventKind = "search" | "buy_click";
@@ -121,6 +126,43 @@ export async function recordEbayApiCall(
       error: input.ok ? null : input.error ?? null,
     });
   });
+}
+
+/** Insert a send row once. A second claim for the same id does not send again. */
+export async function claimEmailSend(
+  db: Database,
+  input: { id: string; kind: EmailKind; userId?: string | null },
+): Promise<boolean> {
+  const rows = await db
+    .insert(emailSends)
+    .values({
+      id: input.id,
+      kind: input.kind,
+      userId: input.userId ?? null,
+      status: "logged_only",
+      ok: false,
+    })
+    .onConflictDoNothing({ target: emailSends.id })
+    .returning({ id: emailSends.id });
+  return rows.length > 0;
+}
+
+export async function finishEmailSend(
+  db: Database,
+  input: { id: string; status: EmailSendStatus; error?: string | null },
+) {
+  await db
+    .update(emailSends)
+    .set({
+      status: input.status,
+      ok: input.status === "delivered",
+      error: input.error ?? null,
+    })
+    .where(eq(emailSends.id, input.id));
+}
+
+export async function releaseEmailSend(db: Database, id: string) {
+  await db.delete(emailSends).where(eq(emailSends.id, id));
 }
 
 export async function recordEmailSend(

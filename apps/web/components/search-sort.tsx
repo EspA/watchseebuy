@@ -12,7 +12,7 @@ export function SearchSort({ value }: { value: SearchSort }) {
       <AutoSelect
         form="search-form"
         name="sort"
-        defaultValue={value}
+        value={value}
       >
         <option value="best">{t("sortBest")}</option>
         <option value="price">{t("sortPriceAsc")}</option>

@@ -11,6 +11,8 @@ import {
   type ReactNode,
   type SelectHTMLAttributes,
 } from "react";
+import { createPortal } from "react-dom";
+import { useOverlayMenu } from "@/components/overlay-menu";
 
 type Item = { value: string; label: string };
 type Group = { label?: string; items: Item[] };
@@ -61,6 +63,11 @@ function readGroups(children: ReactNode): Group[] {
   return groups;
 }
 
+function renderOverlay(node: ReactNode, style: object | null) {
+  if (style && typeof document !== "undefined") return createPortal(node, document.body);
+  return node;
+}
+
 function asValue(
   value: SelectHTMLAttributes<HTMLSelectElement>["value"] | undefined,
 ): string {
@@ -84,7 +91,10 @@ export function MenuSelect({
   const [uncontrolled, setUncontrolled] = useState(() => asValue(defaultValue));
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLUListElement>(null);
   const selectRef = useRef<HTMLSelectElement>(null);
+  const overlayStyle = useOverlayMenu(open, triggerRef, "left", () => setOpen(false));
   const controlledRef = useRef(isControlled);
   controlledRef.current = isControlled;
   const listId = useId();
@@ -123,7 +133,9 @@ export function MenuSelect({
   useEffect(() => {
     if (!open) return;
     const onPointer = (event: MouseEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+      const target = event.target as Node;
+      if (rootRef.current?.contains(target) || menuRef.current?.contains(target)) return;
+      setOpen(false);
     };
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") setOpen(false);
@@ -173,6 +185,7 @@ export function MenuSelect({
         {children}
       </select>
       <button
+        ref={triggerRef}
         type="button"
         className="menu-select-trigger"
         disabled={disabled}
@@ -186,8 +199,15 @@ export function MenuSelect({
       >
         <span>{current?.label ?? value}</span>
       </button>
-      {open ? (
-        <ul className="menu-select-menu" id={listId} role="listbox">
+      {open
+        ? renderOverlay(
+            <ul
+              ref={menuRef}
+              className="menu-select-menu"
+              id={listId}
+              role="listbox"
+              style={overlayStyle ?? undefined}
+            >
           {groups.map((group, index) => (
             <li key={group.label ?? `group-${index}`}>
               {group.label ? (
@@ -219,8 +239,10 @@ export function MenuSelect({
               </ul>
             </li>
           ))}
-        </ul>
-      ) : null}
+            </ul>,
+            overlayStyle,
+          )
+        : null}
     </div>
   );
 }

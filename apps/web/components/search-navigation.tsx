@@ -3,6 +3,7 @@
 import {
   createContext,
   useContext,
+  useLayoutEffect,
   useTransition,
   type FormEvent,
   type ReactNode,
@@ -18,6 +19,7 @@ export function useSearchPending() {
 export function SearchPendingProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  useSearchStickyOffsets();
 
   return (
     <SearchPendingContext.Provider value={pending}>
@@ -26,6 +28,39 @@ export function SearchPendingProvider({ children }: { children: ReactNode }) {
       </SearchNavContext.Provider>
     </SearchPendingContext.Provider>
   );
+}
+
+function useSearchStickyOffsets() {
+  useLayoutEffect(() => {
+    const header = document.querySelector(".shell > .header");
+    const chrome = document.querySelector(".search-chrome");
+    const root = document.documentElement;
+    if (!(header instanceof HTMLElement) && !(chrome instanceof HTMLElement)) {
+      return;
+    }
+
+    const apply = () => {
+      const headerHeight =
+        header instanceof HTMLElement ? header.getBoundingClientRect().height : 0;
+      const chromeHeight =
+        chrome instanceof HTMLElement ? chrome.getBoundingClientRect().height : 0;
+      root.style.setProperty("--search-header-offset", `${headerHeight}px`);
+      root.style.setProperty(
+        "--search-sticky-offset",
+        `${headerHeight + chromeHeight}px`,
+      );
+    };
+
+    apply();
+    const observer = new ResizeObserver(apply);
+    if (header instanceof HTMLElement) observer.observe(header);
+    if (chrome instanceof HTMLElement) observer.observe(chrome);
+    return () => {
+      observer.disconnect();
+      root.style.removeProperty("--search-header-offset");
+      root.style.removeProperty("--search-sticky-offset");
+    };
+  }, []);
 }
 
 const SearchNavContext = createContext<{

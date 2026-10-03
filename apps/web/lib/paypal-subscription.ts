@@ -23,6 +23,7 @@ import {
   planCharge,
   stringField,
 } from "@/lib/paypal";
+import { sendSubscriptionWelcome } from "@/lib/subscription-welcome";
 
 export type PaypalSubscription = {
   id: string;
@@ -156,14 +157,33 @@ export async function syncPaypalSubscription(
   if (current?.paypalSubscriptionId && current.paypalSubscriptionId !== subscription.id) {
     await cancelPaypalSubscription(current.paypalSubscriptionId);
   }
+  const renewsAt = subscription.nextBillingTime ?? fallbackPeriodEnd(interval);
+  const justActivated = !(
+    current?.status === "active" && current.paypalSubscriptionId === subscription.id
+  );
   await upsertUserSubscription(db, {
     userId,
     plan,
     billingInterval: interval,
     status: "active",
-    expiresAt: subscription.nextBillingTime ?? fallbackPeriodEnd(interval),
+    expiresAt: renewsAt,
     paypalSubscriptionId: subscription.id,
   });
+  if (!justActivated) return;
+  try {
+    await sendSubscriptionWelcome({
+      userId,
+      plan,
+      interval,
+      renewsAt,
+      paypalSubscriptionId: subscription.id,
+    });
+  } catch (error) {
+    console.error(
+      "subscription welcome email failed",
+      error instanceof Error ? error.message : error,
+    );
+  }
 }
 
 export function parseSubscription(value: unknown): PaypalSubscription | null {

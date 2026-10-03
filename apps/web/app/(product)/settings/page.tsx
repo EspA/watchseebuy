@@ -71,7 +71,9 @@ export default async function SettingsPage({
         <section className="panel settings-panel">
           <h2>{t("plan")}</h2>
           <p className="settings-plan-name">{t(`planName.${billing.plan}`)}</p>
-          {billing.interval ? (
+          {billing.complimentary ? (
+            <p className="muted">{t("planComplimentary")}</p>
+          ) : billing.interval ? (
             <p className="muted">{t(`planInterval.${billing.interval}`)}</p>
           ) : null}
           <p className="muted">{planNote}</p>

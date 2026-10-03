@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
+import { useOverlayMenu } from "@/components/overlay-menu";
 import { useNavigateSearch } from "@/components/search-navigation";
 import {
   DEFAULT_EBAY_SITE,
@@ -9,6 +11,11 @@ import {
 } from "@watchseebuy/domain";
 import { useTranslations } from "next-intl";
 import { applySiteCookie } from "@/lib/preference-cookies";
+
+function renderSiteMenu(node: ReactNode, style: object | null) {
+  if (style && typeof document !== "undefined") return createPortal(node, document.body);
+  return node;
+}
 
 function searchForm(
   input: HTMLInputElement | null,
@@ -45,7 +52,15 @@ export function EbaySiteSelect({
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(site);
   const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLUListElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const overlayStyle = useOverlayMenu(
+    open,
+    triggerRef,
+    variant === "filter" ? "right" : "left",
+    () => setOpen(false),
+  );
   const current = ebaySiteOf(value);
 
   useEffect(() => {
@@ -55,7 +70,9 @@ export function EbaySiteSelect({
   useEffect(() => {
     if (!open) return;
     const onPointer = (event: MouseEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+      const target = event.target as Node;
+      if (rootRef.current?.contains(target) || menuRef.current?.contains(target)) return;
+      setOpen(false);
     };
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") setOpen(false);
@@ -77,6 +94,7 @@ export function EbaySiteSelect({
         <input ref={inputRef} type="hidden" name="site" value={value} />
       ) : null}
       <button
+        ref={triggerRef}
         type="button"
         className="search-site-trigger"
         aria-label={current.label}
@@ -87,8 +105,15 @@ export function EbaySiteSelect({
       >
         <span aria-hidden="true">{current.flag}</span>
       </button>
-      {open ? (
-        <ul className="search-site-menu" role="listbox" aria-label={t("ebaySite")}>
+      {open
+        ? renderSiteMenu(
+            <ul
+              ref={menuRef}
+              className="search-site-menu"
+              role="listbox"
+              aria-label={t("ebaySite")}
+              style={overlayStyle ?? undefined}
+            >
           {ebaySitesWithLead(current.value).map((option) => {
             const selected = option.value === value;
             return (
@@ -118,8 +143,10 @@ export function EbaySiteSelect({
               </li>
             );
           })}
-        </ul>
-      ) : null}
+            </ul>,
+            overlayStyle,
+          )
+        : null}
     </div>
   );
 }

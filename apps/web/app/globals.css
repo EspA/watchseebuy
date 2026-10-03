@@ -23,6 +23,7 @@
   --score-mid-muted: #b45309;
   --tease-glow-1: #fffaf1;
   --tease-glow-2: #f3e6d2;
+  --scrollbar-thumb: #6e665e;
   --page-width: min(1120px, calc(100% - 32px));
 }
 
@@ -51,10 +52,28 @@ html[data-theme="dark"] {
   --score-mid-muted: #d4a04a;
   --tease-glow-1: #2c2418;
   --tease-glow-2: #3a2618;
+  --scrollbar-thumb: #8a8076;
 }
 
 * {
   box-sizing: border-box;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
 }
 
 html,
@@ -440,8 +459,6 @@ a.account-menu-item {
 .agent-clear {
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
   padding: 0;
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -462,7 +479,10 @@ a.account-menu-item {
   gap: 10px;
   max-height: 320px;
   overflow: auto;
-  padding: 2px 2px 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
 }
 
 .agent-line {
@@ -559,28 +579,37 @@ a.account-menu-item {
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 2px;
   min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--card);
+  padding: 4px 6px 4px 2px;
+}
+
+.agent-field:focus-within {
+  outline: 2px solid color-mix(in srgb, var(--ink) 18%, transparent);
+  outline-offset: 1px;
 }
 
 .agent-field-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   flex: 0 0 auto;
 }
 
 .agent-compose textarea {
   flex: 1;
   min-width: 0;
-  min-height: 48px;
+  min-height: 40px;
   max-height: 140px;
-  resize: vertical;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: var(--card);
+  resize: none;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   color: var(--ink);
-  padding: 12px 14px;
+  padding: 8px 4px 8px 14px;
 }
 
 .agent-compose textarea::placeholder {
@@ -588,8 +617,7 @@ a.account-menu-item {
 }
 
 .agent-compose textarea:focus {
-  outline: 2px solid color-mix(in srgb, var(--ink) 18%, transparent);
-  outline-offset: 1px;
+  outline: none;
 }
 
 .agent-tip {
@@ -606,11 +634,15 @@ a.account-menu-item {
   max-width: min(228px, 70vw);
 }
 
+.agent-send,
+.agent-clear {
+  width: 34px;
+  height: 34px;
+}
+
 .agent-send {
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
   padding: 0;
   border: 0;
   border-radius: 999px;
@@ -1047,6 +1079,59 @@ a.account-menu-item {
 
 .page {
   padding: 40px 0 80px;
+}
+
+.shell:has(.search-page) > .header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--paper);
+}
+
+.search-page {
+  padding: 0 0 32px;
+}
+
+.search-chrome {
+  position: sticky;
+  top: var(--search-header-offset, 0px);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  margin-bottom: -12px;
+  padding-bottom: 12px;
+}
+
+.search-chrome > .search-mode {
+  align-self: center;
+  width: max-content;
+}
+
+.search-page .search {
+  margin-top: 12px;
+}
+
+.search-page:has(.search-split) .agent-log {
+  max-height: 140px;
+}
+
+.search-page .search-split .watch-save {
+  top: var(--search-sticky-offset, 16px);
+  z-index: 21;
+  max-height: calc(100dvh - var(--search-sticky-offset, 16px) - 16px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.search-page .results-toolbar {
+  position: sticky;
+  top: var(--search-sticky-offset, 16px);
+  z-index: 20;
+  background: var(--paper);
+  margin-bottom: -12px;
+  padding-bottom: 12px;
 }
 
 .shell > footer {
@@ -1588,6 +1673,18 @@ a.account-menu-item {
   min-width: 0;
 }
 
+.filter-more-tail {
+  display: grid;
+  gap: 12px;
+  margin-top: 2px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.filter-more-tail .search-exclude summary {
+  font-size: 0.85rem;
+}
+
 .filter-group summary {
   width: fit-content;
   cursor: pointer;
@@ -1619,6 +1716,7 @@ a.account-menu-item {
   grid-template-columns: none;
 }
 
+.filter-group .filter-chip label,
 .watch-save > .filter-chip label,
 .filter-extras > .filter-chip label {
   display: flex;
@@ -1632,6 +1730,7 @@ a.account-menu-item {
 }
 
 .filter-chip input,
+.filter-group .filter-chip input[type="checkbox"],
 .watch-save > .filter-chip input[type="checkbox"],
 .filter-extras > .filter-chip input[type="checkbox"] {
   width: auto;
@@ -1639,6 +1738,7 @@ a.account-menu-item {
   accent-color: var(--accent, #3b82f6);
 }
 
+.filter-group .filter-chip input[type="hidden"],
 .watch-save > .filter-chip input[type="hidden"],
 .filter-extras > .filter-chip input[type="hidden"] {
   display: none;
@@ -1700,13 +1800,43 @@ a.account-menu-item {
   visibility: visible;
 }
 
+.search-combo > .search-site,
+.agent-compose > .search-site {
+  display: none;
+}
+
 .filter-condition-row {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  gap: 12px;
+  align-items: end;
   min-width: 0;
 }
 
 .filter-site {
-  display: none;
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.search-site.is-filter {
+  border-right: 0;
+}
+
+.search-site.is-filter .search-site-trigger {
+  min-height: 42px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--paper);
+}
+
+.search-site.is-filter .search-site-menu {
+  left: auto;
+  right: 0;
 }
 
 .filter-condition,
@@ -1786,6 +1916,7 @@ a.account-menu-item {
 .watch-save > label input,
 .filter-chrome > label input,
 .filter-extras > label input,
+.filter-group > label input,
 .filter-group select {
   width: 100%;
   min-width: 0;
@@ -2125,10 +2256,15 @@ a.account-menu-item {
   .search-split .watch-save {
     position: static;
   }
+
+  .search-page .search-split .watch-save {
+    max-height: none;
+    overflow: visible;
+  }
 }
 
 @media (max-width: 720px) {
-  .page > .search-mode {
+  .search-page .search-mode {
     display: flex;
     width: fit-content;
     margin: 0 auto 6px;
@@ -2136,7 +2272,7 @@ a.account-menu-item {
     gap: 2px;
   }
 
-  .page > .search-mode button {
+  .search-page .search-mode button {
     padding: 3px 10px;
     font-size: 0.78rem;
   }
@@ -2250,79 +2386,6 @@ a.account-menu-item {
     border: 1px solid var(--line);
     background: transparent;
     color: var(--ink);
-  }
-
-  .search-combo > .search-site,
-  .agent-compose > .search-site {
-    display: none;
-  }
-
-  .agent-field {
-    gap: 2px;
-    border: 1px solid var(--line);
-    border-radius: 24px;
-    background: var(--card);
-    padding: 4px 6px 4px 2px;
-  }
-
-  .agent-field:focus-within {
-    outline: 2px solid color-mix(in srgb, var(--ink) 18%, transparent);
-    outline-offset: 1px;
-  }
-
-  .agent-compose textarea {
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    resize: none;
-    min-height: 40px;
-    padding: 8px 4px 8px 14px;
-  }
-
-  .agent-compose textarea:focus {
-    outline: none;
-  }
-
-  .agent-field-actions {
-    gap: 4px;
-  }
-
-  .agent-send,
-  .agent-clear {
-    width: 34px;
-    height: 34px;
-  }
-
-  .filter-condition-row {
-    grid-template-columns: minmax(0, 1fr) max-content;
-    gap: 12px;
-    align-items: end;
-  }
-
-  .filter-site {
-    display: grid;
-    justify-items: end;
-    gap: 6px;
-    font-size: 0.85rem;
-    color: var(--muted);
-    white-space: nowrap;
-  }
-
-  .search-site.is-filter {
-    border-right: 0;
-  }
-
-  .search-site.is-filter .search-site-trigger {
-    min-height: 42px;
-    padding: 8px 10px;
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    background: var(--paper);
-  }
-
-  .search-site.is-filter .search-site-menu {
-    left: auto;
-    right: 0;
   }
 
   .filter-chrome:not(.is-open) .filter-extras,

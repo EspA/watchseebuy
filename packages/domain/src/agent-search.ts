@@ -109,7 +109,7 @@ export function agentSearchGuide(): string {
     "located: any, region:NORTH_AMERICA, region:EUROPEAN_UNION, region:UK_AND_IRELAND, region:ASIA, or country:XX.",
     "to: ship-to country code such as US, GB, DE, or any.",
     "zip: ship-to postal code.",
-    "confidence, score: minimum 1-10.",
+    "confidence, score: a minimum from 1 to 10, only when the collector names that number. Omit both when they only want the results sorted.",
     "grader: raw | psa | cgc | bgs | sgc. grade: 10 | 9.5 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1.",
     "language: english | japanese | french | german | spanish | italian.",
     "figurePackaging: carded | loose. figureCompleteness: complete | incomplete. figurePunch: unpunched | punched.",

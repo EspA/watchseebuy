@@ -13,6 +13,7 @@ export type CurrentBilling = {
   interval: BillingInterval | null;
   status: "active" | "cancelled" | null;
   expiresAt: Date | null;
+  complimentary: boolean;
 };
 
 export async function currentBilling(userId: string): Promise<CurrentBilling> {
@@ -26,7 +27,8 @@ export async function currentBilling(userId: string): Promise<CurrentBilling> {
       }
     : null;
   const plan = effectiveBillingPlan(snapshot);
-  const complimentary = isComplimentaryInterval(snapshot?.billingInterval);
+  const complimentary =
+    plan !== "free" && isComplimentaryInterval(snapshot?.billingInterval);
   const interval =
     plan !== "free" &&
     !complimentary &&
@@ -43,5 +45,6 @@ export async function currentBilling(userId: string): Promise<CurrentBilling> {
     interval,
     status,
     expiresAt: plan === "free" || complimentary ? null : (snapshot?.expiresAt ?? null),
+    complimentary,
   };
 }

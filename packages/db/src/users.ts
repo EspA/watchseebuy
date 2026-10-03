@@ -17,6 +17,26 @@ export type UserAuthSummary = {
   hasPassword: boolean;
 };
 
+export async function getUserMailProfile(
+  db: Database,
+  userId: string,
+): Promise<{
+  email: string;
+  firstName: string | null;
+  timezone: string | null;
+} | null> {
+  const [row] = await db
+    .select({
+      email: user.email,
+      firstName: user.firstName,
+      timezone: user.timezone,
+    })
+    .from(user)
+    .where(eq(user.id, userId))
+    .limit(1);
+  return row ?? null;
+}
+
 export async function getUserSettings(
   db: Database,
   userId: string,

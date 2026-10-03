@@ -10,6 +10,8 @@ import {
   LISTING_TYPE_FILTERS,
   LOCATION_GROUPS,
   excludeWordsField,
+  userExcludeWords,
+  withoutUnofficialExcludeWords,
   isEbayConditionId,
   type FilterGroupId,
   type WatchCriteria,
@@ -86,8 +88,14 @@ export async function SaveWatchForm({
   });
   const listingValue =
     intent.listingType === "auction_below" ? "auction" : intent.listingType;
+  const customExcludes = withoutUnofficialExcludeWords(
+    userExcludeWords(intent.excludeKeywords),
+  );
   const moreFiltersOpen =
     listingValue !== "all" ||
+    Boolean(intent.shipToPostal) ||
+    customExcludes.length > 0 ||
+    intent.excludeUnofficial === false ||
     Boolean(intent.itemLocation && intent.itemLocation !== "any") ||
     Boolean(
       intent.shipToCountry &&
@@ -163,40 +171,6 @@ export async function SaveWatchForm({
       ) : null}
       <MoreFilters extras={
           <>
-      {settingsPostal?.trim() ? (
-        <details className="filter-group">
-          <summary>
-            {tf("shipTo")}
-            {intent.shipToPostal ? ` · ${intent.shipToPostal}` : ""}
-          </summary>
-          <label>
-            {tf("zip")}
-            <AutoText
-              form={SEARCH_FORM}
-              name="zip"
-              type="text"
-              placeholder={tf("optional")}
-              autoComplete="postal-code"
-              defaultValue={intent.shipToPostal ?? ""}
-            />
-          </label>
-        </details>
-      ) : (
-        <label>
-          <span className="filter-label-line">
-            {tf("shipTo")}
-            <span className="watch-note">{tf("shipToHint")}</span>
-          </span>
-          <AutoText
-            form={SEARCH_FORM}
-            name="zip"
-            type="text"
-            placeholder={tf("optional")}
-            autoComplete="postal-code"
-            defaultValue={intent.shipToPostal ?? ""}
-          />
-        </label>
-      )}
       <div className="watch-price-row">
         <label>
           {tl("priceScore")}
@@ -235,11 +209,6 @@ export async function SaveWatchForm({
           </AutoSelect>
         </label>
       </div>
-      <ExcludeWords
-        form={SEARCH_FORM}
-        value={excludeWordsField(intent.excludeKeywords)}
-      />
-      <ExcludeUnofficialFilter checked={intent.excludeUnofficial !== false} />
       <FilterAccordion
         {...(specializedOpen ? { initialOpen: specializedOpen } : {})}
       >
@@ -290,6 +259,40 @@ export async function SaveWatchForm({
         {...(moreFiltersOpen ? { open: true } : {})}
       >
         <summary>{tf("more")}</summary>
+        {settingsPostal?.trim() ? (
+          <details className="filter-group">
+            <summary>
+              {tf("shipTo")}
+              {intent.shipToPostal ? ` · ${intent.shipToPostal}` : ""}
+            </summary>
+            <label>
+              {tf("zip")}
+              <AutoText
+                form={SEARCH_FORM}
+                name="zip"
+                type="text"
+                placeholder={tf("optional")}
+                autoComplete="postal-code"
+                defaultValue={intent.shipToPostal ?? ""}
+              />
+            </label>
+          </details>
+        ) : (
+          <label>
+            <span className="filter-label-line">
+              {tf("shipTo")}
+              <span className="watch-note">{tf("shipToHint")}</span>
+            </span>
+            <AutoText
+              form={SEARCH_FORM}
+              name="zip"
+              type="text"
+              placeholder={tf("optional")}
+              autoComplete="postal-code"
+              defaultValue={intent.shipToPostal ?? ""}
+            />
+          </label>
+        )}
         <label>
           {tf("listingType")}
           <AutoSelect
@@ -344,6 +347,13 @@ export async function SaveWatchForm({
               ))}
             </AutoSelect>
           </label>
+        </div>
+        <div className="filter-more-tail">
+          <ExcludeWords
+            form={SEARCH_FORM}
+            value={excludeWordsField(intent.excludeKeywords)}
+          />
+          <ExcludeUnofficialFilter checked={intent.excludeUnofficial !== false} />
         </div>
       </details>
           </>

@@ -12,7 +12,13 @@ export default async function PricingPage({
   const session = await getSession();
   const billing = session
     ? await currentBilling(session.user.id)
-    : { plan: "free" as const, interval: null, status: null, expiresAt: null };
+    : {
+        plan: "free" as const,
+        interval: null,
+        status: null,
+        expiresAt: null,
+        complimentary: false,
+      };
   const t = await getTranslations("pricing");
   const notice =
     error === "cancelled"
@@ -30,6 +36,7 @@ export default async function PricingPage({
         plan={billing.plan}
         interval={billing.interval}
         status={billing.status}
+        complimentary={billing.complimentary}
       />
     </main>
   );

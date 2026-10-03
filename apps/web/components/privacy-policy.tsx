@@ -177,8 +177,9 @@ export function PrivacyPolicyContent() {
         with anyone else.
       </p>
       <p>
-        Mail from us is transactional: sign-in links, password reset, and watch
-        alerts. We do not put you on a marketing list you did not ask for. If
+        Mail from us is transactional: sign-in links, password reset, watch
+        alerts, and a note when a paid plan starts. We do not put you on a
+        marketing list you did not ask for. If
         we ever send promotional mail, you will be able to unsubscribe; we may
         still send non-promotional messages about your account or watches.
       </p>
@@ -196,7 +197,7 @@ export function PrivacyPolicyContent() {
           <strong>Vendors</strong> who perform services on our behalf — hosting
           (Google Cloud in the United States), PayPal to process a subscription
           you start, and our mail provider, to deliver sign-in mail, alerts,
-          and contact-form messages to{" "}
+          subscription confirmations, and contact-form messages to{" "}
           <a href="mailto:contact@watchseebuy.com">contact@watchseebuy.com</a>
         </li>
         <li>

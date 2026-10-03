@@ -6,8 +6,10 @@ import {
 } from "@watchseebuy/db";
 import {
   PLAN_ENTITLEMENTS,
+  agentScoreFloorsFromText,
   agentSearchGuide,
   agentSearchMonthKey,
+  agentSortFromText,
   DEFAULT_EBAY_SITE,
   interpretAgentTurn,
   parseAppLocale,
@@ -193,6 +195,10 @@ export async function POST(request: Request) {
       fresh: turn.fresh,
     });
   }
+  const said = messages[messages.length - 1]?.content ?? "";
+  const sort = agentSortFromText(said);
+  if (sort) turn.params.set("sort", sort);
+  applySpokenScoreFilters(turn.params, said, turn.fresh, search);
   const href = `/search?${turn.params.toString()}`;
   const nextUsed = quota ? quota.used + 1 : 0;
   if (quota?.ip && quota.secret) rememberAnonymousQuota(quota.ip, quota.secret, nextUsed);
@@ -348,6 +354,7 @@ function systemPrompt(input: {
     "The launch lines — Pokémon, LEGO, Hot Wheels, Labubu, Kenner Star Wars, Transformers, TMNT, Barbie, G.I. Joe, and He-Man — are examples. Any other toy or game is in scope too, including Dragon Ball, Marvel, Gundam, Magic: The Gathering, and console games.",
     "If the words name a character, set, series, or title a collector would shop for as a toy or game, set action to search.",
     "Browsing the catalog for that piece is in scope, including price, condition, and where it ships.",
+    "Asking to sort by cheap, expensive, price score, best deals, seller score, or best sellers is still a catalog search.",
     "If the user asks for anything else — general chat, writing, code, weather, account help, saving a watch, alerts, other websites, clothing, comics, coins, stamps, or advice that is not a toy or game search — set action to out_of_scope and reply to an empty string.",
     "Do not answer an out-of-scope request.",
     "When you still need the piece or one missing detail, set action to clarify and ask one short question.",
@@ -362,6 +369,8 @@ function systemPrompt(input: {
       language +
       ", spoken to the collector.",
     "When action is search, confirm what you understood. Name the piece and the filters.",
+    "Cheap or lowest price shows the lowest price to their door first. Expensive or highest price shows the highest first. Price score, best deals, or best value shows the strongest price scores first, unless they ask for the lowest scores. Seller score, best sellers, or top rated sellers shows the strongest seller scores first, unless they ask for the lowest. Mention that order in the reply.",
+    "score and confidence are minimum filters. Set score only when the collector names a price-score number, such as price score 8. Set confidence only when they name a seller-score number, such as seller score 9. Best sellers, seller score, best deals, and price score on their own are a sort. Leave score and confidence unset for those.",
     "Do not begin the reply with Searching, and do not say that you are searching. A separate line already tells the collector to wait.",
     "Sound like a person helping, for example: I'll look for a factory-sealed LEGO set and leave mosaics out.",
     "Do not list individual listings.",
@@ -408,6 +417,44 @@ function chatMessages(value: unknown): ChatMessage[] | null {
   const last = messages[messages.length - 1];
   if (!last || last.role !== "user") return null;
   return messages;
+}
+
+function applySpokenScoreFilters(
+  params: URLSearchParams,
+  text: string,
+  fresh: boolean,
+  current: SearchQuery,
+) {
+  const floors = agentScoreFloorsFromText(text);
+  keepSpokenFloor(params, "score", floors.price, floors.clearPrice, fresh, current.score);
+  keepSpokenFloor(
+    params,
+    "confidence",
+    floors.seller,
+    floors.clearSeller,
+    fresh,
+    current.confidence,
+  );
+}
+
+function keepSpokenFloor(
+  params: URLSearchParams,
+  key: "score" | "confidence",
+  spoken: number | undefined,
+  clear: boolean,
+  fresh: boolean,
+  previous: string | undefined,
+) {
+  if (spoken !== undefined) {
+    params.set(key, String(spoken));
+    return;
+  }
+  if (clear || fresh) {
+    params.delete(key);
+    return;
+  }
+  if (previous) params.set(key, previous);
+  else params.delete(key);
 }
 
 function unavailable() {

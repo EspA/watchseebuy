@@ -17,11 +17,13 @@ export function PricingPlans({
   plan,
   interval,
   status,
+  complimentary,
 }: {
   signedIn: boolean;
   plan: BillingPlan;
   interval: BillingInterval | null;
   status: "active" | "cancelled" | null;
+  complimentary: boolean;
 }) {
   const t = useTranslations("pricing");
   const [cycle, setCycle] = useState<BillingInterval>("monthly");
@@ -57,6 +59,7 @@ export function PricingPlans({
             plan={plan}
             interval={interval}
             status={status}
+            complimentary={complimentary}
           />
         ))}
       </div>
@@ -71,6 +74,7 @@ function PlanCard({
   plan,
   interval,
   status,
+  complimentary,
 }: {
   card: (typeof CARDS)[number];
   cycle: BillingInterval;
@@ -78,19 +82,27 @@ function PlanCard({
   plan: BillingPlan;
   interval: BillingInterval | null;
   status: "active" | "cancelled" | null;
+  complimentary: boolean;
 }) {
   const t = useTranslations("pricing");
   const entitlements = PLAN_ENTITLEMENTS[card];
+  const complimentaryCurrent = complimentary && plan === card && card !== "free";
   const current =
-    plan === card &&
-    (card === "free" || (interval === cycle && status === "active"));
+    complimentaryCurrent ||
+    (plan === card &&
+      (card === "free" || (interval === cycle && status === "active")));
   const price =
-    card === "free"
+    card === "free" || complimentaryCurrent
       ? t("freePrice")
       : formatUsdFromCents(PAID_PRICE_CENTS[card][cycle]);
-  const cadence = card === "free" ? null : cycle === "annual" ? t("perYear") : t("perMonth");
+  const cadence =
+    card === "free" || complimentaryCurrent
+      ? null
+      : cycle === "annual"
+        ? t("perYear")
+        : t("perMonth");
   const monthlyEquivalent =
-    card !== "free" && cycle === "annual"
+    card !== "free" && !complimentaryCurrent && cycle === "annual"
       ? formatUsdFromCents(Math.round(PAID_PRICE_CENTS[card].annual / 12))
       : null;
   const intervalLabel =
@@ -122,6 +134,7 @@ function PlanCard({
         cycle={cycle}
         signedIn={signedIn}
         current={current}
+        complimentaryCurrent={complimentaryCurrent}
       />
     </article>
   );
@@ -132,17 +145,26 @@ function PlanAction({
   cycle,
   signedIn,
   current,
+  complimentaryCurrent,
 }: {
   card: (typeof CARDS)[number];
   cycle: BillingInterval;
   signedIn: boolean;
   current: boolean;
+  complimentaryCurrent: boolean;
 }) {
   const t = useTranslations("pricing");
   if (card === "free") {
     return (
       <button type="button" className="btn secondary" disabled>
         {current ? t("current") : t("included")}
+      </button>
+    );
+  }
+  if (complimentaryCurrent) {
+    return (
+      <button type="button" className="btn secondary" disabled>
+        {t("complimentary")}
       </button>
     );
   }

@@ -1,6 +1,9 @@
 import {
+  claimEmailSend,
+  finishEmailSend,
   getDb,
   recordEmailSend,
+  releaseEmailSend,
   type EmailKind,
   type EmailSendStatus,
 } from "@watchseebuy/db";
@@ -19,9 +22,23 @@ export async function sendTransactionalEmail(input: {
   replyTo?: string;
   from?: string;
   userId?: string | null;
+  /** Stable id so a repeated subscription event does not mail twice. */
+  dedupeId?: string;
 }) {
   const smtp = smtpConfigFromEnv();
+  const dedupe = input.dedupeId?.trim() || undefined;
+  let claimed = false;
+  let sent = false;
   try {
+    if (dedupe && process.env.DATABASE_URL) {
+      claimed = await claimEmailSend(getDb(), {
+        id: dedupe,
+        kind: input.kind,
+        ...(input.userId !== undefined ? { userId: input.userId } : {}),
+      });
+      if (!claimed) return { delivered: false as const };
+    }
+
     if (smtp) {
       const transport = nodemailer.createTransport({
         host: smtp.host,
@@ -42,7 +59,8 @@ export async function sendTransactionalEmail(input: {
         text: input.text,
         html: input.html ?? `<pre>${escapeHtml(input.text)}</pre>`,
       });
-      await persistEmailSend({
+      sent = true;
+      await recordOutcome(dedupe, claimed, {
         kind: input.kind,
         status: "delivered",
         ...(input.userId !== undefined ? { userId: input.userId } : {}),
@@ -59,7 +77,7 @@ export async function sendTransactionalEmail(input: {
         message: "SMTP_HOST is not set; email logged only.",
       }),
     );
-    await persistEmailSend({
+    await recordOutcome(dedupe, claimed, {
       kind: input.kind,
       status: "logged_only",
       ...(input.userId !== undefined ? { userId: input.userId } : {}),
@@ -67,14 +85,61 @@ export async function sendTransactionalEmail(input: {
     return { delivered: false as const };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    await persistEmailSend({
-      kind: input.kind,
-      status: "failed",
-      error: message,
-      ...(input.userId !== undefined ? { userId: input.userId } : {}),
-    });
+    if (sent) {
+      await recordOutcome(dedupe, claimed, {
+        kind: input.kind,
+        status: "delivered",
+        ...(input.userId !== undefined ? { userId: input.userId } : {}),
+      });
+      return { delivered: true as const };
+    }
+    if (claimed && dedupe) {
+      try {
+        await releaseEmailSend(getDb(), dedupe);
+      } catch (releaseError) {
+        console.error(
+          "email claim release failed",
+          releaseError instanceof Error ? releaseError.message : releaseError,
+        );
+      }
+    } else {
+      await persistEmailSend({
+        kind: input.kind,
+        status: "failed",
+        error: message,
+        ...(input.userId !== undefined ? { userId: input.userId } : {}),
+      });
+    }
     throw error;
   }
+}
+
+async function recordOutcome(
+  dedupe: string | undefined,
+  claimed: boolean,
+  input: {
+    kind: EmailKind;
+    userId?: string | null;
+    status: EmailSendStatus;
+    error?: string;
+  },
+) {
+  if (claimed && dedupe) {
+    try {
+      await finishEmailSend(getDb(), {
+        id: dedupe,
+        status: input.status,
+        ...(input.error !== undefined ? { error: input.error } : {}),
+      });
+    } catch (error) {
+      console.error(
+        "email claim finish failed",
+        error instanceof Error ? error.message : error,
+      );
+    }
+    return;
+  }
+  await persistEmailSend(input);
 }
 
 async function persistEmailSend(input: {
