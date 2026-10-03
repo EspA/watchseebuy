@@ -74,12 +74,15 @@ test("worker hydrate only the unmatched-signal listings that fit a watch", () =>
       epid: "15032",
     }),
     listing({
-      ebayItemId: "other-item",
-      title: "Hot Wheels Bone Shaker",
+      ebayItemId: "over-cap",
+      title: "Charizard Base Set",
+      itemCents: 80_000,
     }),
   ];
 
-  const needed = listingsNeedingProductHydration(hits, [watch()]);
+  const needed = listingsNeedingProductHydration(hits, [
+    watch({ maxLandedCents: 20_000 }),
+  ]);
   assert.deepEqual(
     needed.map((row) => row.ebayItemId),
     ["keep"],

@@ -435,19 +435,32 @@ export function excludeWordsField(
   return userExcludeWords(excludeKeywords).join(", ");
 }
 
-export function ebaySearchQuery(
-  keywords: string,
-  excludeKeywords?: string[],
-): string {
-  if (!excludeKeywords?.length) return keywords;
-  const clauses = excludeKeywords
-    .map((word) => {
-      const clean = word.replace(/"/g, "").trim();
-      if (!clean) return "";
-      return /\s/.test(clean) ? `-"${clean}"` : `-${clean}`;
-    })
-    .filter(Boolean);
-  return [keywords, ...clauses].join(" ").trim();
+/**
+ * Title-only. A minus term in the Browse `q` string turns off eBay's loose
+ * match and can drop every listing. Descriptions stay out of this check:
+ * "loose copy" is a real figure, "Custom" in the title is not.
+ */
+export function listingMatchesExcludeWords(
+  listing: { title?: string },
+  excludeKeywords: string[] | undefined,
+): boolean {
+  const title = listing.title ?? "";
+  for (const word of userExcludeWords(excludeKeywords)) {
+    if (titleIncludesTerm(title, word)) return false;
+  }
+  return true;
+}
+
+function titleIncludesTerm(title: string, term: string): boolean {
+  const clean = term.trim();
+  if (!clean) return false;
+  const escaped = clean
+    .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+    .replace(/\s+/g, "\\s+");
+  return new RegExp(
+    `(?<![\\p{L}\\p{N}])${escaped}(?![\\p{L}\\p{N}])`,
+    "iu",
+  ).test(title);
 }
 
 export type GradeCompany = "psa" | "bgs" | "sgc" | "cgc";
@@ -519,7 +532,6 @@ export type CoverageQuery = {
   itemLocation?: string;
   deliveryCountry?: string;
   deliveryPostal?: string;
-  excludeKeywords?: string[];
   categoryIds?: string;
   aspectFilter?: string;
 };
@@ -910,7 +922,6 @@ export function toCoverageQuery(criteria: WatchCriteria): CoverageQuery {
       : undefined;
   const deliveryCountry = criteria.shipToCountry?.trim() || undefined;
   const deliveryPostal = criteria.shipToPostal?.trim() || undefined;
-  const excludeKeywords = userExcludeWords(criteria.excludeKeywords);
   const categoryIds =
     cardCategoryIds(criteria.cardCategory, criteria.cardGame) ||
     figureCategoryIds(criteria.figureCategory, criteria.figureScale) ||
@@ -939,9 +950,6 @@ export function toCoverageQuery(criteria: WatchCriteria): CoverageQuery {
     deliveryPostal ? `zip:${deliveryPostal}` : "zip:",
     categoryIds ? `cat:${categoryIds}` : "cat:",
     aspectFilter ? `asp:${aspectFilter}` : "asp:",
-    excludeKeywords.length
-      ? `ex:${[...excludeKeywords].map((w) => w.toLowerCase()).sort().join(",")}`
-      : "ex:",
     coverageKeywords(composeCatalogQuery(criteria.query, criteria, storeLocale)),
   ].join("|");
 
@@ -954,7 +962,6 @@ export function toCoverageQuery(criteria: WatchCriteria): CoverageQuery {
     ...(itemLocation ? { itemLocation } : {}),
     ...(deliveryCountry ? { deliveryCountry } : {}),
     ...(deliveryPostal ? { deliveryPostal } : {}),
-    ...(excludeKeywords.length ? { excludeKeywords } : {}),
     ...(categoryIds ? { categoryIds } : {}),
     ...(aspectFilter ? { aspectFilter } : {}),
   };

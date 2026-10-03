@@ -6,6 +6,7 @@ import {
   parseSearchIntent,
   toCoverageQuery,
   unofficialExcludeWords,
+  userExcludeWords,
 } from "./watch-criteria.ts";
 import { localizeQueryTerm } from "./store-query-terms.ts";
 
@@ -39,7 +40,8 @@ test("DE-site coverage injects German exclude words", () => {
   const coverage = toCoverageQuery(intent);
   assert.equal(coverage.ebaySite, "EBAY_DE");
   assert.match(coverage.keywords, /carded/);
-  assert.ok(coverage.excludeKeywords?.includes("fälschung"));
-  assert.ok(coverage.excludeKeywords?.includes("lose"));
-  assert.ok(!coverage.excludeKeywords?.includes("fake"));
+  const excluded = userExcludeWords(intent.excludeKeywords);
+  assert.ok(excluded.includes("fälschung"));
+  assert.ok(excluded.includes("lose"));
+  assert.ok(!excluded.includes("fake"));
 });

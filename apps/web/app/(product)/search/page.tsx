@@ -6,6 +6,7 @@ import {
   describeWatch,
   landedCostCents,
   listingMatchesCondition,
+  listingMatchesExcludeWords,
   listingMatchesConfidence,
   listingMatchesGrader,
   listingMatchesItemLocation,
@@ -214,6 +215,7 @@ export default async function SearchPage({
       );
       return (
         landedOk &&
+        listingMatchesExcludeWords(listing, intent.excludeKeywords) &&
         listingMatchesCondition(listing, intent.condition) &&
         listingMatchesListingType(listing, intent.listingType) &&
         listingMatchesItemLocation(listing, intent.itemLocation) &&

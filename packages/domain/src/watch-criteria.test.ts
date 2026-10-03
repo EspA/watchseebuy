@@ -44,8 +44,8 @@ import {
   compactSearchFilters,
   describeListingLocation,
   describeWatch,
-  ebaySearchQuery,
   excludeWordsField,
+  listingMatchesExcludeWords,
   listingMatchesCondition,
   listingMatchesGrader,
   listingMatchesItemLocation,
@@ -260,15 +260,42 @@ test("user exclude words parse, cover, and hide from the field defaults", () => 
     ),
     sortedUserExcludes("lot"),
   );
-  assert.notEqual(toCoverageQuery(withUser).key, toCoverageQuery(base).key);
-  assert.ok(toCoverageQuery(withUser).excludeKeywords?.includes("lot"));
-  assert.ok(toCoverageQuery(withUser).excludeKeywords?.includes("moc"));
+  assert.equal(toCoverageQuery(withUser).key, toCoverageQuery(base).key);
+  assert.ok(userExcludeWords(withUser.excludeKeywords).includes("lot"));
+  assert.ok(userExcludeWords(withUser.excludeKeywords).includes("moc"));
   const unofficialOff = applyWatchOverrides(withUser, {
     excludeUnofficial: false,
   });
   assert.equal(unofficialOff.excludeUnofficial, false);
   assert.deepEqual(userExcludeWords(unofficialOff.excludeKeywords), ["lot"]);
-  assert.equal(ebaySearchQuery("lego star wars", ["lot"]), "lego star wars -lot");
+  assert.equal(
+    listingMatchesExcludeWords(
+      { title: "NEW Star Wars Yoda NY I Love Shirt Custom Lego Minifigure" },
+      base.excludeKeywords,
+    ),
+    false,
+  );
+  assert.equal(
+    listingMatchesExcludeWords(
+      { title: "LEGO Star Wars SW0465 New York Yoda" },
+      base.excludeKeywords,
+    ),
+    true,
+  );
+  assert.equal(
+    listingMatchesExcludeWords(
+      { title: "Customer moccasin showcase" },
+      base.excludeKeywords,
+    ),
+    true,
+  );
+  assert.equal(
+    listingMatchesExcludeWords(
+      { title: "LEGO lot of star wars sets" },
+      withUser.excludeKeywords,
+    ),
+    false,
+  );
 });
 
 test("card catalog filters inject into eBay keywords, not Browse filter", () => {
@@ -358,8 +385,8 @@ test("card catalog filters inject into eBay keywords, not Browse filter", () => 
   });
   assert.equal(raw.cardGrade, undefined);
   assert.ok(!toCoverageQuery(raw).keywords.includes("raw"));
-  assert.ok(toCoverageQuery(raw).excludeKeywords?.includes("psa"));
-  assert.ok(toCoverageQuery(raw).excludeKeywords?.includes("graded"));
+  assert.ok(userExcludeWords(raw.excludeKeywords).includes("psa"));
+  assert.ok(userExcludeWords(raw.excludeKeywords).includes("graded"));
   assert.match(describeWatch(raw), /Raw/);
 
   const graded = applyWatchOverrides(base, { grader: "cgc", cardGrade: "10" });
@@ -391,9 +418,9 @@ test("trading cards category is a Browse category_ids, not a keyword", () => {
   assert.equal(coverage.categoryIds, "2536");
   assert.equal(coverage.keywords, "charizard");
   assert.ok(!coverage.keywords.includes("collectible card"));
-  assert.ok(coverage.excludeKeywords?.includes("reproduction"));
-  assert.ok(coverage.excludeKeywords?.includes("fake"));
-  assert.ok(coverage.excludeKeywords?.includes("custom"));
+  assert.ok(userExcludeWords(ccg.excludeKeywords).includes("reproduction"));
+  assert.ok(userExcludeWords(ccg.excludeKeywords).includes("fake"));
+  assert.ok(userExcludeWords(ccg.excludeKeywords).includes("custom"));
   assert.notEqual(coverage.key, toCoverageQuery(base).key);
   assert.match(describeWatch(ccg), /Collectible Card Games/);
   const singles = applyWatchOverrides(base, { cardCategory: "183454" });
@@ -510,19 +537,19 @@ test("building bricks type and status inject keywords; Set excludes instead", ()
   );
   const setCoverage = toCoverageQuery(setWatch);
   assert.equal(setCoverage.keywords, "lego star wars");
-  assert.ok(setCoverage.excludeKeywords?.includes("Minifigure"));
-  assert.ok(setCoverage.excludeKeywords?.includes("part"));
-  assert.ok(setCoverage.excludeKeywords?.includes("plate"));
-  assert.ok(setCoverage.excludeKeywords?.includes("brick"));
-  assert.ok(setCoverage.excludeKeywords?.includes("panel"));
-  assert.ok(setCoverage.excludeKeywords?.includes("tile"));
-  assert.ok(setCoverage.excludeKeywords?.includes("slope"));
-  assert.ok(setCoverage.excludeKeywords?.includes("case"));
-  assert.ok(setCoverage.excludeKeywords?.includes("display"));
-  assert.ok(setCoverage.excludeKeywords?.includes("sticker"));
-  assert.ok(setCoverage.excludeKeywords?.includes("incomplete"));
-  assert.ok(setCoverage.excludeKeywords?.includes("led"));
-  assert.ok(setCoverage.excludeKeywords?.includes("protector"));
+  assert.ok(userExcludeWords(setWatch.excludeKeywords).includes("Minifigure"));
+  assert.ok(userExcludeWords(setWatch.excludeKeywords).includes("part"));
+  assert.ok(userExcludeWords(setWatch.excludeKeywords).includes("plate"));
+  assert.ok(userExcludeWords(setWatch.excludeKeywords).includes("brick"));
+  assert.ok(userExcludeWords(setWatch.excludeKeywords).includes("panel"));
+  assert.ok(userExcludeWords(setWatch.excludeKeywords).includes("tile"));
+  assert.ok(userExcludeWords(setWatch.excludeKeywords).includes("slope"));
+  assert.ok(userExcludeWords(setWatch.excludeKeywords).includes("case"));
+  assert.ok(userExcludeWords(setWatch.excludeKeywords).includes("display"));
+  assert.ok(userExcludeWords(setWatch.excludeKeywords).includes("sticker"));
+  assert.ok(userExcludeWords(setWatch.excludeKeywords).includes("incomplete"));
+  assert.ok(userExcludeWords(setWatch.excludeKeywords).includes("led"));
+  assert.ok(userExcludeWords(setWatch.excludeKeywords).includes("protector"));
   assert.match(describeWatch(setWatch), /Set/);
   assert.match(describeWatch(setWatch), /excluding/);
 
@@ -556,8 +583,8 @@ test("building bricks type and status inject keywords; Set excludes instead", ()
   );
   const sealedCoverage = toCoverageQuery(sealed);
   assert.equal(sealedCoverage.keywords, "lego star wars sealed");
-  assert.ok(sealedCoverage.excludeKeywords?.includes("incomplete"));
-  assert.ok(sealedCoverage.excludeKeywords?.includes("missing"));
+  assert.ok(userExcludeWords(sealed.excludeKeywords).includes("incomplete"));
+  assert.ok(userExcludeWords(sealed.excludeKeywords).includes("missing"));
   const sealedCleared = applyWatchOverrides(sealed, { clearBrickStatus: true });
   assert.deepEqual(
     userExcludeWords(sealedCleared.excludeKeywords).sort((a, b) =>
@@ -672,8 +699,8 @@ test("figure packaging, completeness, and punch inject keywords", () => {
   });
   assert.equal(carded.figureCompleteness, undefined);
   assert.equal(toCoverageQuery(carded).keywords, "kenner luke carded punched");
-  assert.ok(toCoverageQuery(carded).excludeKeywords?.includes("uncarded"));
-  assert.ok(toCoverageQuery(carded).excludeKeywords?.includes("unpunched"));
+  assert.ok(userExcludeWords(carded.excludeKeywords).includes("uncarded"));
+  assert.ok(userExcludeWords(carded.excludeKeywords).includes("unpunched"));
   assert.match(describeWatch(carded), /Carded/);
   assert.match(describeWatch(carded), /Punched/);
 
@@ -779,7 +806,7 @@ test("hot wheels packaging injects keywords; Carded excludes uncarded", () => {
     sortedUserExcludes(...CARDED_EXCLUDE_WORDS, "lot"),
   );
   assert.equal(toCoverageQuery(carded).keywords, "hot wheels bone shaker carded");
-  assert.ok(toCoverageQuery(carded).excludeKeywords?.includes("uncarded"));
+  assert.ok(userExcludeWords(carded.excludeKeywords).includes("uncarded"));
   assert.match(describeWatch(carded), /Carded/);
 
   const loose = applyWatchOverrides(base, { wheelsPackaging: "loose" });

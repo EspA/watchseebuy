@@ -11,6 +11,7 @@ import type {
 import { listingMatchesConfidence } from "./seller-confidence.ts";
 import {
   listingMatchesCondition,
+  listingMatchesExcludeWords,
   listingMatchesGrader,
   listingMatchesItemLocation,
   listingMatchesListingType,
@@ -58,7 +59,6 @@ export function matchListing(
   watch: WatchCriteria,
 ): MatchDecision {
   const reasons: string[] = [];
-  const haystack = listing.title.toLowerCase();
   const landedCents = landedCostCents({
     itemCents: listing.itemCents,
     shippingCents: listing.shippingCents,
@@ -67,18 +67,8 @@ export function matchListing(
       : {}),
   });
 
-  const tokens = watch.query
-    .toLowerCase()
-    .split(/\s+/)
-    .filter((t) => t.length > 1);
-  const missing = tokens.filter((t) => !haystack.includes(t));
-  if (missing.length > 0) {
-    return {
-      matches: false,
-      landedCents,
-      reasons: [`missing tokens: ${missing.join(", ")}`],
-    };
-  }
+  // eBay already matched the coverage keywords, including loose titles
+  // ("I Heart" for "I Love"). Requiring every word here dropped those listings.
 
   if (
     watch.minLandedCents !== undefined &&
@@ -93,6 +83,9 @@ export function matchListing(
     return { matches: false, landedCents, reasons: ["over max price"] };
   }
 
+  if (!listingMatchesExcludeWords(listing, watch.excludeKeywords)) {
+    return { matches: false, landedCents, reasons: ["excluded words"] };
+  }
   if (!listingMatchesCondition(listing, watch.condition)) {
     return { matches: false, landedCents, reasons: ["condition"] };
   }
@@ -120,7 +113,7 @@ export function matchListing(
     return { matches: false, landedCents, reasons: ["auction over cap"] };
   }
 
-  reasons.push("title tokens");
+  reasons.push("ebay match");
   if (
     watch.minLandedCents !== undefined ||
     watch.maxLandedCents !== undefined

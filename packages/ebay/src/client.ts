@@ -1,6 +1,5 @@
 import {
   applyListingIdentity,
-  ebaySearchQuery,
   type CandidateListing,
   type CoverageQuery,
 } from "@watchseebuy/domain";
@@ -129,7 +128,7 @@ export class EbayClient {
       const result = await searchItemSummaries({
         hosts: hostsForEnv(this.env()),
         token,
-        q: ebaySearchQuery(coverage.keywords, coverage.excludeKeywords),
+        q: coverage.keywords,
         marketplaceId: coverage.ebaySite,
         listingType: coverage.listingType,
         record: this.record,
