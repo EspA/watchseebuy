@@ -8,8 +8,8 @@ import {
   subscriptions,
   user,
   watches,
-} from "./schema";
-import { deletedEbayUsernames } from "./account-deletion";
+} from "./schema.ts";
+import { deletedEbayUsernames } from "./account-deletion.ts";
 
 export type CoverageToPoll = {
   id: string;
@@ -49,28 +49,34 @@ export type UnsentMatch = {
   listing: StoredListing;
 };
 
-export async function listCoverageDueForPoll(
+export type PollIntervals = {
+  defaultPollMs: number;
+  premiumPollMs: number;
+  premiumPlusPollMs: number;
+};
+
+export function coverageDueForPollQuery(
   db: Database,
   now: Date,
-  intervals: {
-    defaultPollMs: number;
-    premiumPollMs: number;
-    premiumPlusPollMs: number;
-  },
+  intervals: PollIntervals,
 ) {
+  // Drizzle's postgres.js driver replaces the timestamptz serializer with an
+  // identity function, so a raw Date crashes parameter binding. Untyped JS
+  // numbers are sent as text, and `text * interval` is not a valid operator.
+  const at = now.toISOString();
   const pollMs = sql`MIN(
     CASE
       WHEN ${watches.alertFrequency} = 'on_change'
         AND ${subscriptions.plan} = 'premium_plus'
         AND ${subscriptions.status} IN ('active', 'cancelled')
-        AND ${subscriptions.expiresAt} > ${now}
-      THEN LEAST(${intervals.defaultPollMs}, ${intervals.premiumPlusPollMs})
+        AND ${subscriptions.expiresAt} > ${at}::timestamptz
+      THEN LEAST(${intervals.defaultPollMs}::bigint, ${intervals.premiumPlusPollMs}::bigint)
       WHEN ${watches.alertFrequency} = 'on_change'
         AND ${subscriptions.plan} = 'premium'
         AND ${subscriptions.status} IN ('active', 'cancelled')
-        AND ${subscriptions.expiresAt} > ${now}
-      THEN LEAST(${intervals.defaultPollMs}, ${intervals.premiumPollMs})
-      ELSE ${intervals.defaultPollMs}
+        AND ${subscriptions.expiresAt} > ${at}::timestamptz
+      THEN LEAST(${intervals.defaultPollMs}::bigint, ${intervals.premiumPollMs}::bigint)
+      ELSE ${intervals.defaultPollMs}::bigint
     END
   )`;
   return db
@@ -98,9 +104,17 @@ export async function listCoverageDueForPoll(
     .having(
       or(
         isNull(coverageQueries.lastPolledAt),
-        sql`${coverageQueries.lastPolledAt} <= ${now} - (${pollMs} * interval '1 millisecond')`,
+        sql`${coverageQueries.lastPolledAt} <= ${at}::timestamptz - (${pollMs} * interval '1 millisecond')`,
       ),
     );
+}
+
+export async function listCoverageDueForPoll(
+  db: Database,
+  now: Date,
+  intervals: PollIntervals,
+) {
+  return coverageDueForPollQuery(db, now, intervals);
 }
 
 export async function listWatchesForCoverage(

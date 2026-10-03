@@ -3,6 +3,12 @@ import { tick } from "./tick.ts";
 
 const INTERVAL_MS = Number(process.env.WORKER_INTERVAL_MS ?? 60_000);
 
+function describeError(error: unknown): string {
+  if (!(error instanceof Error)) return String(error);
+  const cause = error.cause instanceof Error ? error.cause.message : "";
+  return cause ? `${cause}\n${error.message}` : error.message;
+}
+
 let inFlight: Promise<Record<string, unknown>> | null = null;
 
 async function runTick() {
@@ -19,7 +25,7 @@ async function runTick() {
     } catch (error) {
       const payload = {
         at: new Date().toISOString(),
-        error: error instanceof Error ? error.message : String(error),
+        error: describeError(error),
       };
       console.error(JSON.stringify(payload));
       throw error;
@@ -51,7 +57,7 @@ function listen(port: number) {
           res.writeHead(500, { "content-type": "application/json" });
           res.end(
             JSON.stringify({
-              error: error instanceof Error ? error.message : String(error),
+              error: describeError(error),
             }),
           );
         });
