@@ -89,8 +89,8 @@
       <tr><th>Application title</th><td>WatchSeeBuy</td></tr>
       <tr><th>Application URL</th><td>https://watchseebuy.com</td></tr>
       <tr><th>Production App ID</th><td>your-production-app-id</td></tr>
-      <tr><th>Purpose of request</th><td>Increase Buy Browse API call limit to 50,000 calls/day</td></tr>
-      <tr><th>eBay Partner Network</th><td>Yes · publisher ID 1000001</td></tr>
+      <tr><th>Purpose of request</th><td>Increase Buy Browse API call limit to 250,000 calls/day</td></tr>
+      <tr><th>eBay Partner Network</th><td>Yes · publisher ID your-epn-publisher-id</td></tr>
       <tr><th>Reviewer test path</th><td>https://watchseebuy.com/search (public search; no eBay user token)</td></tr>
       <tr><th>Privacy / terms</th><td>https://watchseebuy.com/privacy · https://watchseebuy.com/terms</td></tr>
       <tr><th>Account deletion</th><td>https://watchseebuy.com/api/ebay/account-deletion</td></tr>
@@ -110,7 +110,7 @@
       The product is live. The number of users is growing quickly, which
       increases public searches and saved watches. Search and watch coverage
       share one Browse daily quota. The default 5,000 calls/day cannot sustain
-      that growth. We request 50,000 Browse calls/day as soon as possible so
+      that growth. We request 250,000 Browse calls/day as soon as possible so
       search and alerts remain available.
     </p>
 
@@ -158,7 +158,7 @@
       <p>
         Buy always lands on the eBay item page. Clicks go through a
         first-party WatchSeeBuy URL, then to eBay with Partner Network
-        parameters for publisher <strong>1000001</strong>. We use a text
+        parameters for publisher <strong>your-epn-publisher-id</strong>. We use a text
         “Buy on eBay” link, not the eBay logo. If an ad blocker strips
         affiliate parameters, we still open the plain item URL so the
         collector can complete the purchase. In-app checkout (Buy APIs) is
@@ -246,8 +246,8 @@
       searches) × (1 + getItems after filters)</strong>
     </p>
     <p>
-      Requested Browse capacity: <strong>50,000 calls/day</strong>. Peak-hour
-      planning: about 200 searches and 1,000 getItem calls if a search burst
+      Requested Browse capacity: <strong>250,000 calls/day</strong>. Peak-hour
+      planning: about 1,000 searches and 5,000 getItem calls if a search burst
       coincides with a worker tick. Identity and Notification traffic stays
       small.
     </p>
@@ -336,7 +336,7 @@
     <p class="foot">
       WatchSeeBuy · https://watchseebuy.com · contact@watchseebuy.com ·
       Production App ID your-production-app-id ·
-      EPN 1000001 · Attachment for Application Growth Check
+      EPN your-epn-publisher-id · Attachment for Application Growth Check
     </p>
   </body>
 </html>
